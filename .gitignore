@@ -1,0 +1,27 @@
+# Virtual environment
+.venv/
+venv/
+
+# Python caches / build artefacts
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Generated datasets and reports
+data/
+outputs/
+
+# Local tool metadata
+.freebuff/
+
+# Editor / OS noise
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

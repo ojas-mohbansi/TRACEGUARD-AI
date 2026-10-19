@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "modbus-nids"
+version = "0.1.0"
+description = "Hybrid Modbus/TCP network intrusion detection system (Phase 1: ingestion)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+authors = [{ name = "FSM-NIDS" }]
+dependencies = [
+    "numpy>=1.26,<3",
+    "pandas>=2.2,<3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+modbus-nids = "modbus_nids.cli:main"
+
+[tool.setuptools]
+packages = ["modbus_nids"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-ra"
