@@ -4,8 +4,9 @@ Local, CPU-only intrusion detection for Modbus/TCP industrial traffic. The
 hybrid detector combines an FSM-based protocol model with statistical/ML
 features; the pipeline is built phase by phase.
 
-**Current scope: Phase 1.3 — session-isolated windows, lifecycle management and
-feature extraction (complete); Phase 1.1 ingestion is its input layer.**
+**Current scope: Phase 2.1 — Tier-1 deterministic protocol FSM (complete);
+Phase 1.3 session-isolated features remain the input layer for the Tier 2/3
+stages.**
 
 ## Layout
 
@@ -18,8 +19,9 @@ modbus_nids/
 ├── synthetic.py   # seeded Modbus traffic simulator + defect injector
 ├── window.py      # per-session sliding windows, pruning, feature math
 ├── features.py    # batch extraction API over records / frames / IngestResult
-└── cli.py         # generate | parse | features | demo
-tests/             # pytest suite (validation, parser, synthetic, window, CLI)
+├── fsm.py         # Tier-1 protocol state machine, verdicts, conversation keys
+└── cli.py         # generate | parse | features | fsm | demo
+tests/             # pytest suite (validation, parser, synthetic, window, FSM, CLI)
 ```
 
 ## Input contract
@@ -185,6 +187,139 @@ the plant's polling cadence rather than using pruning as a generic cache squeeze
 On a 200,000-row log spanning 4,000 sessions, extraction runs at roughly 54k
 rows/s on a single CPU core (3.7 s), producing a finite `(200000, 17)` matrix.
 
+## Tier-1 protocol FSM (Phase 2.1)
+
+`modbus_nids.fsm.ModbusFSM` is the deterministic, hard-protocol half of the
+detector. It consumes the same `ModbusRecord` stream as the feature extractor
+and returns one verdict per event: a score, a decision, a stable reason code
+and the provenance needed to reconstruct exactly what the engine saw. A
+violation short-circuits the pipeline (`score = 1.0`, `bypass_ml = True`); a
+clean event scores `0.0` and is forwarded to the Tier 2/3 stages.
+
+The engine is a *protocol* checker, not a behavioural one. "Is this exchange
+possible in a well-formed Modbus/TCP conversation?" is Tier 1; "is this traffic
+unusual?" — write floods, register sweeps, off-hours bursts — stays in Tier
+2/3.
+
+### Conversations are canonicalised, not directional
+
+A request and its response travel in opposite directions, so the directional
+`(source_ip, dest_ip, connection)` key used for feature windows would split an
+exchange across two sessions. `ConversationKey` stores
+`(client_ip, server_ip, tcp_connection)` instead, and its `label`
+(`client|server|connection`) is byte-identical to the existing `flow_key` for
+request-only captures.
+
+Roles are resolved per event and the evidence is recorded as `role_source`:
+
+| Precedence | Source | Meaning |
+|---|---|---|
+| 1 | `ports` | exactly one of `source_port`/`dest_port` is an allowed Modbus port: `dest` ⇒ request, `source` ⇒ response |
+| 2 | `declared` | the `direction` column, when the ports are absent or ambiguous |
+| 3 | `learned` | the roles established by an earlier event on the same connection |
+| 4 | `default` | nothing was available; the source end is treated as the client |
+
+Ports outrank the `direction` column on purpose: exporters mislabel direction
+often, and the synthetic `exception_response` defect keeps client→server
+endpoints while declaring `direction="response"`. Ports-first attributes the
+packet to the right conversation, so the engine reports the real fault
+(`response_without_request`) instead of a direction artefact. A contradiction
+between the ports and the declared direction is recorded as the soft note
+`direction_conflict`, never as a violation. The Modbus exception flag (0x80)
+outranks everything for the *message* role, because only a server sets it.
+
+### States, symbols and the transition table
+
+`SessionState` is `idle`, `request_sent` (exactly one transaction in flight),
+`waiting_response` (two or more — legal pipelining) and `error` (the previous
+event was a violation). `FSMSymbol` records the provenance of an event
+(`request_read_03`, `request_write_single_06`, `request_write_multiple_10`,
+`request_other`, the matching `response_*` symbols and `response_exception`)
+and folds to a `SymbolClass` of `request` or `response`.
+
+The transition table is a declared, module-level mapping:
+
+| State | REQUEST | RESPONSE |
+|---|---|---|
+| `idle` | `request_sent` | `forbidden` |
+| `request_sent` | `waiting_response` | `derived` |
+| `waiting_response` | `waiting_response` | `derived` |
+| `error` | `derived` | `derived` |
+
+`derived` recomputes the state from the number of transactions still in flight
+(`0 → idle`, `1 → request_sent`, `≥2 → waiting_response`). A pair missing from
+the table is an *undefined* transition and is reported as
+`undefined_transition` rather than silently accepted. `error` is a one-event
+quarantine: the next structurally valid event recovers the conversation, so one
+malformed packet cannot cascade across a whole capture.
+
+### Hard rules and soft notes
+
+A request is checked against the open transactions of its conversation before
+it is accepted:
+
+* a transaction ID that is still open, or that was closed recently (the
+  `tid_history` ring, default 256), is a violation — `transaction_id_reuse`;
+* an optional `supported_function_codes` allow-list rejects other request
+  codes — `unsupported_function_code`.
+
+A response is matched to its request by transaction ID:
+
+* no open request — `response_without_request`;
+* the transaction was already answered — `response_after_close`;
+* a function code that contradicts the request — `function_code_mismatch`;
+* an exception response with the wrong MBAP length —
+  `exception_length_invalid`;
+* a unit ID that contradicts the request — `unit_id_mismatch`;
+* a response that arrives while the conversation is in error and matches no
+  open request — `session_in_error`.
+
+Soft observations are counted for auditing but never scored:
+`incomplete_transaction`, `outstanding_evicted`, `transaction_expired`,
+`direction_inferred`, `direction_conflict`, `session_evicted`.
+
+**Unanswered requests are legal.** Modbus/TCP allows several requests in
+flight on one connection, and many captures only contain one direction, so an
+unanswered request stays open and is reported as an incomplete transaction at
+`finish()`. It is never a violation.
+
+### Verdicts
+
+```python
+from modbus_nids import FSMConfig, ModbusFSM, evaluate_tier1
+
+tier1 = evaluate_tier1(result)      # IngestResult, DataFrame or records
+verdict = tier1.verdicts[0]
+verdict.score, verdict.decision, verdict.bypass_ml   # 0.0 / "benign" / False
+verdict.reason, verdict.detail                       # None / "" when clean
+
+engine = ModbusFSM(FSMConfig(tid_history=512, max_sessions=10_000))
+tier1 = engine.evaluate(result)
+summary = engine.finish()      # events, sessions, violations, reasons, notes
+frame = tier1.to_frame()       # one row per event, 19 pinned columns
+```
+
+`Tier1Verdict` carries `raw_index`, `session_id`/`session_key`, `symbol`,
+`symbol_class`, `direction`, `role_source`, `transaction_id`, `function_code`,
+`state_before`, `state_after`, `outstanding`, `reason`, `detail`, `score`,
+`decision`, `bypass_ml` and `notes`. `Tier1Result` adds `scores`,
+`decisions`, `anomaly_mask`, `reasons`, `n_violations`, `violation_rate`,
+`n_sessions`, `to_frame()`, `to_dict()` and `summary()`.
+
+### Bounds
+
+Memory is bounded on every axis: at most `max_outstanding` open transactions
+(default 64) and `tid_history` closed transaction IDs (default 256) per
+conversation, and at most `max_sessions` conversations (LRU eviction, off by
+default); the learned-role map is bounded by the same cap. `response_timeout`
+(seconds, measured on event timestamps rather than the wall clock, so batch
+runs stay deterministic) expires transactions that were never answered.
+`prune(reference, idle_timeout=...)` evicts idle conversations, mirroring
+`SessionWindowManager`.
+
+On a 200,000-row log spanning 4,000 conversations the Tier-1 pass runs at
+roughly 89k events/s on a single CPU core (2.3 s).
+
 ## Setup
 
 ```bash
@@ -210,13 +345,18 @@ python -m venv .venv
 .venv/Scripts/python -m modbus_nids.cli features \
     --in data/synthetic.csv --out data/features.csv --window-size 10
 
-# 4. Or run the in-memory demo (generate, parse and featurise)
+# 4. Run the Tier-1 protocol state machine over the same log
+.venv/Scripts/python -m modbus_nids.cli fsm \
+    --in data/synthetic.csv --out data/tier1.csv --report data/tier1.json
+
+# 5. Or run the in-memory demo (generate, parse, featurise and evaluate)
 .venv/Scripts/python -m modbus_nids.cli demo
 ```
 
-`parse` and `features` exit `0` on success, `1` when no row survives validation,
-and `2` on a fatal input error (missing file, missing required column, unreadable
-encoding, invalid window configuration).
+`parse`, `features` and `fsm` exit `0` on success, `1` when no row survives
+validation (or, for `fsm`, when the log yields no event), and `2` on a fatal
+input error (missing file, missing required column, unreadable encoding,
+invalid window configuration).
 The JSON report contains `meta` (provenance, counts, timing) and `report`
 (reason-code counts and samples).
 
@@ -229,6 +369,14 @@ result = parse_csv("data/synthetic.csv", IngestConfig(chunk_size=100_000))
 print(result.summary())
 clean = result.frame          # typed, sorted, session-ready
 records = result.records      # list[ModbusRecord]
+```
+
+```python
+from modbus_nids import ModbusFSM
+
+tier1 = ModbusFSM().evaluate(result)
+print(tier1.summary())        # events, violations, reasons, notes
+verdicts = tier1.to_frame()   # one row per event, aligned with the clean frame
 ```
 
 CSV ingestion streams `chunk_size` rows at a time, so large captures stay
@@ -261,3 +409,16 @@ boundary, idempotence), per-session `idle_timeout` restart semantics, the
 `max_sessions` LRU cap, `last_seen` / `evicted_sessions` reporting, Tier-1
 metadata provenance (including nullable protocol fields), and dtype equality
 between empty and populated feature frames.
+
+Phase 2.1 adds: the state table and its undefined-transition guard, the
+ports-first role resolution and its `role_source` provenance, canonical
+conversation keys shared by a request and its response, transaction
+correlation with the open/closed rings, every hard rule (`response_without_
+request`, `response_after_close`, `function_code_mismatch`, `unit_id_mismatch`,
+`exception_length_invalid`, `transaction_id_reuse`, `undefined_transition`,
+`forbidden_transition`, `session_in_error`, `unsupported_function_code`), the
+one-event error quarantine and its recovery, the `id → request_sent → derived`
+state sequence, pipelining and unanswered requests staying legal, per-event
+verdict provenance, the memory bounds (`max_outstanding`, `tid_history`,
+`max_sessions`, `response_timeout`, `prune`), and the `fsm` CLI writing a
+verdict frame whose row count matches the clean frame.

@@ -8,8 +8,9 @@ import sys
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
-from modbus_nids import FEATURE_COLUMNS
+from modbus_nids import FEATURE_COLUMNS, VERDICT_COLUMNS
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -116,8 +117,64 @@ def test_missing_input_is_a_fatal_error(tmp_path: Path) -> None:
     assert "does not exist" in completed.stderr
 
 
+def test_fsm_command_writes_verdicts_and_a_report(tmp_path: Path) -> None:
+    log = tmp_path / "synthetic.csv"
+    verdicts = tmp_path / "verdicts.csv"
+    report = tmp_path / "tier1.json"
+
+    assert run_cli(
+        "generate", "--out", str(log), "--sessions", "4", "--events", "20", "--seed", "13"
+    ).returncode == 0
+
+    completed = run_cli(
+        "fsm", "--in", str(log), "--out", str(verdicts), "--report", str(report)
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "events=" in completed.stdout
+
+    frame = pd.read_csv(verdicts)
+    for column in VERDICT_COLUMNS:
+        assert column in frame.columns, column
+    assert len(frame) == 80
+
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["events"] == 80
+    assert payload["sessions"] == 4
+    assert payload["violations"] == sum(payload["reasons"].values())
+    assert payload["violation_rate"] == pytest.approx(payload["violations"] / 80)
+
+
+def test_fsm_command_reports_violations_on_a_protocol_anomaly(tmp_path: Path) -> None:
+    log = tmp_path / "synthetic.csv"
+    report = tmp_path / "tier1.json"
+
+    assert run_cli(
+        "generate",
+        "--out",
+        str(log),
+        "--sessions",
+        "40",
+        "--events",
+        "60",
+        "--anomaly-rate",
+        "0.05",
+        "--defect-rate",
+        "0.0",
+        "--seed",
+        "42",
+    ).returncode == 0
+
+    completed = run_cli("fsm", "--in", str(log), "--report", str(report))
+    assert completed.returncode == 0, completed.stderr
+
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["violations"] > 0
+    assert payload["reasons"]
+
+
 def test_no_arguments_runs_demo() -> None:
     completed = run_cli()
 
     assert completed.returncode == 0, completed.stderr
     assert "source=<demo>" in completed.stdout
+    assert "tier1: events=" in completed.stdout

@@ -1,10 +1,11 @@
-"""Command-line interface for Phase 1.1 ingestion and Phase 1.3 features.
+"""Command-line interface for Phase 1.1 ingestion, Phase 1.3 features and Phase 2.1 Tier-1 FSM.
 
 Commands:
     generate   write a synthetic Modbus/TCP CSV log
     parse      validate a CSV log into a clean frame and rejection report
     features   compute session-isolated window features from a log
-    demo       generate + parse + featurise in memory and print a digest
+    fsm        run the Tier-1 protocol state machine over a log
+    demo       generate + parse + featurise + evaluate in memory and print a digest
 
 Exit codes: 0 success, 1 nothing survived validation, 2 fatal input error.
 """
@@ -19,6 +20,7 @@ from typing import Sequence
 
 from .constants import DEFAULT_ALLOWED_PORTS
 from .features import extract_features
+from .fsm import DEFAULT_MAX_OUTSTANDING, DEFAULT_TID_HISTORY, FSMConfig, ModbusFSM
 from .models import IngestConfig, IngestionError
 from .parser import parse_csv, parse_dataframe
 from .synthetic import generate_synthetic_logs, write_synthetic_csv
@@ -30,7 +32,7 @@ def build_parser() -> argparse.ArgumentParser:
         prog="modbus-nids",
         description=(
             "Modbus/TCP pipeline: synthetic logs, strict parsing, rejection "
-            "reports, session-isolated features."
+            "reports, session-isolated features, Tier-1 protocol FSM."
         ),
     )
     sub = parser.add_subparsers(dest="command")
@@ -108,7 +110,45 @@ def build_parser() -> argparse.ArgumentParser:
     )
     features.set_defaults(handler=_cmd_features)
 
-    demo = sub.add_parser("demo", help="generate, parse and featurise in memory")
+    fsm = sub.add_parser("fsm", help="run the Tier-1 protocol state machine over a log")
+    fsm.add_argument(
+        "--in", dest="input", required=True, type=Path, help="input CSV path"
+    )
+    fsm.add_argument(
+        "--out", type=Path, help="write the per-event Tier-1 verdicts to this CSV"
+    )
+    fsm.add_argument(
+        "--report", type=Path, help="write the Tier-1 summary as JSON"
+    )
+    fsm.add_argument(
+        "--max-outstanding",
+        type=int,
+        default=DEFAULT_MAX_OUTSTANDING,
+        help="open transactions kept per conversation",
+    )
+    fsm.add_argument(
+        "--tid-history",
+        type=int,
+        default=DEFAULT_TID_HISTORY,
+        help="recently closed transaction ids remembered per conversation",
+    )
+    fsm.add_argument(
+        "--lenient",
+        action="store_true",
+        help="skip port/protocol-id scope checks (structural rules still apply)",
+    )
+    fsm.add_argument(
+        "--allowed-port",
+        dest="allowed_ports",
+        type=int,
+        action="append",
+        help="allowed Modbus port (repeatable; defaults to 502)",
+    )
+    fsm.set_defaults(handler=_cmd_fsm)
+
+    demo = sub.add_parser(
+        "demo", help="generate, parse, featurise and evaluate in memory"
+    )
     demo.add_argument("--sessions", type=int, default=8)
     demo.add_argument("--events", type=int, default=25)
     demo.add_argument("--anomaly-rate", type=float, default=0.05)
@@ -119,11 +159,15 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _allowed_ports(args: argparse.Namespace) -> frozenset[int]:
+    ports = getattr(args, "allowed_ports", None)
+    return frozenset(ports) if ports else DEFAULT_ALLOWED_PORTS
+
+
 def _config_from(args: argparse.Namespace) -> IngestConfig:
-    ports = frozenset(args.allowed_ports) if getattr(args, "allowed_ports", None) else DEFAULT_ALLOWED_PORTS
     return IngestConfig(
         strict=not getattr(args, "lenient", False),
-        allowed_ports=ports,
+        allowed_ports=_allowed_ports(args),
         chunk_size=getattr(args, "chunk_size", 200_000),
     )
 
@@ -179,6 +223,29 @@ def _cmd_features(args: argparse.Namespace) -> int:
     return 0 if len(batch) else 1
 
 
+def _cmd_fsm(args: argparse.Namespace) -> int:
+    result = parse_csv(args.input, _config_from(args))
+    engine = ModbusFSM(
+        FSMConfig(
+            allowed_ports=_allowed_ports(args),
+            max_outstanding=args.max_outstanding,
+            tid_history=args.tid_history,
+        )
+    )
+    tier1 = engine.evaluate(result)
+    if args.out is not None:
+        _write_clean(tier1.to_frame(), args.out)
+    summary = engine.finish()
+    if args.report is not None:
+        args.report.parent.mkdir(parents=True, exist_ok=True)
+        args.report.write_text(
+            json.dumps(summary.to_dict(), indent=2, sort_keys=True), encoding="utf-8"
+        )
+    print(result.summary())
+    print(summary.summary())
+    return 0 if len(tier1) else 1
+
+
 def _cmd_demo(args: argparse.Namespace) -> int:
     raw = generate_synthetic_logs(
         n_sessions=args.sessions,
@@ -189,10 +256,15 @@ def _cmd_demo(args: argparse.Namespace) -> int:
     )
     result = parse_dataframe(raw, IngestConfig(), source="<demo>")
     batch = extract_features(result)
+    tier1 = ModbusFSM().evaluate(result)
     print(result.summary())
     print(
         f"features: rows={len(batch)} sessions={batch.n_sessions} "
         f"columns={len(batch.feature_names)} X={batch.X.shape}"
+    )
+    print(
+        f"tier1: events={len(tier1)} violations={tier1.n_violations} "
+        f"rate={tier1.violation_rate:.2%}"
     )
     print()
     print(batch.frame.head(8).to_string(index=False))

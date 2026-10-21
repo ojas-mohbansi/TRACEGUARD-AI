@@ -17,7 +17,7 @@ import csv
 from datetime import datetime
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Iterable, Mapping, Sequence
+from typing import Any, Iterable, Mapping, Sequence, Union
 
 import pandas as pd
 
@@ -119,6 +119,27 @@ def frame_to_records(
     if failures:
         raise ValueError(
             f"{len(failures)} row(s) in the frame failed validation: {failures[0]}"
+        )
+    return records
+
+
+def resolve_records(
+    source: Union[IngestResult, pd.DataFrame, Iterable[ModbusRecord]],
+) -> list[ModbusRecord]:
+    """Resolve the three accepted input shapes into typed records.
+
+    Shared by the Phase 1.3 feature extractor and the Phase 2.1 FSM engine so
+    both tiers accept exactly the same inputs and fail the same way.
+    """
+    if isinstance(source, IngestResult):
+        return list(source.records)
+    if isinstance(source, pd.DataFrame):
+        return frame_to_records(source)
+    records = list(source)
+    invalid = [type(item).__name__ for item in records if not isinstance(item, ModbusRecord)]
+    if invalid:
+        raise TypeError(
+            "expected ModbusRecord items; got " + ", ".join(sorted(set(invalid)))
         )
     return records
 

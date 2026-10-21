@@ -1,9 +1,10 @@
-"""Hybrid Modbus/TCP NIDS — ingestion and windowed feature layers.
+"""Hybrid Modbus/TCP NIDS — ingestion, windowed features and the Tier-1 FSM.
 
 Public surface for the rest of the system: canonical schema constants, the
 validated record type, the ingestion result/report contracts, the CSV /
-record / DataFrame entry points, and the Phase 1.3 session-isolated window
-extractor that feeds the FSM and ML tiers.
+record / DataFrame entry points, the Phase 1.3 session-isolated window
+extractor, and the Phase 2.1 deterministic protocol FSM that gates the ML
+tiers.
 """
 
 from __future__ import annotations
@@ -41,10 +42,30 @@ from .parser import (
     parse_dataframe,
     parse_records,
     records_to_frame,
+    resolve_records,
 )
 from .synthetic import generate_synthetic_logs, write_synthetic_csv
 from .validation import RowValidation, coerce_timestamp, validate_row
 from .features import FeatureBatch, extract_features
+from .fsm import (
+    ConversationKey,
+    DEFAULT_MAX_OUTSTANDING,
+    DEFAULT_TID_HISTORY,
+    FSMConfig,
+    FSMNote,
+    FSMReason,
+    FSMSummary,
+    FSMSymbol,
+    ModbusFSM,
+    RoleSource,
+    SessionState,
+    SymbolClass,
+    Tier1Result,
+    Tier1Verdict,
+    TransitionTarget,
+    VERDICT_COLUMNS,
+    evaluate_tier1,
+)
 from .window import (
     DEFAULT_EPSILON,
     DEFAULT_WINDOW_SIZE,
@@ -59,12 +80,14 @@ from .window import (
     WindowError,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 __all__ = [
     "__version__",
     "CANONICAL_COLUMNS",
     "DEFAULT_ALLOWED_PORTS",
+    "DEFAULT_MAX_OUTSTANDING",
+    "DEFAULT_TID_HISTORY",
     "DERIVED_COLUMNS",
     "FUNCTION_CODES",
     "MBAP_MAX_LENGTH",
@@ -74,8 +97,14 @@ __all__ = [
     "REQUIRED_COLUMNS",
     "DEFAULT_EPSILON",
     "DEFAULT_WINDOW_SIZE",
+    "ConversationKey",
     "Direction",
     "FEATURE_COLUMNS",
+    "FSMConfig",
+    "FSMNote",
+    "FSMReason",
+    "FSMSummary",
+    "FSMSymbol",
     "FeatureBatch",
     "FunctionCodeSpec",
     "IngestConfig",
@@ -83,22 +112,31 @@ __all__ = [
     "IngestResult",
     "IngestionError",
     "METADATA_COLUMNS",
+    "ModbusFSM",
     "ModbusRecord",
     "NGRAM_SIZES",
     "OUTPUT_COLUMNS",
     "READ_FUNCTION_CODES",
     "RejectReason",
     "RejectionReport",
+    "RoleSource",
     "RowValidation",
     "SchemaError",
     "SessionKey",
+    "SessionState",
     "SessionWindowManager",
     "SourceError",
+    "SymbolClass",
+    "Tier1Result",
+    "Tier1Verdict",
+    "TransitionTarget",
+    "VERDICT_COLUMNS",
     "ValidationIssue",
     "WRITE_FUNCTION_CODES",
     "WarningCode",
     "WindowError",
     "coerce_timestamp",
+    "evaluate_tier1",
     "extract_features",
     "frame_to_records",
     "generate_synthetic_logs",
@@ -107,6 +145,7 @@ __all__ = [
     "parse_dataframe",
     "parse_records",
     "records_to_frame",
+    "resolve_records",
     "validate_row",
     "write_synthetic_csv",
 ]

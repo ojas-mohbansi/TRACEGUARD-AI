@@ -19,6 +19,7 @@ outputs/
 
 # Local tool metadata
 .freebuff/
+.archify/
 
 # Editor / OS noise
 .idea/

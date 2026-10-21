@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 
 from .models import IngestResult, ModbusRecord
-from .parser import frame_to_records
+from .parser import resolve_records
 from .window import (
     DEFAULT_EPSILON,
     DEFAULT_WINDOW_SIZE,
@@ -83,17 +83,7 @@ class FeatureBatch:
 
 
 def _resolve_records(source: FeatureSource) -> list[ModbusRecord]:
-    if isinstance(source, IngestResult):
-        return list(source.records)
-    if isinstance(source, pd.DataFrame):
-        return frame_to_records(source)
-    records = list(source)
-    invalid = [type(item).__name__ for item in records if not isinstance(item, ModbusRecord)]
-    if invalid:
-        raise TypeError(
-            "extract_features expects ModbusRecord items; got " + ", ".join(sorted(set(invalid)))
-        )
-    return records
+    return resolve_records(source)
 
 
 def extract_features(
