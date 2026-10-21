@@ -1,9 +1,10 @@
-"""Batch API for Phase 1.2 windowed feature extraction.
+"""Batch API for Phase 1.3 windowed feature extraction.
 
 The heavy lifting lives in :mod:`modbus_nids.window`; this module resolves the
 three supported input shapes (an :class:`IngestResult`, a clean DataFrame, or an
 iterable of :class:`ModbusRecord`) and returns a :class:`FeatureBatch` whose
-rows stay aligned with the ingested records' labels and ``raw_index`` values.
+rows stay aligned with the ingested records' labels, ``raw_index`` values and
+Tier-1 metadata (register address, quantity, unit ID and direction).
 """
 
 from __future__ import annotations
@@ -75,6 +76,11 @@ class FeatureBatch:
         """Session identifier for each row, aligned with ``X``."""
         return self.frame["session_id"].to_numpy()
 
+    @property
+    def n_sessions(self) -> int:
+        """Number of distinct sessions represented in this batch."""
+        return int(self.frame["session_id"].nunique())
+
 
 def _resolve_records(source: FeatureSource) -> list[ModbusRecord]:
     if isinstance(source, IngestResult):
@@ -95,6 +101,7 @@ def extract_features(
     *,
     window_size: int = DEFAULT_WINDOW_SIZE,
     epsilon: float = DEFAULT_EPSILON,
+    idle_timeout: float | None = None,
 ) -> FeatureBatch:
     """Compute session-isolated features for parsed Modbus/TCP records.
 
@@ -102,6 +109,8 @@ def extract_features(
         source: An ingestion result, a clean frame, or an iterable of records.
         window_size: Trailing events retained per TCP session (default 10).
         epsilon: Seconds added inside ``log(dt + epsilon)``.
+        idle_timeout: Optional per-session idle gap in seconds. A session that
+            resumes after a longer gap restarts instead of bridging it.
 
     Returns:
         A :class:`FeatureBatch` aligned row-for-row with the input records.
@@ -110,8 +119,18 @@ def extract_features(
         WindowError: If a session's timestamps regress.
         ValueError: If the feature frame or configuration is invalid.
         TypeError: If an iterable contains non-record items.
+
+    Notes:
+        Batch extraction keeps one bounded window per session, so memory grows
+        with the number of sessions in the input. The manager's ``max_sessions``
+        LRU cap is intentionally not exposed here: silently dropping a session
+        mid-batch would corrupt its feature continuity. Use
+        :class:`~modbus_nids.window.SessionWindowManager` directly for streaming
+        with a hard session cap, or pass ``idle_timeout`` to expire stale ones.
     """
-    manager = SessionWindowManager(window_size=window_size, epsilon=epsilon)
+    manager = SessionWindowManager(
+        window_size=window_size, epsilon=epsilon, idle_timeout=idle_timeout
+    )
     frame = manager.transform(_resolve_records(source))
     return FeatureBatch(frame=frame)
 

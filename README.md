@@ -4,8 +4,8 @@ Local, CPU-only intrusion detection for Modbus/TCP industrial traffic. The
 hybrid detector combines an FSM-based protocol model with statistical/ML
 features; the pipeline is built phase by phase.
 
-**Current scope: Phase 1.2 — session-isolated windows and feature extraction
-(complete); Phase 1.1 ingestion is its input layer.**
+**Current scope: Phase 1.3 — session-isolated windows, lifecycle management and
+feature extraction (complete); Phase 1.1 ingestion is its input layer.**
 
 ## Layout
 
@@ -16,9 +16,9 @@ modbus_nids/
 ├── validation.py  # reason-coded structural + protocol validation
 ├── parser.py      # CSV / record / DataFrame ingress, typed frame out
 ├── synthetic.py   # seeded Modbus traffic simulator + defect injector
-├── window.py      # per-session sliding windows + incremental feature math
+├── window.py      # per-session sliding windows, pruning, feature math
 ├── features.py    # batch extraction API over records / frames / IngestResult
-└── cli.py         # generate | parse | demo
+└── cli.py         # generate | parse | features | demo
 tests/             # pytest suite (validation, parser, synthetic, window, CLI)
 ```
 
@@ -83,7 +83,7 @@ Rows are sorted by timestamp (stable, with `raw_index` as tiebreaker), and
 `IngestResult.records` contains the same rows as typed `ModbusRecord` objects.
 `records_to_frame` / `frame_to_records` round-trip between the two.
 
-## Session-isolated features (Phase 1.2)
+## Session-isolated features (Phase 1.3)
 
 `window.SessionWindowManager` keeps an independent bounded window of the last
 `k = 10` events (configurable) per session. The key is the directional tuple
@@ -116,9 +116,13 @@ Per event, the extractor emits (current event included in the window):
 | `ngram_novelty_{2,3,5}` | `1` if the newest n-gram is new within the window, else `0` |
 
 Metadata — `session_id`, endpoints, `timestamp`, `transaction_id`,
-`function_code`, `label`, `raw_index` — is carried on every row, so feature
-matrices stay aligned with ground truth and source provenance for the Tier 1
-FSM and Tier 2/3 ML stages.
+`function_code`, `register_address`, `quantity`, `unit_id`, `direction`,
+`label`, `raw_index` — is carried on every row, so feature matrices stay aligned
+with ground truth and source provenance for the Tier 1 FSM and Tier 2/3 ML
+stages. Optional protocol fields use nullable `Int64`; string metadata uses
+pandas `string`; the 17 feature columns are always `float64`. The empty result
+from `transform([])` has exactly the same columns and dtypes as a populated
+frame.
 
 ```python
 from modbus_nids import extract_features, parse_csv
@@ -138,8 +142,48 @@ iterable of `ModbusRecord`. For streaming use, drive
 `SessionWindowManager.add(record)` directly and call `reset()` between captures.
 The manager is stateful and not thread-safe; use one instance per stream.
 
-On a 200,000-row log spanning 4,000 sessions, extraction runs at roughly 80k
-rows/s on a single CPU core (2.4 s), producing a finite `(200000, 17)` matrix.
+### Session lifecycle and pruning
+
+A long-running manager would otherwise retain a window forever for every flow it
+has ever seen. Three opt-in controls bound that memory:
+
+```python
+from datetime import datetime, timezone
+from modbus_nids import SessionWindowManager
+
+manager = SessionWindowManager(
+    window_size=10,
+    idle_timeout=30.0,   # restart one session if its own gap exceeds 30 s
+    max_sessions=50_000, # LRU-evict on overflow of a new session
+)
+
+row = manager.add(record)
+manager.prune(datetime.now(timezone.utc))  # explicit idle sweep
+```
+
+* `idle_timeout` is evaluated **per session** on `add()`: if a flow resumes after
+  a longer gap, its stale window is evicted and the new event is a genuine
+  session start (`is_session_start=1`, `dt_seconds=0`,
+  `log_dt=log(epsilon)`). This is safe under interleaved traffic because one
+  session's clock is never compared to another's.
+* `max_sessions` is a hard cap. Adding a **new** session at the cap evicts the
+  least-recently-used session first. It is off by default and intentionally
+  sacrifices that session's temporal context; existing sessions are never split.
+* `prune(reference, idle_timeout=...)` evicts every session whose newest event
+  is older than the cutoff and returns the number removed. With no `reference`
+  it uses the latest timestamp the manager has observed, which keeps offline
+  runs deterministic; live callers should pass the current UTC time. Sessions
+  exactly at the cutoff are retained. `prune()` with no policy raises
+  `ValueError`.
+* `last_seen(key)` exposes a session's newest retained timestamp;
+  `evicted_sessions` is cumulative since construction or the last `reset()`.
+
+Because pruning removes temporal context, a session that reappears after
+pruning is a new session and its first delta is zero. Choose timeouts that match
+the plant's polling cadence rather than using pruning as a generic cache squeeze.
+
+On a 200,000-row log spanning 4,000 sessions, extraction runs at roughly 54k
+rows/s on a single CPU core (3.7 s), producing a finite `(200000, 17)` matrix.
 
 ## Setup
 
@@ -211,3 +255,9 @@ and fraction, n-gram novelty for n = 2/3/5, label/`raw_index` alignment, batch
 extraction from all three input shapes, empty input, timestamp-regression
 rejection, and the `features` CLI writing a matrix whose row count, session
 count and `raw_index` order match the clean frame.
+
+Phase 1.3 adds: explicit idle pruning (deterministic default reference, cutoff
+boundary, idempotence), per-session `idle_timeout` restart semantics, the
+`max_sessions` LRU cap, `last_seen` / `evicted_sessions` reporting, Tier-1
+metadata provenance (including nullable protocol fields), and dtype equality
+between empty and populated feature frames.

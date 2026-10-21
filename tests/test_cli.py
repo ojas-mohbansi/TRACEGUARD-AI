@@ -102,6 +102,11 @@ def test_features_command_writes_an_aligned_matrix(tmp_path: Path) -> None:
     assert frame["window_event_count"].max() == 4
     assert frame["session_id"].nunique() == parsed["flow_key"].nunique()
     assert list(frame["raw_index"]) == list(parsed["raw_index"])
+    assert list(frame["label"]) == list(parsed["label"])
+    for column in ("transaction_id", "function_code", "register_address", "quantity", "unit_id"):
+        assert column in frame.columns, column
+        assert frame[column].astype("Float64").equals(parsed[column].astype("Float64")), column
+    assert list(frame["direction"]) == list(parsed["direction"])
 
 
 def test_missing_input_is_a_fatal_error(tmp_path: Path) -> None:
