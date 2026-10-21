@@ -1,4 +1,4 @@
-"""Command-line interface for Phase 1.1 ingestion and Phase 1.2 features.
+"""Command-line interface for Phase 1.1 ingestion and Phase 1.3 features.
 
 Commands:
     generate   write a synthetic Modbus/TCP CSV log
@@ -172,7 +172,7 @@ def _cmd_features(args: argparse.Namespace) -> int:
         _write_clean(batch.frame, args.out)
     print(result.summary())
     print(
-        f"features: rows={len(batch)} sessions={batch.frame['session_id'].nunique()} "
+        f"features: rows={len(batch)} sessions={batch.n_sessions} "
         f"columns={len(batch.feature_names)} window={args.window_size} "
         f"anomalies={int(batch.y.sum())}"
     )
@@ -191,7 +191,7 @@ def _cmd_demo(args: argparse.Namespace) -> int:
     batch = extract_features(result)
     print(result.summary())
     print(
-        f"features: rows={len(batch)} sessions={batch.frame['session_id'].nunique()} "
+        f"features: rows={len(batch)} sessions={batch.n_sessions} "
         f"columns={len(batch.feature_names)} X={batch.X.shape}"
     )
     print()

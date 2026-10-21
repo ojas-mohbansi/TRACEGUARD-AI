@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "modbus-nids"
-version = "0.1.0"
-description = "Hybrid Modbus/TCP network intrusion detection system (Phase 1: ingestion)"
+version = "0.3.0"
+description = "Hybrid Modbus/TCP network intrusion detection system (Phase 1: ingestion and windowed features)"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Proprietary" }

@@ -8,7 +8,7 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 import pandas as pd
 import pytest
-from pandas.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from modbus_nids import (
     FEATURE_COLUMNS,
@@ -363,6 +363,10 @@ def test_transform_frame_has_pinned_schema_and_dtypes() -> None:
         assert frame[column].dtype == np.float64, column
     for column in ("label", "raw_index", "transaction_id", "function_code"):
         assert frame[column].dtype == np.int64, column
+    for column in ("session_id", "source_ip", "dest_ip", "tcp_connection", "direction"):
+        assert frame[column].dtype == pd.StringDtype(), column
+    for column in ("register_address", "quantity", "unit_id"):
+        assert frame[column].dtype == pd.Int64Dtype(), column
 
 
 def test_feature_rows_stay_aligned_with_labels_and_raw_index() -> None:
@@ -463,3 +467,253 @@ def test_dest_ip_is_part_of_the_session_identity() -> None:
     assert frame["session_id"].nunique() == 2
     assert list(frame["window_event_count"]) == [1, 1, 2]
     assert list(frame["dt_seconds"]) == [0.0, 0.0, 2.0]
+
+
+# ---------------------------------------------------------------------------
+# Session lifecycle: pruning, idle resets and the LRU cap
+# ---------------------------------------------------------------------------
+
+
+def test_prune_evicts_only_idle_sessions() -> None:
+    manager = SessionWindowManager(window_size=4)
+    stale = make_record(timestamp=TS, tcp_connection="A")
+    fresh = make_record(timestamp=TS + timedelta(seconds=5), tcp_connection="B")
+    manager.add(stale)
+    manager.add(fresh)
+
+    evicted = manager.prune(TS + timedelta(seconds=10), idle_timeout=6)
+
+    assert evicted == 1
+    assert manager.session_count == 1
+    assert manager.window_for(SessionKey.from_record(stale)) == ()
+    assert manager.last_seen(SessionKey.from_record(fresh)) == fresh.timestamp
+    assert manager.evicted_sessions == 1
+
+
+def test_prune_defaults_to_the_latest_observed_timestamp() -> None:
+    manager = SessionWindowManager()
+    stale = make_record(timestamp=TS, tcp_connection="A")
+    fresh = make_record(timestamp=TS + timedelta(seconds=100), tcp_connection="B")
+    manager.add(stale)
+    manager.add(fresh)
+
+    assert manager.prune(idle_timeout=10) == 1
+    assert manager.last_seen(SessionKey.from_record(stale)) is None
+    assert manager.last_seen(SessionKey.from_record(fresh)) == fresh.timestamp
+
+
+def test_prune_retains_sessions_exactly_at_the_cutoff() -> None:
+    manager = SessionWindowManager()
+    boundary = make_record(timestamp=TS, tcp_connection="A")
+    manager.add(boundary)
+
+    assert manager.prune(TS + timedelta(seconds=10), idle_timeout=10) == 0
+    assert manager.session_count == 1
+
+
+def test_prune_before_all_sessions_is_a_noop() -> None:
+    manager = SessionWindowManager()
+    manager.add(make_record(timestamp=TS))
+
+    assert manager.prune(TS - timedelta(seconds=30), idle_timeout=5) == 0
+    assert manager.session_count == 1
+
+
+def test_prune_requires_a_policy() -> None:
+    manager = SessionWindowManager()
+    manager.add(make_record(timestamp=TS))
+
+    with pytest.raises(ValueError, match="idle_timeout"):
+        manager.prune()
+
+
+def test_prune_rejects_a_naive_reference() -> None:
+    manager = SessionWindowManager()
+    manager.add(make_record(timestamp=TS))
+
+    with pytest.raises(ValueError, match="timezone-aware"):
+        manager.prune(datetime(2026, 1, 1, 12, 0, 0), idle_timeout=5)
+
+
+def test_prune_is_idempotent_and_empty_safe() -> None:
+    manager = SessionWindowManager()
+    manager.add(make_record(timestamp=TS))
+
+    assert manager.prune(TS + timedelta(seconds=10), idle_timeout=5) == 1
+    assert manager.prune(TS + timedelta(seconds=10), idle_timeout=5) == 0
+    assert manager.evicted_sessions == 1
+
+    empty = SessionWindowManager()
+    assert empty.prune(TS, idle_timeout=5) == 0
+    assert empty.last_seen(SessionKey.from_record(make_record())) is None
+
+
+def test_idle_timeout_restarts_a_resumed_session() -> None:
+    manager = SessionWindowManager(idle_timeout=5)
+    manager.add(make_record(timestamp=TS, transaction_id=11))
+    manager.add(make_record(timestamp=TS + timedelta(seconds=2), transaction_id=12))
+    row = manager.add(make_record(timestamp=TS + timedelta(seconds=20), transaction_id=13))
+
+    assert row["is_session_start"] == 1
+    assert row["dt_seconds"] == 0.0
+    assert row["log_dt"] == pytest.approx(math.log(DEFAULT_EPSILON))
+    assert row["tid_delta"] == 0
+    assert row["window_event_count"] == 1
+    assert row["window_fill_ratio"] == pytest.approx(1 / manager.window_size)
+    assert manager.evicted_sessions == 1
+
+
+def test_idle_timeout_boundary_keeps_the_window() -> None:
+    manager = SessionWindowManager(idle_timeout=5)
+    manager.add(make_record(timestamp=TS))
+    row = manager.add(make_record(timestamp=TS + timedelta(seconds=5)))
+
+    assert row["is_session_start"] == 0
+    assert row["dt_seconds"] == pytest.approx(5.0)
+    assert row["window_event_count"] == 2
+    assert manager.evicted_sessions == 0
+
+
+def test_idle_timeout_is_evaluated_per_session() -> None:
+    manager = SessionWindowManager(idle_timeout=5)
+    manager.add(make_record(timestamp=TS, tcp_connection="A"))
+    manager.add(make_record(timestamp=TS + timedelta(seconds=100), tcp_connection="B"))
+    row = manager.add(make_record(timestamp=TS + timedelta(seconds=1), tcp_connection="A"))
+
+    assert row["is_session_start"] == 0
+    assert row["dt_seconds"] == pytest.approx(1.0)
+    assert manager.session_count == 2
+    assert manager.evicted_sessions == 0
+
+
+def test_idle_timeout_is_disabled_by_default() -> None:
+    manager = SessionWindowManager()
+    manager.add(make_record(timestamp=TS))
+    row = manager.add(make_record(timestamp=TS + timedelta(days=30)))
+
+    assert row["is_session_start"] == 0
+    assert row["window_event_count"] == 2
+    assert manager.evicted_sessions == 0
+
+
+def test_max_sessions_evicts_the_least_recently_used_session() -> None:
+    manager = SessionWindowManager(max_sessions=2)
+    manager.add(make_record(timestamp=TS, tcp_connection="A"))
+    manager.add(make_record(timestamp=TS, tcp_connection="B"))
+    manager.add(make_record(timestamp=TS + timedelta(seconds=1), tcp_connection="A"))
+    manager.add(make_record(timestamp=TS + timedelta(seconds=2), tcp_connection="C"))
+
+    assert manager.session_count == 2
+    assert manager.window_for(SessionKey.from_record(make_record(tcp_connection="A")))
+    assert manager.window_for(SessionKey.from_record(make_record(tcp_connection="C")))
+    assert manager.window_for(SessionKey.from_record(make_record(tcp_connection="B"))) == ()
+    assert manager.evicted_sessions == 1
+
+
+def test_max_sessions_does_not_split_an_existing_session() -> None:
+    manager = SessionWindowManager(max_sessions=1)
+    manager.add(make_record(timestamp=TS))
+    manager.add(make_record(timestamp=TS + timedelta(seconds=1)))
+
+    assert manager.session_count == 1
+    assert manager.evicted_sessions == 0
+    assert len(manager.window_for(SessionKey.from_record(make_record()))) == 2
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "message"),
+    [
+        ({"max_sessions": 0}, "max_sessions"),
+        ({"max_sessions": -1}, "max_sessions"),
+        ({"max_sessions": 2.5}, "max_sessions"),
+        ({"max_sessions": True}, "max_sessions"),
+        ({"idle_timeout": 0.0}, "idle_timeout"),
+        ({"idle_timeout": -1.0}, "idle_timeout"),
+        ({"idle_timeout": float("nan")}, "idle_timeout"),
+        ({"idle_timeout": float("inf")}, "idle_timeout"),
+        ({"idle_timeout": True}, "idle_timeout"),
+    ],
+)
+def test_invalid_lifecycle_configuration_is_rejected(
+    kwargs: dict[str, float], message: str
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        SessionWindowManager(**kwargs)
+
+
+@pytest.mark.parametrize("window_size", [2.5, True, "10"])
+def test_window_size_must_be_an_integer(window_size: object) -> None:
+    with pytest.raises(ValueError, match="window_size"):
+        SessionWindowManager(window_size=window_size)  # type: ignore[arg-type]
+
+
+def test_reset_clears_lifecycle_state() -> None:
+    manager = SessionWindowManager(idle_timeout=5)
+    manager.add(make_record(timestamp=TS))
+    manager.prune(TS + timedelta(seconds=10))
+    assert manager.evicted_sessions == 1
+
+    manager.reset()
+
+    assert manager.session_count == 0
+    assert manager.evicted_sessions == 0
+    assert manager.prune(TS, idle_timeout=5) == 0
+
+
+# ---------------------------------------------------------------------------
+# Tier-1 metadata and dtype parity
+# ---------------------------------------------------------------------------
+
+
+def test_metadata_is_carried_through_for_the_fsm_tier() -> None:
+    record = make_record(
+        register_address=40001,
+        quantity=7,
+        unit_id=3,
+        direction="request",
+        function_code=16,
+        transaction_id=1234,
+        label=1,
+        raw_index=42,
+    )
+    frame = SessionWindowManager().transform([record])
+    row = frame.iloc[0]
+
+    assert row["register_address"] == 40001
+    assert row["quantity"] == 7
+    assert row["unit_id"] == 3
+    assert str(row["direction"]) == "request"
+    assert row["function_code"] == 16
+    assert row["transaction_id"] == 1234
+    assert row["label"] == 1
+    assert row["raw_index"] == 42
+
+
+def test_optional_metadata_uses_nullable_integers() -> None:
+    record = make_record(register_address=None, quantity=None, unit_id=None)
+    frame = SessionWindowManager().transform([record])
+
+    for column in ("register_address", "quantity", "unit_id"):
+        assert frame[column].dtype == pd.Int64Dtype(), column
+        assert pd.isna(frame.loc[0, column]), column
+
+
+def test_empty_and_populated_frames_have_identical_dtypes() -> None:
+    empty = SessionWindowManager().transform([])
+    populated = SessionWindowManager().transform(series(3))
+
+    assert list(empty.columns) == list(populated.columns)
+    assert_series_equal(empty.dtypes, populated.dtypes, check_names=False)
+
+
+def test_feature_batch_forwards_idle_timeout_and_reports_sessions() -> None:
+    records = [
+        make_record(timestamp=TS, raw_index=0),
+        make_record(timestamp=TS + timedelta(seconds=2), raw_index=1),
+        make_record(timestamp=TS + timedelta(seconds=20), raw_index=2),
+    ]
+    batch = extract_features(records, idle_timeout=5)
+
+    assert list(batch.frame["is_session_start"]) == [1, 0, 1]
+    assert batch.n_sessions == 1
+    assert list(batch.raw_index) == [0, 1, 2]

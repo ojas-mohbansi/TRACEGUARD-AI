@@ -2,7 +2,7 @@
 
 Public surface for the rest of the system: canonical schema constants, the
 validated record type, the ingestion result/report contracts, the CSV /
-record / DataFrame entry points, and the Phase 1.2 session-isolated window
+record / DataFrame entry points, and the Phase 1.3 session-isolated window
 extractor that feeds the FSM and ML tiers.
 """
 
@@ -59,7 +59,7 @@ from .window import (
     WindowError,
 )
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 __all__ = [
     "__version__",
