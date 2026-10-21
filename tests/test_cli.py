@@ -178,3 +178,95 @@ def test_no_arguments_runs_demo() -> None:
     assert completed.returncode == 0, completed.stderr
     assert "source=<demo>" in completed.stdout
     assert "tier1: events=" in completed.stdout
+
+
+def test_fsm_command_honours_the_supported_function_codes(tmp_path: Path) -> None:
+    log = tmp_path / "synthetic.csv"
+    report = tmp_path / "tier1.json"
+
+    assert run_cli(
+        "generate", "--out", str(log), "--sessions", "4", "--events", "20", "--seed", "13"
+    ).returncode == 0
+
+    completed = run_cli(
+        "fsm",
+        "--in",
+        str(log),
+        "--report",
+        str(report),
+        "--supported-function-code",
+        "3",
+    )
+    assert completed.returncode == 0, completed.stderr
+
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["reasons"].get("unsupported_function_code", 0) > 0
+
+
+def test_fsm_command_caps_the_tracked_conversations(tmp_path: Path) -> None:
+    log = tmp_path / "synthetic.csv"
+    report = tmp_path / "tier1.json"
+
+    assert run_cli(
+        "generate", "--out", str(log), "--sessions", "4", "--events", "20", "--seed", "13"
+    ).returncode == 0
+
+    completed = run_cli(
+        "fsm", "--in", str(log), "--report", str(report), "--max-sessions", "1"
+    )
+    assert completed.returncode == 0, completed.stderr
+
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["sessions"] == 1
+    assert payload["notes"].get("session_evicted", 0) > 0
+
+
+def test_fsm_command_expires_unanswered_transactions(tmp_path: Path) -> None:
+    log = tmp_path / "synthetic.csv"
+    report = tmp_path / "tier1.json"
+
+    assert run_cli(
+        "generate", "--out", str(log), "--sessions", "3", "--events", "20", "--seed", "13"
+    ).returncode == 0
+
+    completed = run_cli(
+        "fsm", "--in", str(log), "--report", str(report), "--response-timeout", "0.001"
+    )
+    assert completed.returncode == 0, completed.stderr
+
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["notes"].get("transaction_expired", 0) > 0
+    assert payload["incomplete_transactions"] < payload["events"]
+
+
+def test_fsm_command_strict_direction_rejects_an_unresolved_role(tmp_path: Path) -> None:
+    log = tmp_path / "portless.csv"
+    report = tmp_path / "tier1.json"
+    log.write_text(
+        "timestamp,source_ip,dest_ip,tcp_connection,transaction_id,function_code,"
+        "register_address,data_length,label\n"
+        "2026-01-01T12:00:00+00:00,10.0.0.1,10.0.0.2,conn-1,7,3,10,6,0\n"
+        "2026-01-01T12:00:01+00:00,10.0.0.1,10.0.0.2,conn-1,8,3,10,6,0\n",
+        encoding="utf-8",
+    )
+
+    completed = run_cli(
+        "fsm", "--in", str(log), "--report", str(report), "--strict-direction"
+    )
+    assert completed.returncode == 0, completed.stderr
+
+    payload = json.loads(report.read_text(encoding="utf-8"))
+    assert payload["reasons"].get("direction_unresolved", 0) == 2
+
+
+def test_fsm_command_rejects_an_invalid_policy(tmp_path: Path) -> None:
+    log = tmp_path / "synthetic.csv"
+
+    assert run_cli(
+        "generate", "--out", str(log), "--sessions", "2", "--events", "5", "--seed", "13"
+    ).returncode == 0
+
+    completed = run_cli("fsm", "--in", str(log), "--max-sessions", "0")
+
+    assert completed.returncode == 2
+    assert "max_sessions" in completed.stderr

@@ -228,6 +228,12 @@ between the ports and the declared direction is recorded as the soft note
 `direction_conflict`, never as a violation. The Modbus exception flag (0x80)
 outranks everything for the *message* role, because only a server sets it.
 
+`strict_direction` turns an unproven role into a hard violation
+(`direction_unresolved`). A role is proven when a Modbus port or the
+`direction` column establishes it; a role merely *learned* from an earlier
+event does not count, because the earlier event was itself unproven — so
+every event of a portless capture is flagged, not just the first.
+
 ### States, symbols and the transition table
 
 `SessionState` is `idle`, `request_sent` (exactly one transaction in flight),
@@ -318,7 +324,33 @@ runs stay deterministic) expires transactions that were never answered.
 `SessionWindowManager`.
 
 On a 200,000-row log spanning 4,000 conversations the Tier-1 pass runs at
-roughly 89k events/s on a single CPU core (2.3 s).
+roughly 72k events/s on a single CPU core (2.7 s).
+
+### Running it from the shell
+
+Every policy knob of `FSMConfig` is reachable from the `fsm` subcommand, so a
+plant policy can be applied without writing Python:
+
+```bash
+.venv/Scripts/python -m modbus_nids.cli fsm \
+    --in data/synthetic.csv --out data/tier1.csv --report data/tier1.json \
+    --supported-function-code 3 --supported-function-code 16 \
+    --response-timeout 5 --max-sessions 50000 --strict-direction
+```
+
+| Flag | Effect |
+|---|---|
+| `--allowed-port` | repeatable; the Modbus ports that identify the server end (default `502`) |
+| `--supported-function-code` | repeatable; request codes the plant may use — anything else is `unsupported_function_code` |
+| `--response-timeout` | seconds after which an unanswered transaction expires (measured on event timestamps) |
+| `--max-sessions` | cap on tracked conversations; the least recently used is evicted |
+| `--max-outstanding` | open transactions kept per conversation |
+| `--tid-history` | recently closed transaction IDs remembered per conversation |
+| `--strict-direction` | treat an unproven direction as a violation |
+
+An invalid policy (a zero session cap, a negative timeout, a function code
+outside 1–127) exits `2` with the reason on stderr, like any other fatal
+input error.
 
 ## Setup
 
@@ -347,7 +379,8 @@ python -m venv .venv
 
 # 4. Run the Tier-1 protocol state machine over the same log
 .venv/Scripts/python -m modbus_nids.cli fsm \
-    --in data/synthetic.csv --out data/tier1.csv --report data/tier1.json
+    --in data/synthetic.csv --out data/tier1.csv --report data/tier1.json \
+    --supported-function-code 3 --response-timeout 5
 
 # 5. Or run the in-memory demo (generate, parse, featurise and evaluate)
 .venv/Scripts/python -m modbus_nids.cli demo
@@ -380,7 +413,7 @@ verdicts = tier1.to_frame()   # one row per event, aligned with the clean frame
 ```
 
 CSV ingestion streams `chunk_size` rows at a time, so large captures stay
-memory-bounded; on a 200k-row synthetic log it sustains roughly 40k rows/s on a
+memory-bounded; on a 200k-row synthetic log it sustains roughly 35k rows/s on a
 single CPU core.
 
 ## Tests
@@ -422,3 +455,8 @@ state sequence, pipelining and unanswered requests staying legal, per-event
 verdict provenance, the memory bounds (`max_outstanding`, `tid_history`,
 `max_sessions`, `response_timeout`, `prune`), and the `fsm` CLI writing a
 verdict frame whose row count matches the clean frame.
+
+Phase 2.1 completion adds: the CLI policy knobs (`--supported-function-code`,
+`--response-timeout`, `--max-sessions`, `--strict-direction`), the strict
+direction gate rejecting an unproven *learned* role as well as a default one,
+and the CLI end to end for each of them.

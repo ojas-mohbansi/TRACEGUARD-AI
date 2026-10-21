@@ -768,3 +768,31 @@ def test_strict_direction_rejects_an_unresolvable_direction() -> None:
 
     assert verdict.reason is FSMReason.DIRECTION_UNRESOLVED
     assert verdict.bypass_ml is True
+
+
+def test_strict_direction_flags_every_unproven_event_of_a_connection() -> None:
+    engine = ModbusFSM(FSMConfig(strict_direction=True))
+    verdicts = [
+        engine.observe(
+            make_record(transaction_id=tid, source_port=None, dest_port=None, direction="unknown")
+        )
+        for tid in (1, 2)
+    ]
+
+    assert [verdict.reason for verdict in verdicts] == [
+        FSMReason.DIRECTION_UNRESOLVED,
+        FSMReason.DIRECTION_UNRESOLVED,
+    ]
+    assert verdicts[1].role_source is RoleSource.LEARNED
+
+
+def test_strict_direction_accepts_a_role_learned_from_a_port() -> None:
+    engine = ModbusFSM(FSMConfig(strict_direction=True))
+    engine.observe(make_record(transaction_id=1))
+    verdict = engine.observe(
+        make_record(transaction_id=2, source_port=None, dest_port=None, direction="unknown")
+    )
+
+    assert verdict.role_source is RoleSource.LEARNED
+    assert verdict.reason is None
+    assert verdict.bypass_ml is False

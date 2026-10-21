@@ -144,6 +144,28 @@ def build_parser() -> argparse.ArgumentParser:
         action="append",
         help="allowed Modbus port (repeatable; defaults to 502)",
     )
+    fsm.add_argument(
+        "--supported-function-code",
+        dest="supported_function_codes",
+        type=int,
+        action="append",
+        help="request function code the plant may use (repeatable; unset accepts any code)",
+    )
+    fsm.add_argument(
+        "--response-timeout",
+        type=float,
+        help="seconds after which an unanswered transaction expires",
+    )
+    fsm.add_argument(
+        "--max-sessions",
+        type=int,
+        help="cap on tracked conversations; the least recently used is evicted",
+    )
+    fsm.add_argument(
+        "--strict-direction",
+        action="store_true",
+        help="treat an unresolvable direction as a violation",
+    )
     fsm.set_defaults(handler=_cmd_fsm)
 
     demo = sub.add_parser(
@@ -223,15 +245,27 @@ def _cmd_features(args: argparse.Namespace) -> int:
     return 0 if len(batch) else 1
 
 
+def _fsm_config(args: argparse.Namespace) -> FSMConfig:
+    """Build the Tier-1 policy from the command line.
+
+    Every knob of :class:`~modbus_nids.fsm.FSMConfig` is reachable here, so a
+    plant policy can be applied without writing Python.
+    """
+    codes = getattr(args, "supported_function_codes", None)
+    return FSMConfig(
+        allowed_ports=_allowed_ports(args),
+        supported_function_codes=frozenset(codes) if codes else None,
+        max_outstanding=args.max_outstanding,
+        tid_history=args.tid_history,
+        max_sessions=args.max_sessions,
+        response_timeout=args.response_timeout,
+        strict_direction=args.strict_direction,
+    )
+
+
 def _cmd_fsm(args: argparse.Namespace) -> int:
     result = parse_csv(args.input, _config_from(args))
-    engine = ModbusFSM(
-        FSMConfig(
-            allowed_ports=_allowed_ports(args),
-            max_outstanding=args.max_outstanding,
-            tid_history=args.tid_history,
-        )
-    )
+    engine = ModbusFSM(_fsm_config(args))
     tier1 = engine.evaluate(result)
     if args.out is not None:
         _write_clean(tier1.to_frame(), args.out)

@@ -318,7 +318,13 @@ class FSMConfig:
     """
 
     strict_direction: bool = False
-    """Treat an unresolvable direction as a hard violation."""
+    """Treat an unresolvable direction as a hard violation.
+
+    A direction is resolved when the Modbus port identifies the server
+    endpoint, or when the ``direction`` column states it. A role merely
+    *learned* from an earlier event counts as unresolved here, because the
+    earlier event was itself unproven.
+    """
 
     def __post_init__(self) -> None:
         if not isinstance(self.allowed_ports, frozenset):
@@ -741,6 +747,8 @@ class _Resolution:
     client_ip: str
     server_ip: str
     notes: tuple[FSMNote, ...]
+    proven: bool = True
+    """Whether the endpoint roles rest on evidence rather than on a guess."""
 
 
 class ModbusFSM:
@@ -760,7 +768,7 @@ class ModbusFSM:
         self._conversations: dict[ConversationKey, _Conversation] = {}
         self._touches: dict[ConversationKey, int] = {}
         self._touch_serial = 0
-        self._roles: "OrderedDict[tuple[str, str, str], tuple[str, str]]" = OrderedDict()
+        self._roles: "OrderedDict[tuple[str, str, str], tuple[str, str, bool]]" = OrderedDict()
         self._reasons: Counter[FSMReason] = Counter()
         self._notes: Counter[FSMNote] = Counter()
         self._events = 0
@@ -944,13 +952,16 @@ class ModbusFSM:
         else:
             learned_roles = self._roles.get(self._roles_key(record))
             if learned_roles is not None:
-                client_ip, server_ip = learned_roles
+                client_ip, server_ip, proven = learned_roles
                 role_source = RoleSource.LEARNED
                 self._roles.move_to_end(self._roles_key(record))
             else:
                 client_ip, server_ip = record.source_ip, record.dest_ip
                 role_source = RoleSource.DEFAULT
-        self._roles[self._roles_key(record)] = (client_ip, server_ip)
+                proven = False
+        if role_source in (RoleSource.PORTS, RoleSource.DECLARED):
+            proven = True
+        self._roles[self._roles_key(record)] = (client_ip, server_ip, proven)
         self._roles.move_to_end(self._roles_key(record))
         self._trim_roles()
 
@@ -969,8 +980,7 @@ class ModbusFSM:
             direction = declared
         else:
             direction = "request" if record.source_ip == client_ip else "response"
-            if role_source is RoleSource.DEFAULT:
-                notes.append(FSMNote.DIRECTION_INFERRED)
+            notes.append(FSMNote.DIRECTION_INFERRED)
 
         return _Resolution(
             direction=direction,
@@ -978,6 +988,7 @@ class ModbusFSM:
             client_ip=client_ip,
             server_ip=server_ip,
             notes=tuple(notes),
+            proven=proven,
         )
 
     # -- rule evaluation ----------------------------------------------------
@@ -1142,11 +1153,11 @@ class ModbusFSM:
         detail = ""
         state_after = state_before
 
-        if self.config.strict_direction and resolution.role_source is RoleSource.DEFAULT:
+        if self.config.strict_direction and not resolution.proven:
             reason = FSMReason.DIRECTION_UNRESOLVED
             detail = (
-                "direction could not be resolved from ports, the direction column, "
-                "or roles learned from an earlier event"
+                "direction could not be resolved from a Modbus port or the "
+                "direction column"
             )
         else:
             target = TRANSITIONS.get((state_before, symbol_class))

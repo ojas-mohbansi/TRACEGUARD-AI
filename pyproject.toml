@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "modbus-nids"
-version = "0.4.0"
+version = "0.4.1"
 description = "Hybrid Modbus/TCP network intrusion detection system (Phase 2.1: Tier-1 deterministic protocol FSM)"
 readme = "README.md"
 requires-python = ">=3.10"
