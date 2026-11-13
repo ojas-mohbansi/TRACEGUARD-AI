@@ -78,12 +78,28 @@ def test_hybrid_score_combines_fsm_and_ml():
 
 def test_alerts_created_and_stored_in_db():
     """3. Verify alerts are created and stored in database."""
+    # Ensure at least one alert exists in the test database
     r_alerts = requests.get(f"{BASE_URL}/api/alerts?limit=10")
     assert r_alerts.status_code == 200
     data = r_alerts.json()
     assert "alerts" in data
     assert isinstance(data["alerts"], list)
-    assert len(data["alerts"]) > 0
+
+    if len(data["alerts"]) == 0:
+        # Populate an alert by triggering simulation or running detection
+        requests.post(
+            f"{BASE_URL}/api/simulation/start",
+            json={"duration": 2, "mode": "anomalous", "event_count": 20, "speed": 0.01}
+        )
+        import time
+        for _ in range(20):
+            time.sleep(0.5)
+            r_check = requests.get(f"{BASE_URL}/api/alerts?limit=10")
+            if r_check.status_code == 200 and len(r_check.json().get("alerts", [])) > 0:
+                data = r_check.json()
+                break
+
+    assert len(data["alerts"]) > 0, "Expected at least one alert in database"
 
     alert = data["alerts"][0]
     assert "alert_id" in alert
@@ -99,6 +115,7 @@ def test_alerts_created_and_stored_in_db():
     detail = r_detail.json()
     assert detail["alert_id"] == alert_id
     assert "events" in detail
+
 
 
 def test_websocket_receives_events_on_simulation():
@@ -150,7 +167,26 @@ def test_detection_comparison_produces_valid_metrics():
     r_ds = requests.get(f"{BASE_URL}/api/datasets")
     assert r_ds.status_code == 200
     datasets = r_ds.json().get("datasets", [])
-    assert len(datasets) > 0
+
+    if len(datasets) == 0:
+        # Upload a dataset first if empty in clean runner
+        root_dir = Path(__file__).resolve().parent.parent.parent
+        csv_path = root_dir / "datasets" / "synthetic" / "test_data.csv"
+        if csv_path.exists():
+            df = pd.read_csv(csv_path)
+            prefix = uuid4().hex[:6]
+            df["event_id"] = [f"evt_init_{prefix}_{i}" for i in range(len(df))]
+            buf = io.StringIO()
+            df.to_csv(buf, index=False)
+            r_seed = requests.post(
+                f"{BASE_URL}/api/datasets/upload",
+                data={"name": f"seed_data_{prefix}", "description": "Seed dataset for comparison"},
+                files={"file": (f"seed_{prefix}.csv", io.BytesIO(buf.getvalue().encode("utf-8")), "text/csv")},
+            )
+            if r_seed.status_code in [200, 201]:
+                datasets = [r_seed.json()]
+
+    assert len(datasets) > 0, "Expected at least one dataset available for comparison"
 
     ds_id = datasets[0]["dataset_id"]
     r_comp = requests.get(f"{BASE_URL}/api/detection/compare?dataset_id={ds_id}")
@@ -158,6 +194,7 @@ def test_detection_comparison_produces_valid_metrics():
     comp = r_comp.json()
     assert comp["dataset_id"] == ds_id
     assert "engines" in comp
+
     assert "fsm" in comp["engines"]
     assert "ml" in comp["engines"]
     assert "hybrid" in comp["engines"]
