@@ -1,0 +1,34 @@
+@import "tailwindcss";
+@import "./styles/design-system.css";
+
+/* System Fonts - Clean Inter & JetBrains Mono with System Fallbacks */
+@layer base {
+  * {
+    border-color: var(--tg-border-subtle);
+  }
+
+  body {
+    background-color: var(--tg-bg-root);
+    color: var(--tg-text-primary);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Custom Precision Scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--tg-bg-root);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--tg-border-default);
+    border-radius: var(--tg-radius-full);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--tg-text-muted);
+  }
+}

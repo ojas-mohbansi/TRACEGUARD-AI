@@ -1,462 +1,269 @@
-# FSM-NIDS — Hybrid Modbus/TCP NIDS
+# TraceGuard AI — Formal Protocol Verification Meets Hybrid Intrusion Detection
 
-Local, CPU-only intrusion detection for Modbus/TCP industrial traffic. The
-hybrid detector combines an FSM-based protocol model with statistical/ML
-features; the pipeline is built phase by phase.
+[![Theory of Computation](https://img.shields.io/badge/Course-Theory%20of%20Computation-blue.svg)](#formal-theory-of-computation-model)
+[![DFA States](https://img.shields.io/badge/DFA%20States-9%20Total%20(1%20Sink)-10B981.svg)](#formal-theory-of-computation-model)
+[![Alphabet](https://img.shields.io/badge/Alphabet%20%CE%A3-13%20Symbols-3B82F6.svg)](#formal-theory-of-computation-model)
+[![Transitions](https://img.shields.io/badge/Transitions%20%CE%B4-117%20Complete-amber.svg)](#formal-theory-of-computation-model)
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB.svg?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.6-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-19.3.1-61DAFB.svg?logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8.3.8-646CFF.svg?logo=vite&logoColor=white)](https://vitejs.dev/)
 
-**Current scope: Phase 2.1 — Tier-1 deterministic protocol FSM (complete);
-Phase 1.3 session-isolated features remain the input layer for the Tier 2/3
-stages.**
+> **Academic Project Notice:** TraceGuard AI is an educational and scientific demonstration prototype developed for an academic **Theory of Computation / Formal Languages and Automata Theory** curriculum. It bridges mathematical finite-state verification with machine-learning anomaly detection to protect stateful network protocols. It is designed for demonstration and research evaluation, not commercial perimeter defense.
 
-## Layout
+---
 
-```
-modbus_nids/
-├── constants.py   # MBAP bounds, function-code table, canonical schema + aliases
-├── models.py      # ModbusRecord, IngestConfig, RejectionReport, IngestResult, ...
-├── validation.py  # reason-coded structural + protocol validation
-├── parser.py      # CSV / record / DataFrame ingress, typed frame out
-├── synthetic.py   # seeded Modbus traffic simulator + defect injector
-├── window.py      # per-session sliding windows, pruning, feature math
-├── features.py    # batch extraction API over records / frames / IngestResult
-├── fsm.py         # Tier-1 protocol state machine, verdicts, conversation keys
-└── cli.py         # generate | parse | features | fsm | demo
-tests/             # pytest suite (validation, parser, synthetic, window, FSM, CLI)
-```
+## 1. Project Overview
 
-## Input contract
+Modern application protocols (e.g., HTTP/1.1, TLS, SSH) are fundamentally stateful communication systems. Traditional Network Intrusion Detection Systems (NIDS) primarily perform regex signature pattern matching or statistical anomaly classification on isolated packets. Neither paradigm mathematically evaluates whether an observed sequence of protocol operations is legal with respect to formal state machine specifications.
 
-Each row describes one Modbus/TCP event and must carry the following fields
-(header matching is case-, space- and underscore-insensitive; common aliases
-such as `src_ip`, `tid`, `fc`, `addr`, `length`, `attack` are accepted):
+**TraceGuard AI** demonstrates how formal automata theory directly addresses this challenge:
+1. **Deterministic Verification ($\text{Tier 1}$):** Formulates application session lifecycles as a formal Complete Deterministic Finite Automaton (Complete DFA) $\mathcal{M} = (Q, \Sigma, \delta, q_0, F)$ that decides sequence language membership in $O(1)$ time per event transition with zero false positives on conforming streams.
+2. **Statistical Outlier Detection ($\text{Tier 2}$):** Deploys an unsupervised Isolation Forest model trained on 15 multivariate session features (payload byte sizes, inter-arrival latencies, cyclic counts) to detect zero-day deviations that preserve syntactic transition order.
+3. **Hybrid Consensus Scoring:** Synthesizes deterministic FSM state violations and statistical anomaly probabilities into an interpretable risk index with a strict mathematical violation floor.
 
-| Canonical | Type | Meaning |
-|---|---|---|
-| `timestamp` | ISO-8601 or epoch | event time, normalised to UTC |
-| `source_ip` / `dest_ip` | string | endpoint addresses |
-| `tcp_connection` | string / int | socket or stream identifier |
-| `transaction_id` | 0–65535 | MBAP transaction ID |
-| `function_code` | 1–127, 128–255 | Modbus FC, exception bit preserved |
-| `register_address` | 0–65535, nullable | target register |
-| `data_length` | 2–254 | MBAP length (unit ID + PDU) |
-| `label` | 0 / 1 | 0 normal, 1 anomalous |
+---
 
-Optional enrichment columns: `source_port`, `dest_port`, `protocol_id`,
-`unit_id`, `quantity`, `direction`. Epoch timestamps are auto-scaled across
-seconds/milliseconds/microseconds/nanoseconds.
+## 2. Key Features
 
-## Validation gate (strict profile)
+- **Complete HTTP Finite State Machine**: Total transition coverage modeling connection handshakes, request parsing, authentication checks, status dispatches, and teardown cycles.
+- **Interactive Automata Laboratory**: Web-based ReactFlow visualizer with real-time node highlighting, sequence stepping, and a complete $9 \times 13$ transition matrix.
+- **Live Protocol Streaming Monitor**: Full-duplex WebSocket stream (`/ws/events`) visualizing incoming network sessions, state transitions, and live throughput gauges.
+- **Forensic Threat Triage**: Multi-engine anomaly investigation console with per-session root cause explanations, transition violation histories, and operator note auditing.
+- **Detection Benchmark Lab**: Multi-engine comparative evaluation against 32 standardized benchmark datasets calculating Precision, Recall, F1 Score, and False Positive Rates.
+- **Dataset Registry & Corpus Management**: Ingest, catalog, and export CSV/JSON packet capture corpora.
+- **Embedded Presentation Mode**: 14-slide university defense walkthrough with live automata execution directly accessible from the top navigation bar.
 
-Rows that fail a hard rule are dropped and counted under a stable reason code
-(`missing_field`, `bad_timestamp`, `bad_ip`, `bad_tcp_connection`,
-`tid_out_of_range`, `bad_port`, `protocol_id_nonzero`,
-`mbap_length_out_of_bounds`, `fc_out_of_range`, `register_out_of_range`,
-`quantity_out_of_bounds`, `label_not_binary`, `not_modbus_framed`,
-`duplicate_record`, `csv_parse_error`, `invalid_record`).
+---
 
-* Ports, when present, must include an allowed Modbus port (default 502);
-  otherwise the row must prove explicit Modbus framing (valid function code,
-  protocol ID 0, MBAP length in bounds).
-* Per-function-code quantity bounds are enforced when `quantity` is present:
-  FC1/2 1–2000, FC3/4 1–125, FC15 1–1968, FC16 1–123, FC23 read 1–125.
-* Soft anomalies (`length_inconsistent`, `non_monotonic_timestamp`,
-  `unknown_function_code`) are counted as warnings on retained rows, not
-  dropped. Request-length consistency is checked only when `direction` is
-  known, since responses carry a byte count rather than a quantity.
-* Duplicate (retransmitted) rows are kept by default; `IngestConfig` can drop
-  exact duplicates, which is deliberately opt-in because retransmission is
-  itself NIDS signal.
+## 3. System Architecture
 
-Rejected rows never silence the run: the parser returns a `RejectionReport`
-with per-reason counts, rejection rate, and up to `max_reject_samples` examples
-per reason, serialisable via `summary()`, `to_frame()`, and `to_json()`.
+```mermaid
+flowchart TD
+    subgraph Client ["Client Presentation Tier (React 19 + Vite)"]
+        UI["Tailwind CSS + Custom Design Tokens"]
+        NAV["App Layout & Navigation"]
+        LAB["Automata Lab (ReactFlow)"]
+        MON["Live Monitor (WebSocket)"]
+        TRIAGE["Threats & Forensics Drawer"]
+    end
 
-## Output contract
+    subgraph Server ["Application & Protocol Tier (FastAPI / Uvicorn)"]
+        API["REST Endpoints (/api/*)"]
+        WS["WebSocket Multiplexer (/ws/events)"]
+        SIM["Traffic Simulation & Stream Generator"]
+    end
 
-`IngestResult.frame` carries canonical snake_case columns with pinned dtypes:
+    subgraph CoreEngine ["Multi-Engine Detection Tier"]
+        FSM["Deterministic FSM Engine\n(RFC 7231 Automaton)"]
+        ML["Statistical ML Engine\n(Isolation Forest)"]
+        HYBRID["Hybrid Consensus Resolver\n(S_h = 0.6 S_FSM + 0.4 S_ML)"]
+    end
 
-* `timestamp` → `datetime64[ns, UTC]`
-* `source_ip`, `dest_ip`, `tcp_connection`, `direction` → `string`
-* `transaction_id`, `function_code`, `data_length`, `label` → `int64`
-* `register_address`, `quantity`, ports, `protocol_id`, `unit_id` → `Int64`
-* derived `flow_key` (`src|dst|connection`) and `raw_index` (source row)
+    subgraph Storage ["Persistence & Data Model"]
+        DB[("SQLite Telemetry & Alerts")]
+        MODELS["Serialized Model Weights (.joblib)"]
+        CORPUS["Benchmark Datasets (/datasets)"]
+    end
 
-Rows are sorted by timestamp (stable, with `raw_index` as tiebreaker), and
-`IngestResult.records` contains the same rows as typed `ModbusRecord` objects.
-`records_to_frame` / `frame_to_records` round-trip between the two.
-
-## Session-isolated features (Phase 1.3)
-
-`window.SessionWindowManager` keeps an independent bounded window of the last
-`k = 10` events (configurable) per session. The key is the directional tuple
-`(source_ip, dest_ip, tcp_connection)` — the same tuple as the derived
-`flow_key`, exposed as `session_id`. The Modbus transaction ID is deliberately
-*not* part of the key: it changes every request, so keying on it would produce a
-fresh window per event and destroy all temporal context. TID continuity is
-instead a feature (`tid_delta`). Because the key is directional, request and
-response streams are separate sessions unless the caller normalises endpoints
-before ingest.
-
-Events for a session must arrive in non-decreasing timestamp order; a regression
-raises `WindowError` rather than silently corrupting deltas. Batch parsing sorts
-globally, so per-session order is guaranteed for `parse_csv`/`parse_dataframe`
-inputs.
-
-Per event, the extractor emits (current event included in the window):
-
-| Feature | Definition |
-|---|---|
-| `dt_seconds` | `t_i - t_{i-1}` in seconds, `0` at session start |
-| `log_dt` | `log(dt_seconds + epsilon)`, `epsilon = 1e-6` s; a session start therefore scores `log(epsilon)` (finite, not NaN) |
-| `is_session_start` | `1` for the first event of a session |
-| `tid_delta` | `(TID_i - TID_{i-1}) mod 65536`, `0` at session start |
-| `window_event_count`, `window_fill_ratio` | occupancy of the trailing window |
-| `write_count`, `read_count`, `other_count` | FC classes in the window (writes 0x05/0x06/0x0F/0x10, reads 0x01–0x04; exception bit folded to the base FC) |
-| `write_read_ratio` | `write_count / max(read_count, 1)` |
-| `write_fraction` | `write_count / max(write + read, 1)` |
-| `ngram_unique_{2,3,5}` | distinct symbol n-grams in the window |
-| `ngram_novelty_{2,3,5}` | `1` if the newest n-gram is new within the window, else `0` |
-
-Metadata — `session_id`, endpoints, `timestamp`, `transaction_id`,
-`function_code`, `register_address`, `quantity`, `unit_id`, `direction`,
-`label`, `raw_index` — is carried on every row, so feature matrices stay aligned
-with ground truth and source provenance for the Tier 1 FSM and Tier 2/3 ML
-stages. Optional protocol fields use nullable `Int64`; string metadata uses
-pandas `string`; the 17 feature columns are always `float64`. The empty result
-from `transform([])` has exactly the same columns and dtypes as a populated
-frame.
-
-```python
-from modbus_nids import extract_features, parse_csv
-
-result = parse_csv("data/synthetic.csv")
-batch = extract_features(result, window_size=10)
-
-batch.X             # float64 (n_events, 17)
-batch.y             # int64 labels, aligned
-batch.raw_index     # source row ids, aligned
-batch.session_ids   # session id per row
-batch.frame         # metadata + features as one DataFrame
+    UI --> API
+    MON <-->|Full-Duplex WS| WS
+    API --> FSM
+    API --> ML
+    API --> HYBRID
+    SIM --> WS
+    FSM --> HYBRID
+    ML --> HYBRID
+    HYBRID --> DB
+    ML -.-> MODELS
+    API -.-> CORPUS
 ```
 
-`extract_features` accepts an `IngestResult`, a clean `DataFrame`, or any
-iterable of `ModbusRecord`. For streaming use, drive
-`SessionWindowManager.add(record)` directly and call `reset()` between captures.
-The manager is stateful and not thread-safe; use one instance per stream.
+---
 
-### Session lifecycle and pruning
+## 4. Formal Theory of Computation Model
 
-A long-running manager would otherwise retain a window forever for every flow it
-has ever seen. Three opt-in controls bound that memory:
+The HTTP Protocol State Machine in TraceGuard AI is formalized as a **Complete Total Deterministic Finite Automaton (Complete DFA)**:
 
-```python
-from datetime import datetime, timezone
-from modbus_nids import SessionWindowManager
+$$\mathcal{M} = (Q, \Sigma, \delta, q_0, F)$$
 
-manager = SessionWindowManager(
-    window_size=10,
-    idle_timeout=30.0,   # restart one session if its own gap exceeds 30 s
-    max_sessions=50_000, # LRU-evict on overflow of a new session
-)
+### 4.1 Formal 5-Tuple Definition
 
-row = manager.add(record)
-manager.prune(datetime.now(timezone.utc))  # explicit idle sweep
+| Mathematical Tuple Element | Formal Value in TraceGuard AI | Description |
+| :--- | :--- | :--- |
+| **$Q$ (State Space)** | $|Q| = 9$ | $\{\text{IDLE}, \text{CONNECTED}, \text{REQUEST\_RECEIVED}, \text{AUTH\_CHECKED}, \text{AUTH\_FAILED}, \text{RESPONSE\_SENT}, \text{ERROR}, \text{CLOSED}, \text{TRAP}\}$ |
+| **$\Sigma$ (Alphabet)** | $|\Sigma| = 13$ | $\{\text{CONNECT}, \text{REQUEST}, \text{AUTH\_SUCCESS}, \text{AUTH\_FAILURE}, \text{RESPONSE\_200}, \text{RESPONSE\_301}, \text{RESPONSE\_401}, \text{RESPONSE\_403}, \text{RESPONSE\_500}, \text{CLOSE}, \text{TIMEOUT}, \text{MALFORMED}, \text{ERROR\_RESPONSE}\}$ |
+| **$\delta$ (Total Transition Function)** | $\delta: Q \times \Sigma \to Q$ | Complete transition matrix containing exactly $\|Q\| \times \|\Sigma\| = 9 \times 13 = \mathbf{117}$ total mapping entries |
+| **$q_0$ (Start State)** | $\text{IDLE} \in Q$ | Initial quiescent state awaiting transport handshake |
+| **$F$ (Accepting Set)** | $\{\text{CLOSED}\} \subset Q$ | Terminal accepting state reached upon legitimate teardown |
+| **$\text{TRAP}$ (Dead Sink)** | $\text{TRAP} \notin F$ | Non-accepting, absorbing dead state ($\forall \sigma \in \Sigma, \delta(\text{TRAP}, \sigma) = \text{TRAP}$) |
+
+### 4.2 Language Classification Semantics
+
+TraceGuard AI rigorously distinguishes three fundamental automata outcomes for an input sequence $w = \sigma_1 \sigma_2 \dots \sigma_n$:
+
+1. **`ACCEPTED` ($w \in L(\mathcal{M})$):**  
+   Every transition is valid and the final state is in $F$ ($\delta^*(q_0, w) \in F$). Represents a completely executed, valid HTTP session terminated cleanly.
+2. **`INCOMPLETE_VALID` ($w$ is a valid prefix):**  
+   Every individual transition is mathematically valid, but the final state is non-accepting ($\delta^*(q_0, w) \in Q \setminus (F \cup \{\text{TRAP}\})$). Represents an in-flight, compliant session currently awaiting subsequent protocol packets. (Includes the empty string $\varepsilon$ remaining at $q_0 = \text{IDLE}$).
+3. **`REJECTED` ($w \notin L(\mathcal{M})$):**  
+   The sequence contains at least one illegal or out-of-order transition, causing the extended transition function to enter the non-escapable absorbing sink ($\delta^*(q_0, w) = \text{TRAP}$).
+
+### 4.3 Hybrid Scoring Formula
+
+The overall threat score $S_h$ synthesizes deterministic DFA invariant violations with multivariate statistical anomaly predictions:
+
+$$S_h = (w_{\text{FSM}} \cdot S_{\text{FSM}}) + (w_{\text{ML}} \cdot S_{\text{ML}})$$
+$$\text{where } w_{\text{FSM}} = 0.60, \quad w_{\text{ML}} = 0.40$$
+
+- **Guaranteed Violation Floor**: Whenever an explicit DFA protocol violation is detected ($\text{fsm\_violation} = \text{true}$), the hybrid engine enforces a mandatory risk floor:
+  $$S_h \ge 60\%$$
+
+---
+
+## 5. Technology Stack
+
+Verified dependencies extracted directly from manifests (`backend/requirements.txt` and `frontend/package.json`):
+
+### Backend & Detection Engine
+- **Language**: Python 3.11+
+- **API Framework**: FastAPI `0.115.6`
+- **ASGI Server**: Uvicorn `0.34.0`
+- **Database ORM**: SQLAlchemy `2.0.36` (SQLite / PostgreSQL)
+- **Machine Learning**: Scikit-Learn `1.6.0`, NumPy `2.1.3`, Pandas `2.2.3`
+- **Serialization**: Joblib `1.4.2`
+- **Validation**: Pydantic `2.10.3` & Pydantic-Settings `2.7.0`
+- **Testing**: Pytest `9.1.1`
+
+### Frontend Application
+- **Runtime**: Node.js 20+ & npm
+- **Framework**: React `19.3.1`
+- **Build Tool**: Vite `8.3.8`
+- **Routing**: React Router DOM `7.18.5`
+- **State Machine Graph**: ReactFlow `11.11.4`
+- **Data Visualizations**: Recharts `3.10.1`
+- **Styling**: Tailwind CSS `4.3.5` + CSS Design Tokens (`--tg-*`)
+- **Iconography**: Lucide React `1.72.0`
+
+---
+
+## 6. Repository Structure
+
+```
+C:\Projects\FSM-NIDS\
+├── backend/                         # FastAPI backend service
+│   ├── alembic/                     # Database migration definitions
+│   ├── app/
+│   │   ├── api/                     # REST routes (alerts, dashboard, detection, etc.)
+│   │   ├── core/                    # Security, database configuration, telemetry
+│   │   ├── detection/               # Detection engines:
+│   │   │   ├── fsm/                 # Deterministic DFA engine & 117 transition map
+│   │   │   ├── ml/                  # Isolation Forest feature extractor & model
+│   │   │   └── hybrid/              # Consensus resolver & scoring formula
+│   │   ├── models/                  # SQLAlchemy ORM entity models
+│   │   └── simulation/              # Real-time traffic & attack generator
+│   ├── tests/                       # Complete pytest suite (32 tests)
+│   ├── requirements.txt             # Locked Python backend dependencies
+│   └── train_model.py               # ML Isolation Forest training pipeline
+├── frontend/                        # React 19 single-page application
+│   ├── src/
+│   │   ├── components/              # UI components (KPICard, EventTable, PresentationMode)
+│   │   ├── layouts/                 # AppLayout sidebar and header
+│   │   ├── pages/                   # 7 Core views (Dashboard, AutomataLab, Threats, etc.)
+│   │   ├── services/                # API client (Fetch) and WebSocket manager
+│   │   └── styles/                  # Tailwind CSS and design-system.css tokens
+│   ├── package.json                 # Node dependencies and build scripts
+│   └── vite.config.js               # Vite build configuration
+├── datasets/                        # Standard benchmark CSV packet captures
+├── docs/                            # Comprehensive academic & technical documentation
+├── models/                          # Pre-trained Isolation Forest weights (.joblib)
+├── presentation/                    # University defense presentation (.pptx)
+├── scripts/                         # Synthetic dataset generation & audit utilities
+├── submission/                      # Packaging verification reports & submission ZIP
+├── .dockerignore                    # Container build exclusions
+├── .env.example                     # Safe environment template without secrets
+├── .gitignore                       # Repository exclusion rules
+├── Dockerfile                       # Production multi-stage Docker container
+└── docker-compose.yml               # Multi-container orchestration file
 ```
 
-* `idle_timeout` is evaluated **per session** on `add()`: if a flow resumes after
-  a longer gap, its stale window is evicted and the new event is a genuine
-  session start (`is_session_start=1`, `dt_seconds=0`,
-  `log_dt=log(epsilon)`). This is safe under interleaved traffic because one
-  session's clock is never compared to another's.
-* `max_sessions` is a hard cap. Adding a **new** session at the cap evicts the
-  least-recently-used session first. It is off by default and intentionally
-  sacrifices that session's temporal context; existing sessions are never split.
-* `prune(reference, idle_timeout=...)` evicts every session whose newest event
-  is older than the cutoff and returns the number removed. With no `reference`
-  it uses the latest timestamp the manager has observed, which keeps offline
-  runs deterministic; live callers should pass the current UTC time. Sessions
-  exactly at the cutoff are retained. `prune()` with no policy raises
-  `ValueError`.
-* `last_seen(key)` exposes a session's newest retained timestamp;
-  `evicted_sessions` is cumulative since construction or the last `reset()`.
+---
 
-Because pruning removes temporal context, a session that reappears after
-pruning is a new session and its first delta is zero. Choose timeouts that match
-the plant's polling cadence rather than using pruning as a generic cache squeeze.
+## 7. Installation & Local Execution
 
-On a 200,000-row log spanning 4,000 sessions, extraction runs at roughly 54k
-rows/s on a single CPU core (3.7 s), producing a finite `(200000, 17)` matrix.
+### 7.1 Prerequisites
+- **Python**: Version `3.11` or higher
+- **Node.js**: Version `20` or higher (with `npm`)
+- **Shell**: Windows PowerShell (or standard Bash)
 
-## Tier-1 protocol FSM (Phase 2.1)
+### 7.2 Backend Setup
+```powershell
+# Navigate to backend directory
+cd C:\Projects\FSM-NIDS\backend
 
-`modbus_nids.fsm.ModbusFSM` is the deterministic, hard-protocol half of the
-detector. It consumes the same `ModbusRecord` stream as the feature extractor
-and returns one verdict per event: a score, a decision, a stable reason code
-and the provenance needed to reconstruct exactly what the engine saw. A
-violation short-circuits the pipeline (`score = 1.0`, `bypass_ml = True`); a
-clean event scores `0.0` and is forwarded to the Tier 2/3 stages.
+# Install Python dependencies
+pip install -r requirements.txt
 
-The engine is a *protocol* checker, not a behavioural one. "Is this exchange
-possible in a well-formed Modbus/TCP conversation?" is Tier 1; "is this traffic
-unusual?" — write floods, register sweeps, off-hours bursts — stays in Tier
-2/3.
+# Set PYTHONPATH to the backend folder
+$env:PYTHONPATH="C:\Projects\FSM-NIDS\backend"
 
-### Conversations are canonicalised, not directional
+# Launch FastAPI server
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+*Backend API documentation available at `http://localhost:8000/docs`.*
 
-A request and its response travel in opposite directions, so the directional
-`(source_ip, dest_ip, connection)` key used for feature windows would split an
-exchange across two sessions. `ConversationKey` stores
-`(client_ip, server_ip, tcp_connection)` instead, and its `label`
-(`client|server|connection`) is byte-identical to the existing `flow_key` for
-request-only captures.
+### 7.3 Frontend Setup
+```powershell
+# Open a new terminal and navigate to frontend
+cd C:\Projects\FSM-NIDS\frontend
 
-Roles are resolved per event and the evidence is recorded as `role_source`:
+# Install dependencies
+npm install
 
-| Precedence | Source | Meaning |
-|---|---|---|
-| 1 | `ports` | exactly one of `source_port`/`dest_port` is an allowed Modbus port: `dest` ⇒ request, `source` ⇒ response |
-| 2 | `declared` | the `direction` column, when the ports are absent or ambiguous |
-| 3 | `learned` | the roles established by an earlier event on the same connection |
-| 4 | `default` | nothing was available; the source end is treated as the client |
+# Start development server
+npm run dev
+```
+*Frontend interface accessible at `http://localhost:5173/`.*
 
-Ports outrank the `direction` column on purpose: exporters mislabel direction
-often, and the synthetic `exception_response` defect keeps client→server
-endpoints while declaring `direction="response"`. Ports-first attributes the
-packet to the right conversation, so the engine reports the real fault
-(`response_without_request`) instead of a direction artefact. A contradiction
-between the ports and the declared direction is recorded as the soft note
-`direction_conflict`, never as a violation. The Modbus exception flag (0x80)
-outranks everything for the *message* role, because only a server sets it.
+### 7.4 Running Automated Tests
+```powershell
+cd C:\Projects\FSM-NIDS
+$env:PYTHONPATH="C:\Projects\FSM-NIDS\backend"
 
-`strict_direction` turns an unproven role into a hard violation
-(`direction_unresolved`). A role is proven when a Modbus port or the
-`direction` column establishes it; a role merely *learned* from an earlier
-event does not count, because the earlier event was itself unproven — so
-every event of a portless capture is flagged, not just the first.
-
-### States, symbols and the transition table
-
-`SessionState` is `idle`, `request_sent` (exactly one transaction in flight),
-`waiting_response` (two or more — legal pipelining) and `error` (the previous
-event was a violation). `FSMSymbol` records the provenance of an event
-(`request_read_03`, `request_write_single_06`, `request_write_multiple_10`,
-`request_other`, the matching `response_*` symbols and `response_exception`)
-and folds to a `SymbolClass` of `request` or `response`.
-
-The transition table is a declared, module-level mapping:
-
-| State | REQUEST | RESPONSE |
-|---|---|---|
-| `idle` | `request_sent` | `forbidden` |
-| `request_sent` | `waiting_response` | `derived` |
-| `waiting_response` | `waiting_response` | `derived` |
-| `error` | `derived` | `derived` |
-
-`derived` recomputes the state from the number of transactions still in flight
-(`0 → idle`, `1 → request_sent`, `≥2 → waiting_response`). A pair missing from
-the table is an *undefined* transition and is reported as
-`undefined_transition` rather than silently accepted. `error` is a one-event
-quarantine: the next structurally valid event recovers the conversation, so one
-malformed packet cannot cascade across a whole capture.
-
-### Hard rules and soft notes
-
-A request is checked against the open transactions of its conversation before
-it is accepted:
-
-* a transaction ID that is still open, or that was closed recently (the
-  `tid_history` ring, default 256), is a violation — `transaction_id_reuse`;
-* an optional `supported_function_codes` allow-list rejects other request
-  codes — `unsupported_function_code`.
-
-A response is matched to its request by transaction ID:
-
-* no open request — `response_without_request`;
-* the transaction was already answered — `response_after_close`;
-* a function code that contradicts the request — `function_code_mismatch`;
-* an exception response with the wrong MBAP length —
-  `exception_length_invalid`;
-* a unit ID that contradicts the request — `unit_id_mismatch`;
-* a response that arrives while the conversation is in error and matches no
-  open request — `session_in_error`.
-
-Soft observations are counted for auditing but never scored:
-`incomplete_transaction`, `outstanding_evicted`, `transaction_expired`,
-`direction_inferred`, `direction_conflict`, `session_evicted`.
-
-**Unanswered requests are legal.** Modbus/TCP allows several requests in
-flight on one connection, and many captures only contain one direction, so an
-unanswered request stays open and is reported as an incomplete transaction at
-`finish()`. It is never a violation.
-
-### Verdicts
-
-```python
-from modbus_nids import FSMConfig, ModbusFSM, evaluate_tier1
-
-tier1 = evaluate_tier1(result)      # IngestResult, DataFrame or records
-verdict = tier1.verdicts[0]
-verdict.score, verdict.decision, verdict.bypass_ml   # 0.0 / "benign" / False
-verdict.reason, verdict.detail                       # None / "" when clean
-
-engine = ModbusFSM(FSMConfig(tid_history=512, max_sessions=10_000))
-tier1 = engine.evaluate(result)
-summary = engine.finish()      # events, sessions, violations, reasons, notes
-frame = tier1.to_frame()       # one row per event, 19 pinned columns
+# Run all automated test suites
+python -m pytest backend/tests/ -v
 ```
 
-`Tier1Verdict` carries `raw_index`, `session_id`/`session_key`, `symbol`,
-`symbol_class`, `direction`, `role_source`, `transaction_id`, `function_code`,
-`state_before`, `state_after`, `outstanding`, `reason`, `detail`, `score`,
-`decision`, `bypass_ml` and `notes`. `Tier1Result` adds `scores`,
-`decisions`, `anomaly_mask`, `reasons`, `n_violations`, `violation_rate`,
-`n_sessions`, `to_frame()`, `to_dict()` and `summary()`.
+---
 
-### Bounds
+## 8. Academic Documentation Directory
 
-Memory is bounded on every axis: at most `max_outstanding` open transactions
-(default 64) and `tid_history` closed transaction IDs (default 256) per
-conversation, and at most `max_sessions` conversations (LRU eviction, off by
-default); the learned-role map is bounded by the same cap. `response_timeout`
-(seconds, measured on event timestamps rather than the wall clock, so batch
-runs stay deterministic) expires transactions that were never answered.
-`prune(reference, idle_timeout=...)` evicts idle conversations, mirroring
-`SessionWindowManager`.
+Detailed theoretical proofs and reports are available in the [`docs/`](docs/) directory:
 
-On a 200,000-row log spanning 4,000 conversations the Tier-1 pass runs at
-roughly 72k events/s on a single CPU core (2.7 s).
+- [FORMAL_AUTOMATON.md](docs/FORMAL_AUTOMATON.md) — Mathematical specification of $\mathcal{M} = (Q, \Sigma, \delta, q_0, F)$ and completeness theorems.
+- [TRANSITION_TABLE.md](docs/TRANSITION_TABLE.md) — Exhaustive 117-cell deterministic transition matrix.
+- [TOC_THEORY.md](docs/TOC_THEORY.md) — Foundations: Regular languages, Chomsky hierarchy, and pumping lemma considerations.
+- [ALGORITHM_EXPLANATION.md](docs/ALGORITHM_EXPLANATION.md) — In-depth breakdown of FSM verification, Isolation Forest ML, and consensus logic.
+- [PROJECT_REPORT.md](docs/PROJECT_REPORT.md) — University project report with problem statement, methodology, and results.
+- [VIVA_PREPARATION.md](docs/VIVA_PREPARATION.md) — 60 viva voce defense questions, mathematical derivations, and counterarguments.
+- [FINAL_PRESENTATION_SCRIPT.md](docs/FINAL_PRESENTATION_SCRIPT.md) — Timed defense presentation script coordinated with slides.
+- [PHASE_9_FINAL_QA_REPORT.md](docs/PHASE_9_FINAL_QA_REPORT.md) — Full independent QA, route verification, and functional test report.
+- [UI_REDESIGN_REPORT.md](docs/UI_REDESIGN_REPORT.md) — Architectural design system overhaul and visual hierarchy specification.
 
-### Running it from the shell
+---
 
-Every policy knob of `FSMConfig` is reachable from the `fsm` subcommand, so a
-plant policy can be applied without writing Python:
+## 9. Academic Limitations
 
-```bash
-.venv/Scripts/python -m modbus_nids.cli fsm \
-    --in data/synthetic.csv --out data/tier1.csv --report data/tier1.json \
-    --supported-function-code 3 --supported-function-code 16 \
-    --response-timeout 5 --max-sessions 50000 --strict-direction
-```
+In the interest of scientific integrity, the following limitations are documented:
+1. **Regular Language Expressive Boundary**: Deterministic Finite Automata recognize strictly Type-3 Regular Languages. They cannot validate arbitrarily nested recursive syntax (e.g., deeply nested JSON or chunked HTTP payloads), which require Pushdown Automata (Context-Free Grammars).
+2. **Synthetic Telemetry**: The evaluation datasets were generated using synthetic packet captures conforming to RFC 7231 specifications with injected protocol faults. While effective for proof-of-concept verification, performance on live multi-gigabit enterprise backbones will encounter packet fragmentation and TCP out-of-order reassembly challenges.
+3. **Session Abstraction**: Verification occurs on parsed protocol event sequences rather than raw network Ethernet frame buffers.
 
-| Flag | Effect |
-|---|---|
-| `--allowed-port` | repeatable; the Modbus ports that identify the server end (default `502`) |
-| `--supported-function-code` | repeatable; request codes the plant may use — anything else is `unsupported_function_code` |
-| `--response-timeout` | seconds after which an unanswered transaction expires (measured on event timestamps) |
-| `--max-sessions` | cap on tracked conversations; the least recently used is evicted |
-| `--max-outstanding` | open transactions kept per conversation |
-| `--tid-history` | recently closed transaction IDs remembered per conversation |
-| `--strict-direction` | treat an unproven direction as a violation |
+---
 
-An invalid policy (a zero session cap, a negative timeout, a function code
-outside 1–127) exits `2` with the reason on stderr, like any other fatal
-input error.
+## 10. Authors & Course Information
 
-## Setup
-
-```bash
-python -m venv .venv
-.venv/Scripts/python -m pip install -r requirements.txt   # Windows
-.venv/bin/python -m pip install -r requirements.txt       # POSIX
-```
-
-## Usage
-
-```bash
-# 1. Generate a synthetic log (deterministic per seed)
-.venv/Scripts/python -m modbus_nids.cli generate \
-    --out data/synthetic.csv --sessions 60 --events 60 \
-    --anomaly-rate 0.05 --defect-rate 0.02 --seed 2026
-
-# 2. Parse it, exporting clean rows, rejects and an audit report
-.venv/Scripts/python -m modbus_nids.cli parse \
-    --in data/synthetic.csv --out data/clean.csv \
-    --rejects data/rejects.csv --report data/report.json
-
-# 3. Compute session-isolated window features for the clean rows
-.venv/Scripts/python -m modbus_nids.cli features \
-    --in data/synthetic.csv --out data/features.csv --window-size 10
-
-# 4. Run the Tier-1 protocol state machine over the same log
-.venv/Scripts/python -m modbus_nids.cli fsm \
-    --in data/synthetic.csv --out data/tier1.csv --report data/tier1.json \
-    --supported-function-code 3 --response-timeout 5
-
-# 5. Or run the in-memory demo (generate, parse, featurise and evaluate)
-.venv/Scripts/python -m modbus_nids.cli demo
-```
-
-`parse`, `features` and `fsm` exit `0` on success, `1` when no row survives
-validation (or, for `fsm`, when the log yields no event), and `2` on a fatal
-input error (missing file, missing required column, unreadable encoding,
-invalid window configuration).
-The JSON report contains `meta` (provenance, counts, timing) and `report`
-(reason-code counts and samples).
-
-Python API:
-
-```python
-from modbus_nids import IngestConfig, parse_csv
-
-result = parse_csv("data/synthetic.csv", IngestConfig(chunk_size=100_000))
-print(result.summary())
-clean = result.frame          # typed, sorted, session-ready
-records = result.records      # list[ModbusRecord]
-```
-
-```python
-from modbus_nids import ModbusFSM
-
-tier1 = ModbusFSM().evaluate(result)
-print(tier1.summary())        # events, violations, reasons, notes
-verdicts = tier1.to_frame()   # one row per event, aligned with the clean frame
-```
-
-CSV ingestion streams `chunk_size` rows at a time, so large captures stay
-memory-bounded; on a 200k-row synthetic log it sustains roughly 35k rows/s on a
-single CPU core.
-
-## Tests
-
-```bash
-.venv/Scripts/python -m pytest -q
-```
-
-Covers timestamp forms and epoch scaling (seconds through nanoseconds), MBAP
-length bounds (2 and 254), port scope with the default and a custom allow-list,
-function-code quantity bounds (FC1/2/3/4/15/16/23) and request-length checks
-(FC3/7/15/16/22/23/24/43), sorting and `sort=False` ordering, report
-accounting/serialisation, CSV streaming (chunk boundaries, BOM, bad-line file
-numbers, rejects export), generator determinism and defect accounting, and the
-CLI end to end.
-
-Phase 1.2 adds: session isolation under interleaved traffic, per-session window
-bounding and reset, log-delta stability, TID wrap continuity, write/read ratio
-and fraction, n-gram novelty for n = 2/3/5, label/`raw_index` alignment, batch
-extraction from all three input shapes, empty input, timestamp-regression
-rejection, and the `features` CLI writing a matrix whose row count, session
-count and `raw_index` order match the clean frame.
-
-Phase 1.3 adds: explicit idle pruning (deterministic default reference, cutoff
-boundary, idempotence), per-session `idle_timeout` restart semantics, the
-`max_sessions` LRU cap, `last_seen` / `evicted_sessions` reporting, Tier-1
-metadata provenance (including nullable protocol fields), and dtype equality
-between empty and populated feature frames.
-
-Phase 2.1 adds: the state table and its undefined-transition guard, the
-ports-first role resolution and its `role_source` provenance, canonical
-conversation keys shared by a request and its response, transaction
-correlation with the open/closed rings, every hard rule (`response_without_
-request`, `response_after_close`, `function_code_mismatch`, `unit_id_mismatch`,
-`exception_length_invalid`, `transaction_id_reuse`, `undefined_transition`,
-`forbidden_transition`, `session_in_error`, `unsupported_function_code`), the
-one-event error quarantine and its recovery, the `id → request_sent → derived`
-state sequence, pipelining and unanswered requests staying legal, per-event
-verdict provenance, the memory bounds (`max_outstanding`, `tid_history`,
-`max_sessions`, `response_timeout`, `prune`), and the `fsm` CLI writing a
-verdict frame whose row count matches the clean frame.
-
-Phase 2.1 completion adds: the CLI policy knobs (`--supported-function-code`,
-`--response-timeout`, `--max-sessions`, `--strict-direction`), the strict
-direction gate rejecting an unproven *learned* role as well as a default one,
-and the CLI end to end for each of them.
+- **Course**: Theory of Computation / Formal Languages and Automata Theory
+- **Department**: Computer Science & Engineering
+- **Project Name**: TraceGuard AI: Protocol NIDS
+- **Academic Year**: 2026

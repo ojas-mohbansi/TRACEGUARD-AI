@@ -1,0 +1,71 @@
+# Git & Version Control
+.git
+.gitignore
+.gitattributes
+
+# Python byte-code & build artifacts
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Testing & Coverage
+.pytest_cache
+backend/.pytest_cache
+.coverage
+htmlcov/
+
+# Node & Frontend build caches
+node_modules
+frontend/node_modules
+frontend/dist
+.vite/
+npm-debug.log*
+
+# Secrets & Environment variables
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# Databases & local logs
+*.db
+*.sqlite3
+backend/traceguard.db
+*.log
+
+# Dynamic runtime uploads
+backend/uploaded_datasets/*
+!backend/uploaded_datasets/.gitkeep
+uploaded_datasets/*
+!uploaded_datasets/.gitkeep
+
+# IDEs & OS artifacts
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Agent & Skill metadata
+.gemini
+.agent/
+.agents/
+skills-lock.json

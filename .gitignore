@@ -1,28 +1,102 @@
-# Virtual environment
-.venv/
-venv/
-
-# Python caches / build artefacts
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*.egg-info/
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
 build/
+develop-eggs/
 dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Node / Frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+dist/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.turbo/
+
+# Environments & Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+
+# Databases & runtime uploads
+*.sqlite3
+*.db
+backend/traceguard.db
+backend/uploaded_datasets/*.csv
+!backend/uploaded_datasets/.gitkeep
+*.log
+
+# Pytest / Coverage / Test caches
 .pytest_cache/
-.ruff_cache/
+backend/.pytest_cache/
 .coverage
+.coverage.*
 htmlcov/
+.cache/
+.mypy_cache/
+.ruff_cache/
 
-# Generated datasets and reports
-data/
-outputs/
+# Agent & AI toolchain artifacts
+.agent/
+.agents/
+skills-lock.json
 
-# Local tool metadata
-.freebuff/
-.archify/
-
-# Editor / OS noise
+# IDEs & Editors
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# OS specific files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+[Dd]esktop.ini
+
+# Submission generated deliverables & duplicate directory copies
+# Note: Keeps submission reports in git while excluding the zip archive and duplicated source tree
+submission/TraceGuard_AI_Submission.zip
+submission/TraceGuard_AI/

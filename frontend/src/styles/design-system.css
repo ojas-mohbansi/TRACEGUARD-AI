@@ -1,0 +1,292 @@
+/**
+ * TRACEGUARD AI — UNIFIED DESIGN SYSTEM TOKENS & FOUNDATIONS
+ * Established under design-taste-frontend, ui-ux-pro-max, emil-design-eng, and accessibility principles.
+ * Technical, calm, editorial, precise, high-contrast, zero-slop network security instrument.
+ */
+
+:root {
+  /* ── Color Palette: Technical Ink & Precision Emerald ── */
+  --tg-bg-root: #0A0D14;
+  --tg-bg-base: #0E131F;
+  --tg-bg-surface: #141B2B;
+  --tg-bg-elevated: #1B2438;
+  --tg-bg-hover: #222E47;
+  --tg-bg-active: #2A3856;
+
+  /* ── Borders & Outlines ── */
+  --tg-border-subtle: rgba(255, 255, 255, 0.07);
+  --tg-border-default: rgba(255, 255, 255, 0.12);
+  --tg-border-strong: rgba(255, 255, 255, 0.20);
+  --tg-border-focus: #10B981;
+
+  /* ── Typography & Text Hierarchies ── */
+  --tg-text-primary: #F8FAFC;
+  --tg-text-secondary: #CBD5E1;
+  --tg-text-muted: #8896AB;
+  --tg-text-disabled: #475569;
+
+  /* ── Semantic Status & Engine Accents ── */
+  --tg-accent-emerald: #10B981;
+  --tg-accent-emerald-subtle: rgba(16, 185, 129, 0.12);
+  --tg-accent-emerald-glow: rgba(16, 185, 129, 0.25);
+
+  --tg-accent-cyan: #06B6D4;
+  --tg-accent-cyan-subtle: rgba(6, 182, 212, 0.12);
+
+  --tg-accent-indigo: #6366F1;
+  --tg-accent-indigo-subtle: rgba(99, 102, 241, 0.12);
+
+  --tg-status-warning: #F59E0B;
+  --tg-status-warning-subtle: rgba(245, 158, 11, 0.12);
+
+  --tg-status-danger: #EF4444;
+  --tg-status-danger-subtle: rgba(239, 68, 68, 0.12);
+
+  --tg-status-info: #3B82F6;
+  --tg-status-info-subtle: rgba(59, 130, 246, 0.12);
+
+  /* ── Detection Engine Color Mapping ── */
+  --tg-engine-fsm: #10B981;
+  --tg-engine-ml: #3B82F6;
+  --tg-engine-hybrid: #F59E0B;
+
+  /* ── Typography Scale ── */
+  --tg-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --tg-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
+
+  /* ── Spacing Scale (8pt rhythmic system) ── */
+  --tg-space-1: 0.25rem; /* 4px */
+  --tg-space-2: 0.5rem;  /* 8px */
+  --tg-space-3: 0.75rem; /* 12px */
+  --tg-space-4: 1rem;    /* 16px */
+  --tg-space-5: 1.25rem; /* 20px */
+  --tg-space-6: 1.5rem;  /* 24px */
+  --tg-space-8: 2rem;    /* 32px */
+  --tg-space-10: 2.5rem; /* 40px */
+  --tg-space-12: 3rem;   /* 48px */
+
+  /* ── Radii ── */
+  --tg-radius-xs: 4px;
+  --tg-radius-sm: 6px;
+  --tg-radius-md: 8px;
+  --tg-radius-lg: 12px;
+  --tg-radius-xl: 16px;
+  --tg-radius-full: 9999px;
+
+  /* ── Shadows (Layered elevation, no harsh glow) ── */
+  --tg-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
+  --tg-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --tg-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+
+  /* ── Emil Motion & Transition Timings ── */
+  --tg-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --tg-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --tg-duration-instant: 100ms;
+  --tg-duration-fast: 150ms;
+  --tg-duration-normal: 220ms;
+  --tg-duration-slow: 350ms;
+}
+
+/* Base Body Styles */
+body {
+  background-color: var(--tg-bg-root);
+  color: var(--tg-text-primary);
+  font-family: var(--tg-font-sans);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Interactive elements respect motion settings */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── Reusable Component Utility Classes ── */
+
+/* Cards and Panels */
+.tg-panel {
+  background-color: var(--tg-bg-surface);
+  border: 1px solid var(--tg-border-subtle);
+  border-radius: var(--tg-radius-lg);
+  box-shadow: var(--tg-shadow-sm);
+  transition: border-color var(--tg-duration-fast) var(--tg-ease-out), box-shadow var(--tg-duration-fast) var(--tg-ease-out);
+}
+
+.tg-panel:hover {
+  border-color: var(--tg-border-default);
+}
+
+.tg-panel-elevated {
+  background-color: var(--tg-bg-elevated);
+  border: 1px solid var(--tg-border-default);
+  border-radius: var(--tg-radius-lg);
+  box-shadow: var(--tg-shadow-md);
+}
+
+/* Buttons */
+.tg-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: #10B981;
+  color: #0A0D14;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--tg-radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--tg-duration-fast) var(--tg-ease-out), background-color var(--tg-duration-fast) var(--tg-ease-out);
+}
+
+.tg-btn-primary:hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+}
+
+.tg-btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.tg-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--tg-bg-surface);
+  color: var(--tg-text-primary);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  padding: 0.5rem 0.875rem;
+  border-radius: var(--tg-radius-md);
+  border: 1px solid var(--tg-border-default);
+  cursor: pointer;
+  transition: background-color var(--tg-duration-fast) var(--tg-ease-out), border-color var(--tg-duration-fast) var(--tg-ease-out), transform var(--tg-duration-fast) var(--tg-ease-out);
+}
+
+.tg-btn-secondary:hover {
+  background-color: var(--tg-bg-hover);
+  border-color: var(--tg-border-strong);
+  transform: translateY(-1px);
+}
+
+.tg-btn-secondary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Badges */
+.tg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--tg-radius-xs);
+  font-size: 0.6875rem;
+  font-family: var(--tg-font-mono);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.tg-badge-emerald {
+  background-color: var(--tg-accent-emerald-subtle);
+  color: var(--tg-accent-emerald);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.tg-badge-blue {
+  background-color: var(--tg-status-info-subtle);
+  color: #60A5FA;
+  border-color: rgba(59, 130, 246, 0.25);
+}
+
+.tg-badge-amber {
+  background-color: var(--tg-status-warning-subtle);
+  color: #FBBF24;
+  border-color: rgba(245, 158, 11, 0.25);
+}
+
+.tg-badge-red {
+  background-color: var(--tg-status-danger-subtle);
+  color: #F87171;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.tg-badge-neutral {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--tg-text-secondary);
+  border-color: var(--tg-border-subtle);
+}
+
+/* Form Controls */
+.tg-input, .tg-select {
+  width: 100%;
+  background-color: var(--tg-bg-base);
+  border: 1px solid var(--tg-border-default);
+  color: var(--tg-text-primary);
+  border-radius: var(--tg-radius-md);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.8125rem;
+  outline: none;
+  transition: border-color var(--tg-duration-fast) var(--tg-ease-out), box-shadow var(--tg-duration-fast) var(--tg-ease-out);
+}
+
+.tg-input:focus, .tg-select:focus {
+  border-color: var(--tg-border-focus);
+  box-shadow: 0 0 0 2px var(--tg-accent-emerald-subtle);
+}
+
+/* Monospace Data Tables */
+.tg-table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--tg-radius-lg);
+  border: 1px solid var(--tg-border-subtle);
+  background-color: var(--tg-bg-surface);
+}
+
+.tg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  text-align: left;
+}
+
+.tg-table th {
+  background-color: rgba(255, 255, 255, 0.02);
+  color: var(--tg-text-muted);
+  font-family: var(--tg-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--tg-border-subtle);
+}
+
+.tg-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--tg-border-subtle);
+  color: var(--tg-text-secondary);
+  vertical-align: middle;
+}
+
+.tg-table tbody tr {
+  transition: background-color var(--tg-duration-instant) var(--tg-ease-out);
+}
+
+.tg-table tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.025);
+}
+
+.tg-table tbody tr:last-child td {
+  border-bottom: none;
+}
