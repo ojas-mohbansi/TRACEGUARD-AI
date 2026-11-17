@@ -71,12 +71,14 @@ class CaptureService:
         diag = NpcapDiagnostics.run_diagnostics()
         interfaces = []
         for iface in diag.get("interfaces", []):
+            iface_id = iface.get("id") or iface.get("name") or "unknown"
+            iface_name = iface.get("name") or iface_id
             interfaces.append({
-                "id": iface["id"],
-                "name": iface["name"],
-                "ip": iface["ip"] or "Unassigned",
-                "is_up": True,
-                "description": iface["description"] or iface["name"],
+                "id": iface_id,
+                "name": iface_name,
+                "ip": iface.get("ip") or "Unassigned",
+                "is_up": iface.get("is_up", True),
+                "description": iface.get("description") or iface_name,
                 "live_capture_ready": diag["available"]
             })
 

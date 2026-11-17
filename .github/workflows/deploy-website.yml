@@ -36,10 +36,10 @@ jobs:
         with:
           bun-version: '1.2.4'
 
-      - name: Setup Node.js (for toolchain & postbuild)
+      - name: Setup Node.js (v22 required by Wrangler)
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install Website Dependencies
         run: bun install --frozen-lockfile

@@ -62,16 +62,41 @@ class NpcapDiagnostics:
         # Non-Windows platforms
         if not is_windows:
             try:
-                from scapy.all import conf, get_if_list
+                from scapy.all import conf
                 ifaces = []
                 try:
-                    ifaces = get_if_list()
-                    report["interfaces"] = [{"name": iface, "description": iface} for iface in ifaces]
-                    if ifaces:
-                        report["test_interface"] = ifaces[0]
-                        report["steps"]["4_interfaces_enumerated"] = True
+                    for k, iface in conf.ifaces.items():
+                        name = getattr(iface, "name", k)
+                        desc = getattr(iface, "description", name)
+                        ip = getattr(iface, "ip", "")
+                        mac = getattr(iface, "mac", "")
+                        ifaces.append({
+                            "id": str(k),
+                            "name": name,
+                            "description": desc or name,
+                            "ip": ip or "Unassigned",
+                            "mac": mac or "",
+                            "is_up": True
+                        })
                 except Exception:
-                    pass
+                    try:
+                        from scapy.all import get_if_list
+                        for name in get_if_list():
+                            ifaces.append({
+                                "id": name,
+                                "name": name,
+                                "description": name,
+                                "ip": "Unassigned",
+                                "mac": "",
+                                "is_up": True
+                            })
+                    except Exception:
+                        pass
+
+                report["interfaces"] = ifaces
+                if ifaces:
+                    report["test_interface"] = ifaces[0]["name"]
+                    report["steps"]["4_interfaces_enumerated"] = True
 
                 use_pcap = getattr(conf, "use_pcap", False)
                 if use_pcap:
