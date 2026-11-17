@@ -53,6 +53,17 @@ jobs:
       - name: Validate Technical SEO & Metadata
         run: bun run seo:check
 
+      - name: Verify Cloudflare Credentials in GitHub Secrets
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ]; then
+            echo "::error title=Missing Secret::GitHub Actions Secret 'CLOUDFLARE_API_TOKEN' is not configured."
+            echo "To enable automated deployments, add your Cloudflare API token to:"
+            echo "https://github.com/${{ github.repository }}/settings/secrets/actions"
+            exit 1
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
       - name: Deploy to Cloudflare Pages
         run: bun run deploy
         env:
