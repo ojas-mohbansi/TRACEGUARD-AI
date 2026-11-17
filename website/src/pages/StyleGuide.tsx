@@ -11,6 +11,7 @@ import { DFADiagram } from '../components/DFADiagram'
 import { HybridFormula } from '../components/HybridFormula'
 import { Eyebrow } from '../components/Typography'
 import { colorGroups, typeScale } from '../lib/tokens'
+import type { ColorGroup, ColorToken, TypeScaleToken } from '../lib/tokens'
 
 const states: Array<{ label: string; force?: ForceState; disabled?: boolean; loading?: boolean }> = [
   { label: 'Default' },
@@ -63,11 +64,11 @@ export function StyleGuide() {
         {/* Colours */}
         <Block id="colours" title="Color System" note="Strict contrast compliance: signal blue (#3B82F6), trace emerald (#10B981), threat red (#ef4444).">
           <div className="flex flex-col gap-8">
-            {colorGroups.map((g) => (
+            {colorGroups.map((g: ColorGroup) => (
               <div key={g.name}>
                 <Label>{g.name}</Label>
                 <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-                  {g.colors.map((c) => (
+                  {g.colors.map((c: ColorToken) => (
                     <li key={c.name} className="flex flex-col gap-2 rounded-card border border-line bg-surface p-3">
                       <span className="h-14 rounded-[12px] border border-line-mid" style={{ background: c.hex }} />
                       <span className="text-[14px] font-medium text-white">{c.name}</span>
@@ -83,7 +84,7 @@ export function StyleGuide() {
         {/* Type scale */}
         <Block id="type" title="Type Scale" note="Inter (primary UI) and JetBrains Mono (automata states, metrics, and proofs).">
           <ul className="flex flex-col gap-6">
-            {typeScale.map((t) => (
+            {typeScale.map((t: TypeScaleToken) => (
               <li key={t.name} className="grid gap-2 sm:grid-cols-[200px_1fr] sm:items-baseline border-b border-line pb-4">
                 <div>
                   <span className="text-[14px] font-medium text-white">{t.name}</span>

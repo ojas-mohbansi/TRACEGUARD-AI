@@ -63,6 +63,16 @@ class NpcapDiagnostics:
         if not is_windows:
             try:
                 from scapy.all import conf, get_if_list
+                ifaces = []
+                try:
+                    ifaces = get_if_list()
+                    report["interfaces"] = [{"name": iface, "description": iface} for iface in ifaces]
+                    if ifaces:
+                        report["test_interface"] = ifaces[0]
+                        report["steps"]["4_interfaces_enumerated"] = True
+                except Exception:
+                    pass
+
                 use_pcap = getattr(conf, "use_pcap", False)
                 if use_pcap:
                     report["state"] = cls.STATE_CAPTURE_READY
@@ -70,7 +80,6 @@ class NpcapDiagnostics:
                     report["steps"]["1_driver_installed"] = True
                     report["steps"]["2_service_running"] = True
                     report["steps"]["3_pcap_api_loaded"] = True
-                    report["steps"]["4_interfaces_enumerated"] = True
                     report["steps"]["5_handle_open_test"] = True
                     report["steps"]["6_capture_ready"] = True
                     report["driver_info"]["version"] = "libpcap"
@@ -78,7 +87,7 @@ class NpcapDiagnostics:
                     return report
                 else:
                     report["state"] = cls.STATE_NOT_INSTALLED
-                    report["message"] = "libpcap development headers/runtime not found."
+                    report["message"] = "libpcap development headers/runtime not installed or not found."
                     return report
             except Exception as e:
                 report["state"] = cls.STATE_UNKNOWN_ERROR

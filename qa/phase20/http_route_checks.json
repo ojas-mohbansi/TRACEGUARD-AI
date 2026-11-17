@@ -1,0 +1,234 @@
+{
+  "timestamp": "2026-11-17T22:15:29.671Z",
+  "workerUrl": "https://traceguard-ai.pages.dev",
+  "totalChecks": 15,
+  "passed": 15,
+  "failed": 0,
+  "checks": [
+    {
+      "path": "/",
+      "description": "Homepage",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "text/html",
+      "actualContentType": "text/html; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/technology",
+      "description": "Technology Page",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "text/html",
+      "actualContentType": "text/html; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/automaton",
+      "description": "Automaton Lab",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "text/html",
+      "actualContentType": "text/html; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/architecture",
+      "description": "Architecture Page",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "text/html",
+      "actualContentType": "text/html; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/research",
+      "description": "Research Page",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "text/html",
+      "actualContentType": "text/html; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/presentation",
+      "description": "Presentation Page",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "text/html",
+      "actualContentType": "text/html; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/about",
+      "description": "About Academic Page",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "text/html",
+      "actualContentType": "text/html; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/styleguide",
+      "description": "StyleGuide Page",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "text/html",
+      "actualContentType": "text/html; charset=utf-8",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/robots.txt",
+      "description": "Robots Policy",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "text/plain",
+      "actualContentType": "text/plain; charset=utf-8",
+      "cacheControl": "public, max-age=3600, stale-while-revalidate=86400",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/sitemap.xml",
+      "description": "Sitemap Index",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "application/xml",
+      "actualContentType": "application/xml; charset=utf-8",
+      "cacheControl": "public, max-age=3600, stale-while-revalidate=86400",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/site.webmanifest",
+      "description": "Web App Manifest",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "application/manifest+json",
+      "actualContentType": "application/manifest+json; charset=utf-8",
+      "cacheControl": "public, max-age=3600, stale-while-revalidate=86400",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/favicon.svg",
+      "description": "Vector Favicon",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "image/svg+xml",
+      "actualContentType": "image/svg+xml",
+      "cacheControl": "public, max-age=0, must-revalidate",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    },
+    {
+      "path": "/api/health",
+      "description": "Worker API Health",
+      "expectedStatus": 200,
+      "actualStatus": 200,
+      "expectedContentType": "application/json",
+      "actualContentType": "application/json",
+      "cacheControl": "",
+      "headers": {
+        "x-content-type-options": "",
+        "referrer-policy": "",
+        "content-security-policy": "NONE"
+      },
+      "passed": true
+    },
+    {
+      "path": "/assets/non-existent-script.js",
+      "description": "Missing Asset File Handling",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "expectedContentType": "text/plain",
+      "actualContentType": "text/plain; charset=utf-8",
+      "cacheControl": "",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "",
+        "content-security-policy": "NONE"
+      },
+      "passed": true
+    },
+    {
+      "path": "/trap-404-test-route",
+      "description": "Unknown Route 404 Handling",
+      "expectedStatus": 404,
+      "actualStatus": 404,
+      "expectedContentType": "text/html",
+      "actualContentType": "text/html; charset=utf-8",
+      "cacheControl": "no-cache, no-store",
+      "headers": {
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "content-security-policy": "PRESENT"
+      },
+      "passed": true
+    }
+  ]
+}
