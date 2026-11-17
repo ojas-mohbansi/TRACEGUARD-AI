@@ -13,7 +13,36 @@ const PUBLIC_ROUTES = [
   { path: '/about', changefreq: 'monthly', priority: '0.6' },
 ];
 
+function loadEnvDefaults() {
+  if (process.env.PUBLIC_SITE_URL?.trim()) return;
+  const cwd = process.cwd();
+  const candidatePaths = [
+    path.join(cwd, '.env.production'),
+    path.join(cwd, '.env'),
+    path.join(cwd, 'website/.env.production'),
+    path.join(cwd, 'website/.env'),
+    path.join(cwd, '../website/.env.production'),
+    path.join(cwd, '../website/.env'),
+    path.join(cwd, '../.env.production'),
+  ];
+  for (const p of candidatePaths) {
+    if (fs.existsSync(p)) {
+      try {
+        const content = fs.readFileSync(p, 'utf-8');
+        for (const line of content.split(/\r?\n/)) {
+          const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)?\s*$/);
+          if (m && m[1] === 'PUBLIC_SITE_URL' && m[2]) {
+            process.env.PUBLIC_SITE_URL = m[2].replace(/^["'](.*)["']$/, '$1').trim();
+            return;
+          }
+        }
+      } catch {}
+    }
+  }
+}
+
 function resolveSiteUrl() {
+  loadEnvDefaults();
   const envUrl = process.env.PUBLIC_SITE_URL || '';
   if (envUrl.trim()) {
     return envUrl.trim().replace(/\/+$/, '');

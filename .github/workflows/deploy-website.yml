@@ -1,0 +1,60 @@
+name: Deploy TraceGuard AI Website to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'website/**'
+      - '.github/workflows/deploy-website.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-website-production
+  cancel-in-progress: false
+
+jobs:
+  deploy-website:
+    name: Build, Validate & Deploy Website
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: website
+
+    env:
+      PUBLIC_SITE_URL: https://traceguard-ai.pages.dev
+      VITE_PUBLIC_SITE_URL: https://traceguard-ai.pages.dev
+      NODE_ENV: production
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun Runtime
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.2.4'
+
+      - name: Setup Node.js (for toolchain & postbuild)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Website Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: TypeScript Static Typecheck
+        run: bun run typecheck
+
+      - name: Build Production Website & Edge Assets
+        run: bun run build
+
+      - name: Validate Technical SEO & Metadata
+        run: bun run seo:check
+
+      - name: Deploy to Cloudflare Pages
+        run: bun run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "preview:cf": "wrangler dev",
     "deploy:dry": "wrangler deploy --dry-run",
-    "deploy": "wrangler deploy",
+    "deploy:worker": "wrangler deploy",
+    "deploy:pages": "wrangler pages deploy dist/client --project-name traceguard-ai --branch main",
+    "deploy": "wrangler pages deploy dist/client --project-name traceguard-ai --branch main",
     "seo:check": "node ../scripts/validate_seo.mjs",
     "typecheck": "tsc --noEmit"
   },

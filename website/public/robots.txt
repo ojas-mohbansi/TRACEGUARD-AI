@@ -15,4 +15,4 @@ Allow: /assets/
 Disallow: /styleguide
 Disallow: /api/
 
-Sitemap: http://localhost:5303/sitemap.xml
+Sitemap: https://traceguard-ai.pages.dev/sitemap.xml

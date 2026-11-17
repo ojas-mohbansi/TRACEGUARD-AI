@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const BASE_URL = 'http://127.0.0.1:8787';
+const BASE_URL = process.env.WORKER_URL || process.argv[2] || 'https://traceguard-ai.stylish00killer.workers.dev';
 
 const CHECKS = [
   { path: '/', expectedStatus: 200, expectedContentType: 'text/html', desc: 'Homepage' },

@@ -1,210 +1,122 @@
-# TraceGuard AI — Cloudflare Workers Deployment Guide
+# TraceGuard AI — Cloudflare Pages & Workers Production Deployment Guide
 
 **Target Application**: TraceGuard AI Marketing & Research Web Application  
-**Runtime Architecture**: Cloudflare Workers with Static Assets (`@cloudflare/vite-plugin` + `wrangler`)  
-**Package Manager**: Bun (`bun`)
+**Runtime Architecture**: Cloudflare Pages (with Advanced Mode Edge Worker `_worker.js` + `_headers` + `_routes.json`)  
+**Package Manager**: Bun (`bun` v1.2+)  
+**Primary Production URL**: `https://traceguard-ai.pages.dev`  
+**Workers Production Trigger**: `https://traceguard-ai.stylish00killer.workers.dev`  
+**Account ID**: `a80bbebe00dec24588c0d0cd62a4e02c`  
+**Project Name**: `traceguard-ai`  
 
 ---
 
-## 1. Prerequisites
+## 1. Architecture Overview
 
-Before deploying TraceGuard AI to Cloudflare Workers, ensure the following are installed and configured:
-
-1. **Bun Runtime** (v1.2+):
-   ```bash
-   bun --version
-   ```
-2. **Node.js** (v20+ or v22+ LTS recommended for toolchain compatibility):
-   ```bash
-   node --version
-   ```
-3. **Cloudflare Account**:
-   - Free or Paid Cloudflare plan.
-   - Account ID and zone privileges if attaching a custom apex or subdomain.
-
----
-
-## 2. Required Domain & Environment Configuration
-
-TraceGuard AI includes a strict Technical SEO engine that resolves canonical links, sitemaps, and Open Graph previews from `PUBLIC_SITE_URL`.
-
-1. Copy the example configuration to a local environment file:
-   ```bash
-   cp .env.example .env.production
-   ```
-2. Set your verified production HTTPS domain:
-   ```env
-   PUBLIC_SITE_URL=https://traceguard.ai
-   VITE_PUBLIC_SITE_URL=https://traceguard.ai
-   ```
-   > **Note**: Never use `http://` or placeholder domains in production. The SEO validation tool (`bun run seo:check`) will enforce HTTPS and reject placeholders.
+TraceGuard AI deploys to Cloudflare Pages as a high-performance edge application:
+1. **Static Client Assets**: Compiled React 19 SPA bundled with Vite and Tailwind CSS v4, served directly from Cloudflare's global edge network.
+2. **Edge Worker Router (`_worker.js`)**: Compiled from `src/worker/index.ts` to `dist/client/_worker.js` and driven by `_routes.json`, providing:
+   - Full control over dynamic status codes (true HTTP 404 for missing assets and unknown SPA routes).
+   - Serverless API endpoints: `/api/health`, `/api/contact`, `/api/subscribe`.
+3. **Security Invariants (`_headers` + Edge Worker)**:
+   - `Content-Security-Policy`: Strict CSP with frame-ancestors `'none'`
+   - `X-Content-Type-Options`: `nosniff`
+   - `Referrer-Policy`: `strict-origin-when-cross-origin`
+   - `Permissions-Policy`: `camera=(), microphone=(), geolocation=()`
+4. **Smart Cache Policies**:
+   - Fingerprinted JS/CSS in `/assets/*`: `public, max-age=31536000, immutable` (1 year)
+   - SEO Assets (`sitemap.xml`, `robots.txt`, `site.webmanifest`): `public, max-age=3600, stale-while-revalidate=86400`
+   - HTML documents: `public, max-age=0, must-revalidate`
+   - Missing assets (file extensions): HTTP 404 `text/plain`
+   - SPA unknown route: HTTP 404 status serving `<NotFound />` with `Cache-Control: no-cache, no-store`.
 
 ---
 
-## 3. Cloudflare Authentication
+## 2. Production Environment Configuration
 
-Authenticate Wrangler with your Cloudflare account:
-
-```bash
-bun run wrangler login
+The production domain is configured via `website/.env.production`:
+```env
+PUBLIC_SITE_URL=https://traceguard-ai.pages.dev
+VITE_PUBLIC_SITE_URL=https://traceguard-ai.pages.dev
 ```
 
-Verify your active profile and account:
-```bash
-bun run wrangler whoami
-```
+During build (`bun run build`), the prebuild script `scripts/generate_seo_assets.mjs` generates:
+- `website/public/sitemap.xml` with canonical `https://traceguard-ai.pages.dev/` URLs.
+- `website/public/robots.txt` referencing `Sitemap: https://traceguard-ai.pages.dev/sitemap.xml`.
+- `website/public/site.webmanifest`.
 
 ---
 
-## 4. Local Workers Preview (`wrangler dev`)
+## 3. Deployment Lifecycle
 
-Test the application against Cloudflare's exact local Workers runtime (Workerd) before building for production:
-
-```bash
-# 1. Run production build
-bun run build
-
-# 2. Start local Cloudflare Workers preview
-bun run preview:cf
-```
-
-This starts `wrangler dev` on `http://localhost:8787` (or next available port). Verify:
-- Direct route visits: `http://localhost:8787/technology`, `http://localhost:8787/automaton`
-- Technical SEO endpoints: `http://localhost:8787/robots.txt`, `http://localhost:8787/sitemap.xml`
-- Missing asset handling: `http://localhost:8787/assets/missing.js` returns genuine 404 (not HTML)
-- Unknown path handling: `http://localhost:8787/unknown-route` returns HTTP 404 with the `<NotFound />` state
-
----
-
-## 5. Production Build
-
-Build the dual client bundle and Worker entrypoint:
+Execute all commands inside the `website/` directory using Bun:
 
 ```bash
-bun run build
-```
-
-This runs:
-1. `prebuild`: Generates `public/sitemap.xml`, `public/robots.txt`, and `public/site.webmanifest` using `PUBLIC_SITE_URL`.
-2. `vite build`: Compiles:
-   - Worker environment into `dist/traceguard_ai/`
-   - Static client assets into `dist/client/`
-3. `postbuild`: Cleans OS artifacts without stripping sourcemaps or asset ignore rules.
-
----
-
-## 6. Typecheck & SEO Validation
-
-Run automated pre-flight checks:
-
-```bash
-# 1. TypeScript validation
+# 1. Typecheck
 bun run typecheck
 
-# 2. Technical SEO validation
+# 2. Production build (runs prebuild SEO generator + Vite build + postbuild cleanup)
+bun run build
+
+# 3. Technical SEO & Metadata validation
 bun run seo:check
-```
 
-Both commands must exit with code `0`.
-
----
-
-## 7. Deployment Dry-Run (No Upload)
-
-Simulate deployment packaging and verify asset manifests without uploading code to Cloudflare:
-
-```bash
-bun run deploy:dry
-```
-
-Expected output:
-```text
-⛅️ wrangler 4.x
-Using redirected Wrangler configuration.
-✨ Read 57+ files from the assets directory dist/client
-Total Upload: ~62 KiB
-Your Worker has access to the following bindings:
-Binding env.ASSETS (Assets)
---dry-run: exiting now.
-```
-
----
-
-## 8. Actual Deployment Command
-
-When you are ready to publish TraceGuard AI to Cloudflare Workers, execute:
-
-```bash
+# 4. Deploy directly to Cloudflare Pages
 bun run deploy
-```
-
-Wrangler will upload your compiled static assets to Cloudflare Workers KV/Asset storage, deploy the routing Worker, and output your live deployment URL:
-
-```text
-Uploaded traceguard-ai (x.xx sec)
-Deployed traceguard-ai triggers:
-  https://traceguard-ai.<your-subdomain>.workers.dev
-Current Version ID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+# or:
+npx wrangler pages deploy dist/client --project-name traceguard-ai --branch main
 ```
 
 ---
 
-## 9. Custom Domain Configuration
+## 4. Automated CI/CD Pipeline (`.github/workflows/deploy-website.yml`)
 
-To connect a custom domain (e.g. `traceguard.ai` or `fsm.traceguard.ai`):
+The website has a dedicated, path-filtered GitHub Actions workflow that executes ONLY when website assets or its workflow definition change.
 
-### Option A: Via Cloudflare Dashboard
-1. Log in to [Cloudflare Dashboard](https://dash.cloudflare.com/).
-2. Navigate to **Workers & Pages** > **traceguard-ai**.
-3. Go to **Settings** > **Domains & Routes**.
-4. Click **Add** > **Custom Domain**.
-5. Enter your domain (e.g., `traceguard.ai`) and confirm. Cloudflare will automatically provision SSL certificates and configure DNS records.
-
-### Option B: Via `wrangler.jsonc`
-Add a `routes` definition in `wrangler.jsonc`:
-```jsonc
-{
-  "name": "traceguard-ai",
-  "routes": [
-    { "pattern": "traceguard.ai/*", "zone_name": "traceguard.ai" },
-    { "pattern": "www.traceguard.ai/*", "zone_name": "traceguard.ai" }
-  ]
-}
+### Path Filtering Invariant:
+```yaml
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'website/**'
+      - '.github/workflows/deploy-website.yml'
+  workflow_dispatch:
 ```
-Then run:
-```bash
-bun run deploy
-```
+
+### Trigger Isolation Behavior:
+| Modified Path | Backend CI (`ci.yml`) | Website Deployment (`deploy-website.yml`) |
+|---|---|---|
+| `backend/**` | **Runs** | **Does NOT run** |
+| `frontend/**` (SaaS app) | **Runs** | **Does NOT run** |
+| `website/**` | Does NOT trigger | **Runs** |
+| `docs/**` | Does NOT trigger | **Does NOT run** |
+| `presentation/**` | Does NOT trigger | **Does NOT run** |
+| Root `README.md` | Does NOT trigger | **Does NOT run** |
+| `.github/workflows/deploy-website.yml` | Does NOT trigger | **Runs** |
+
+### Required GitHub Repository Secrets:
+Configure the following secrets in GitHub Repository Settings (`Settings` > `Secrets and variables` > `Actions`):
+1. `CLOUDFLARE_API_TOKEN`: Cloudflare API token with permissions for Pages and Workers scripts/assets.
+2. `CLOUDFLARE_ACCOUNT_ID`: Cloudflare Account ID (`a80bbebe00dec24588c0d0cd62a4e02c`).
 
 ---
 
-## 10. Post-Deployment Verification Checklist
+## 5. Live Verification Matrix
 
-Verify your live production deployment:
-
-1. **HTTP Status Codes**:
-   - `curl -I https://traceguard.ai/` -> `HTTP/2 200`
-   - `curl -I https://traceguard.ai/technology` -> `HTTP/2 200`
-   - `curl -I https://traceguard.ai/sitemap.xml` -> `HTTP/2 200` (`Content-Type: application/xml`)
-   - `curl -I https://traceguard.ai/robots.txt` -> `HTTP/2 200` (`Content-Type: text/plain`)
-   - `curl -I https://traceguard.ai/non-existent-trap` -> `HTTP/2 404`
-2. **Security Headers**:
-   - `X-Content-Type-Options: nosniff`
-   - `Referrer-Policy: strict-origin-when-cross-origin`
-   - `Content-Security-Policy` active
-3. **Cache Invariants**:
-   - Fingerprinted JS/CSS in `/assets/*` return `Cache-Control: public, max-age=31536000, immutable`
-   - HTML documents return `Cache-Control: public, max-age=0, must-revalidate`
-
----
-
-## 11. Search Engine Discovery (User-Performed Step)
-
-Once the production domain is live:
-
-1. **Google Search Console**:
-   - Add property for `https://traceguard.ai`.
-   - Submit Sitemap: `https://traceguard.ai/sitemap.xml`.
-2. **Bing Webmaster Tools**:
-   - Add site or import from Google Search Console.
-   - Submit Sitemap: `https://traceguard.ai/sitemap.xml`.
+All 15 production route invariants are verified against `https://traceguard-ai.pages.dev`:
+- `GET /` -> HTTP 200 `text/html`
+- `GET /technology` -> HTTP 200 `text/html`
+- `GET /automaton` -> HTTP 200 `text/html`
+- `GET /architecture` -> HTTP 200 `text/html`
+- `GET /research` -> HTTP 200 `text/html`
+- `GET /presentation` -> HTTP 200 `text/html`
+- `GET /about` -> HTTP 200 `text/html`
+- `GET /sitemap.xml` -> HTTP 200 `application/xml`
+- `GET /robots.txt` -> HTTP 200 `text/plain`
+- `GET /favicon.svg` -> HTTP 200 `image/svg+xml`
+- `GET /site.webmanifest` -> HTTP 200 `application/manifest+json`
+- `GET /brand/traceguard-ai-preview.png` -> HTTP 200 `image/png`
+- `GET /api/health` -> HTTP 200 `application/json`
+- `GET /assets/non-existent-script.js` -> HTTP 404 `text/plain`
+- `GET /trap-404-test-route` -> HTTP 404 `text/html`
