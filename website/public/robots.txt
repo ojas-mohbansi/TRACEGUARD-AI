@@ -1,0 +1,18 @@
+# TraceGuard AI — Search Engine Robots Policy
+# https://github.com/ojas-mohbansi/TRACEGUARD-AI
+
+User-agent: *
+Allow: /
+Allow: /technology
+Allow: /automaton
+Allow: /architecture
+Allow: /research
+Allow: /presentation
+Allow: /about
+Allow: /brand/
+Allow: /docs/
+Allow: /assets/
+Disallow: /styleguide
+Disallow: /api/
+
+Sitemap: http://localhost:5303/sitemap.xml

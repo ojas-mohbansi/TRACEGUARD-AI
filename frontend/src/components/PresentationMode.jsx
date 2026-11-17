@@ -64,7 +64,15 @@ const PRESENTER_THEMES = {
 
 export function PresentationMode({ onClose }) {
   const slides = manifestData?.slides || [];
-  const totalSlides = slides.length || 14;
+  const totalSlides = slides.length || 22;
+
+  const presentersList = manifestData?.presenters ? Object.values(manifestData.presenters) : [
+    { id: 'P1', name: 'Tanmay', startSlide: 1, endSlide: 4, topic: 'Project Overview & Research Scope' },
+    { id: 'P2', name: 'Karthik Sai', startSlide: 5, endSlide: 9, topic: 'Chomsky Hierarchy & 5-Tuple Spec' },
+    { id: 'P3', name: 'Ojas Mohbansi', startSlide: 10, endSlide: 14, topic: '13-Symbol Alphabet & Trace Proofs' },
+    { id: 'P4', name: 'Darpan Jain', startSlide: 15, endSlide: 18, topic: 'Three-Way Classification & ML Engine' },
+    { id: 'P5', name: 'Panda', startSlide: 19, endSlide: 22, topic: 'Consensus Scoring & Q.E.D. Defense' },
+  ];
 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [viewMode, setViewMode] = useState('presenter'); // 'presenter' | 'audience'
@@ -438,9 +446,35 @@ export function PresentationMode({ onClose }) {
                   Topic: <span className="text-white font-medium">{currentSlide.presenter?.topic}</span>
                 </span>
                 <span className={`text-[10px] font-bold ${theme.accent}`}>
-                  Slide {currentSlide.slideNumber}
+                  Slide {currentSlide.slideNumber} of {totalSlides}
                 </span>
               </div>
+            </div>
+
+            {/* Quick Presenter Jump Selector */}
+            <div className="px-3 py-2 bg-[#090d15] border-b border-white/10 flex items-center space-x-1.5 overflow-x-auto text-xs font-mono shrink-0">
+              <span className="text-[10px] text-slate-400 uppercase font-semibold shrink-0 mr-1">Roster:</span>
+              {presentersList.map((p) => {
+                const isActivePresenter = (currentSlide.presenterId === p.id) || (currentSlide.presenter?.id === p.id);
+                const pTheme = PRESENTER_THEMES[p.id] || PRESENTER_THEMES.P1;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => setCurrentIdx(p.startSlide - 1)}
+                    className={`px-2 py-1 rounded-md text-[10px] whitespace-nowrap transition flex items-center gap-1.5 border ${
+                      isActivePresenter
+                        ? `${pTheme.badge} font-bold ring-1 ${pTheme.ring} shadow-xs`
+                        : 'bg-[#141b2b] text-slate-400 hover:text-white border-white/10 hover:border-white/20'
+                    }`}
+                    title={`Jump to ${p.name} (Slides ${p.startSlide}–${p.endSlide})`}
+                    aria-label={`Jump to ${p.name}`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${pTheme.dot}`} />
+                    <span>{p.name.split(' ')[0]}</span>
+                    <span className="text-[9px] opacity-70">({p.startSlide}–{p.endSlide})</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* Presenter Tab Navigation */}

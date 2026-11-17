@@ -18,7 +18,7 @@ export function Architecture() {
           <ButtonLink href="#pipeline" variant="signal">
             <span>Explore 8 Stages</span>
           </ButtonLink>
-          <ButtonLink href="https://github.com/ojas-mohbansi/TRACEGUARD-AI" variant="secondary" target="_blank" rel="noreferrer">
+          <ButtonLink href="https://github.com/ojas-mohbansi/TRACEGUARD-AI" variant="secondary" target="_blank" rel="noopener noreferrer">
             <span>View Source Code</span>
           </ButtonLink>
         </div>

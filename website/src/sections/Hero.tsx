@@ -35,7 +35,7 @@ export function Hero() {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.08, ease }}
-            className="display text-balance text-[44px] font-semibold tracking-[-0.035em] sm:text-[60px] lg:text-[72px]"
+            className="display text-balance text-[34px] font-semibold tracking-[-0.035em] sm:text-[48px] md:text-[60px] lg:text-[72px]"
           >
             {hero.title.map((l, idx) => (
               <span key={l} className={cx('block', idx === 1 ? 'text-transparent bg-clip-text bg-gradient-to-r from-signal-soft via-blue-400 to-trace-soft' : 'text-white')}>

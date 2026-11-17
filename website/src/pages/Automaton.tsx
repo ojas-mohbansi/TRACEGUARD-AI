@@ -343,8 +343,8 @@ export function Automaton() {
             </div>
           </Reveal>
 
-          <div className="mt-10 overflow-x-auto rounded-card border border-line bg-surface p-6">
-            <table className="w-full text-left font-mono text-xs">
+          <div className="mt-10 overflow-x-auto rounded-card border border-line bg-surface p-4 sm:p-6">
+            <table className="w-full min-w-[560px] text-left font-mono text-xs">
               <thead>
                 <tr className="border-b border-line text-muted">
                   <th className="pb-3 pr-4 font-semibold">Transition Component</th>
@@ -359,8 +359,8 @@ export function Automaton() {
                   <td className="py-3 text-muted">Defined RFC HTTP protocol sequences (CONNECT, REQUEST, AUTH, RESP, CLOSE)</td>
                 </tr>
                 <tr>
-                  <td className="py-3 font-medium text-white">Undefined State/Symbol Pairs</td>
-                  <td className="py-3 text-threat-soft font-bold">88</td>
+                  <td className="py-3 font-medium text-white">Undefined Operational Pairs (7 states × 13 − 15)</td>
+                  <td className="py-3 text-threat-soft font-bold">76</td>
                   <td className="py-3 text-muted">Any unpermitted symbol during operational state routes directly to TRAP</td>
                 </tr>
                 <tr>

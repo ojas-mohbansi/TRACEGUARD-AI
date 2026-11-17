@@ -5,8 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
+    "prebuild": "node ../scripts/generate_seo_assets.mjs",
     "build": "vite build && node scripts/postbuild.mjs",
     "preview": "vite preview",
+    "preview:cf": "wrangler dev",
+    "deploy:dry": "wrangler deploy --dry-run",
+    "deploy": "wrangler deploy",
+    "seo:check": "node ../scripts/validate_seo.mjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

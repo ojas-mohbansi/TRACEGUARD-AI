@@ -41,7 +41,7 @@ export function Technology() {
                   Deterministic Finite Automaton (DFA)
                 </h2>
                 <p className="mt-4 text-pretty text-[16px] leading-relaxed text-soft">
-                  The primary gate of TraceGuard AI is a complete 9-state HTTP protocol automaton. Because the set of valid HTTP event sequences constitutes a regular language, our DFA decides protocol conformance in deterministic <code className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-signal-soft">O(1)</code> time per event.
+                  The primary gate of TraceGuard AI is a complete 9-state HTTP protocol automaton. Because the set of valid HTTP event sequences constitutes a regular language, our DFA executes each state transition in deterministic <code className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-signal-soft">O(1)</code> time per event, achieving strictly linear <code className="rounded bg-surface-2 px-1.5 py-0.5 font-mono text-signal-soft">O(n)</code> processing for any sequence of <span className="font-mono text-white">n</span> session events.
                 </p>
 
                 <div className="mt-6 flex flex-col gap-3">

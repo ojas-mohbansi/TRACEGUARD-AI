@@ -68,6 +68,14 @@ export function AppLayout() {
     setMobileDrawerOpen(false);
   }, [location.pathname]);
 
+  // Support direct entry to presentation mode via query param or hash
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('presentation') === 'true' || location.hash === '#presentation') {
+      setPresentationOpen(true);
+    }
+  }, [location.search, location.hash]);
+
   // Close mobile drawer on Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {

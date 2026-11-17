@@ -1,0 +1,1004 @@
+#!/usr/bin/env python3
+"""
+TraceGuard AI — Phase 21 Presentation Manifest Generator
+Generates the authoritative structured presentation manifest mapping all 22 slides
+to the five presenters according to Phase 21 mandatory assignments:
+  - Presenter 1: Tanmay (Slides 1–4)
+  - Presenter 2: Karthik Sai (Slides 5–9)
+  - Presenter 3: Ojas Mohbansi (Slides 10–14)
+  - Presenter 4: Darpan Jain (Slides 15–18)
+  - Presenter 5: Panda (Slides 19–22)
+"""
+
+import json
+from datetime import datetime
+from pathlib import Path
+
+PRESENTERS = {
+    "P1": {
+        "id": "P1",
+        "name": "Tanmay",
+        "role": "Project Lead / Problem Statement & Scope",
+        "topic": "Project Overview, Threat Landscape, Paradigm Shift & Research Scope",
+        "startSlide": 1,
+        "endSlide": 4,
+        "slides": [1, 2, 3, 4],
+        "allocatedDuration": "2m 45s (165s)",
+        "theme": "amber"
+    },
+    "P2": {
+        "id": "P2",
+        "name": "Karthik Sai",
+        "role": "Formal Foundations & Automaton Spec Lead",
+        "topic": "Chomsky Hierarchy, Kleene's Law, Total Completeness & 5-Tuple Definition",
+        "startSlide": 5,
+        "endSlide": 9,
+        "slides": [5, 6, 7, 8, 9],
+        "allocatedDuration": "3m 15s (195s)",
+        "theme": "emerald"
+    },
+    "P3": {
+        "id": "P3",
+        "name": "Ojas Mohbansi",
+        "role": "Automata Topology & Mathematical Proof Lead",
+        "topic": "13-Symbol Alphabet, 9-State Graph, 117-Cell Matrix & Trace Proofs (w1/w2)",
+        "startSlide": 10,
+        "endSlide": 14,
+        "slides": [10, 11, 12, 13, 14],
+        "allocatedDuration": "3m 30s (210s)",
+        "theme": "blue"
+    },
+    "P4": {
+        "id": "P4",
+        "name": "Darpan Jain",
+        "role": "Systems Architecture & ML Specialist",
+        "topic": "Three-Way Classification (δ*), Triad System Pipeline & Isolation Forest ML",
+        "startSlide": 15,
+        "endSlide": 18,
+        "slides": [15, 16, 17, 18],
+        "allocatedDuration": "2m 50s (170s)",
+        "theme": "purple"
+    },
+    "P5": {
+        "id": "P5",
+        "name": "Panda",
+        "role": "Consensus Arbitration & Defense Closing Lead",
+        "topic": "Consensus Scoring (60% Floor), Live Automata Lab, Chomsky Ascent & Q.E.D.",
+        "startSlide": 19,
+        "endSlide": 22,
+        "slides": [19, 20, 21, 22],
+        "allocatedDuration": "3m 00s (180s)",
+        "theme": "rose"
+    }
+}
+
+SLIDES_DATA = [
+    # SLIDE 1
+    {
+        "slideNumber": 1,
+        "title": "THEORY OF COMPUTATION // ACADEMIC VIVA MONOGRAPH",
+        "category": "THEORY OF COMPUTATION // ACADEMIC VIVA MONOGRAPH",
+        "section": "Title Slide & Team Introduction",
+        "presenterId": "P1",
+        "presenterName": "Tanmay",
+        "presenterStartSlide": 1,
+        "presenterEndSlide": 4,
+        "estimatedDuration": "45s",
+        "spokenScript": (
+            "Good morning, respected professors, faculty examiners, and evaluation committee members. My name is Tanmay. "
+            "On behalf of my research colleagues—Karthik Sai, Ojas Mohbansi, Darpan Jain, and Panda—I am honored to present "
+            "our Theory of Computation final academic defense: TraceGuard AI: Formal Languages & Protocol Automata for Network Intrusion Detection. "
+            "In this defense, our team demonstrates that formal automata theory is not merely an abstract classroom construct, "
+            "but a rigorous, mathematically sound foundation for solving critical real-world cybersecurity vulnerabilities. "
+            "By modeling application protocols as complete Deterministic Finite Automata, we prove that protocol sequence attacks "
+            "can be verified in constant O(1) step time with absolute mathematical certainty."
+        ),
+        "slideNotes": (
+            "Monograph Title Slide. Displays formal 5-tuple M = (Q, Σ, δ, q₀, F), the 5 team authors, "
+            "and the 9x13 complete DFA badge representing 117 total state-symbol transitions. "
+            "Introduce all five team members and set the formal theoretical tone."
+        ),
+        "keyPoints": [
+            "Formal Language & Automata Theory applied to cybersecurity",
+            "Complete 9-State HTTP DFA with 117 Total Transitions",
+            "Guaranteed O(1) step decision latency with zero false positives on compliant grammar"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Why is Theory of Computation relevant to modern network intrusion detection?",
+                "answer": "Network protocols are formally defined as stateful systems with strict sequencing invariants. Applying automata theory allows us to mathematically verify sequence compliance in O(1) step time, eliminating the false positives inherent in heuristic statistical models.",
+                "q": "Why is Theory of Computation relevant to modern network intrusion detection?",
+                "a": "Network protocols are formally defined as stateful systems with strict sequencing invariants. Applying automata theory allows us to mathematically verify sequence compliance in O(1) step time, eliminating the false positives inherent in heuristic statistical models."
+            }
+        ]
+    },
+    # SLIDE 2
+    {
+        "slideNumber": 2,
+        "title": "01 // PROBLEM STATEMENT: Stateful Protocol Vulnerabilities",
+        "category": "PROBLEM DEFINITION & THREAT LANDSCAPE",
+        "section": "Stateful Protocol Vulnerabilities",
+        "presenterId": "P1",
+        "presenterName": "Tanmay",
+        "presenterStartSlide": 1,
+        "presenterEndSlide": 4,
+        "estimatedDuration": "40s",
+        "spokenScript": (
+            "To understand why automata theory is indispensable, we must examine how modern communication protocols actually function. "
+            "Protocols such as HTTP, TLS, and SSH are fundamentally stateful systems: actions are only valid when executed in a strict, "
+            "pre-defined sequential order. Traditional signature-based firewalls inspect payload strings, while contemporary machine learning "
+            "models compute statistical likelihoods. Crucially, neither approach mathematically verifies whether an observed sequence of protocol "
+            "transitions is legal according to specification. Attackers exploit this blind spot in three primary ways: "
+            "First, Out-of-Order Execution—where a server response is emitted before any client request is received. "
+            "Second, Authentication Bypass—where an adversary accesses protected resources without traversing the required authentication state. "
+            "And third, Session Confusion—where packets are injected into terminated or half-open connections. "
+            "These are not payload anomalies—they are structural protocol invariant violations."
+        ),
+        "slideNotes": (
+            "Exposes three structural protocol threats: Out-of-Order Execution, Authentication Bypass, and Session Confusion. "
+            "Emphasize that packet payload inspection cannot detect sequence violations."
+        ),
+        "keyPoints": [
+            "Network protocols (HTTP/TLS) are stateful systems with sequential invariants",
+            "Three attack classes: Out-of-Order Execution, Authentication Bypass, Session Confusion",
+            "Stateless payload firewalls and black-box ML miss sequence violations"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Can statistical ML models detect out-of-order execution attacks?",
+                "answer": "Statistical ML models estimate likelihood based on features like byte size and timing, but they lack formal state tracking. They struggle to guarantee detection of subtle sequential swaps without high false alarm rates.",
+                "q": "Can statistical ML models detect out-of-order execution attacks?",
+                "a": "Statistical ML models estimate likelihood based on features like byte size and timing, but they lack formal state tracking. They struggle to guarantee detection of subtle sequential swaps without high false alarm rates."
+            }
+        ]
+    },
+    # SLIDE 3
+    {
+        "slideNumber": 3,
+        "title": "02 // PARADIGM SHIFT: Black-Box ML vs. Formal Automata",
+        "category": "THEORETICAL MOTIVATION & COMPARATIVE ANALYSIS",
+        "section": "Black-Box ML vs. Formal Automata",
+        "presenterId": "P1",
+        "presenterName": "Tanmay",
+        "presenterStartSlide": 1,
+        "presenterEndSlide": 4,
+        "estimatedDuration": "40s",
+        "spokenScript": (
+            "This slide captures the fundamental paradigm shift at the heart of TraceGuard AI. "
+            "When organizations rely solely on black-box statistical machine learning for protocol security, they encounter three severe "
+            "theoretical and operational hurdles: First, High False Positives: unusual, rare, but perfectly legitimate protocol sequences "
+            "are misclassified as anomalies. Second, Zero Formal Proof: deep neural networks output probability values without a causal chain "
+            "explaining why a sequence violates protocol grammar. And third, Inference Latency: evaluating complex feature matrices introduces "
+            "packet-processing lag that cannot sustain line-rate network speeds. In contrast, our formal Automata Theory approach provides: "
+            "Constant O(1) step decisions—each packet triggers an instantaneous table lookup; zero false positives on specification-compliant grammar; "
+            "and total explainability—pinpointing the exact state-symbol transition that caused a violation."
+        ),
+        "slideNotes": (
+            "Contrasts Statistical ML limits (High false positives, Zero formal proof, Inference latency) with "
+            "Automata Theory solutions (O(1) step decisions, Zero false positives, Total explainability)."
+        ),
+        "keyPoints": [
+            "Statistical ML limits: High false positives, no formal causal proof, inference latency",
+            "Automata theory solution: O(1) step transition lookups, 0% false positives on grammar, causal explainability"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "What is the computational complexity difference between neural network inference and a DFA step?",
+                "answer": "Neural network inference requires matrix multiplications proportional to layer dimensions and weights, O(N*M). A DFA state transition is a single O(1) memory table lookup indexed by (current_state, symbol).",
+                "q": "What is the computational complexity difference between neural network inference and a DFA step?",
+                "a": "Neural network inference requires matrix multiplications proportional to layer dimensions and weights, O(N*M). A DFA state transition is a single O(1) memory table lookup indexed by (current_state, symbol)."
+            }
+        ]
+    },
+    # SLIDE 4
+    {
+        "slideNumber": 4,
+        "title": "03 // RESEARCH SCOPE: Four Core Project Objectives",
+        "category": "RESEARCH OBJECTIVES & SYSTEM SCOPE",
+        "section": "Four Core Project Objectives",
+        "presenterId": "P1",
+        "presenterName": "Tanmay",
+        "presenterStartSlide": 1,
+        "presenterEndSlide": 4,
+        "estimatedDuration": "40s",
+        "spokenScript": (
+            "To realize this theoretical vision, our team established four rigorous academic objectives: "
+            "Objective 1: Protocol DFA Formulation—mathematically formalizing the HTTP protocol as a formal 5-tuple M = (Q, Σ, δ, q₀, F). "
+            "Objective 2: Total Matrix Completeness—guaranteeing that the transition function δ is completely defined for all 117 state-symbol pairs using an absorbing TRAP sink state. "
+            "Objective 3: Extended Transition Word Stepper—implementing δ* to formally classify arbitrary packet traces into accepted languages, valid incomplete prefixes, or rejected violations. "
+            "And Objective 4: Hybrid Consensus Arbitration—benchmarking our deterministic FSM rules against unsupervised Isolation Forest machine learning and enforcing a 60% risk floor on any protocol violation. "
+            "To present the formal mathematical foundations and Chomsky hierarchy governing our automaton, I now hand over the presentation to Karthik Sai."
+        ),
+        "slideNotes": (
+            "Outlines the 4 project pillars: Protocol DFA, Total Matrix completeness, Word Stepper (δ*), and Hybrid Arbiter. "
+            "Concludes Presenter 1's section with a clear verbal handoff to Karthik Sai."
+        ),
+        "keyPoints": [
+            "Objective 01: Protocol DFA formulation M = (Q, Σ, δ, q₀, F)",
+            "Objective 02: Total Matrix completeness with 117 transitions and TRAP sink",
+            "Objective 03: Extended transition word stepper for language classification",
+            "Objective 04: Hybrid consensus arbiter with 60% risk floor rule"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Why benchmark against an Isolation Forest rather than a deep learning autoencoder?",
+                "answer": "Isolation Forest is an unsupervised tree ensemble with extremely low training overhead (sub-second) and fast inference (<0.8ms), making it viable for inline edge network processing without specialized GPU accelerators.",
+                "q": "Why benchmark against an Isolation Forest rather than a deep learning autoencoder?",
+                "a": "Isolation Forest is an unsupervised tree ensemble with extremely low training overhead (sub-second) and fast inference (<0.8ms), making it viable for inline edge network processing without specialized GPU accelerators."
+            }
+        ]
+    },
+    # SLIDE 5
+    {
+        "slideNumber": 5,
+        "title": "SECTION 01 // FORMAL FOUNDATIONS: Chomsky Type-3 Foundations",
+        "category": "SECTION 01 // FORMAL FOUNDATIONS",
+        "section": "Chomsky Type-3 Foundations",
+        "presenterId": "P2",
+        "presenterName": "Karthik Sai",
+        "presenterStartSlide": 5,
+        "presenterEndSlide": 9,
+        "estimatedDuration": "30s",
+        "spokenScript": (
+            "Thank you, Tanmay. Respected professors and members of the examination committee, my name is Karthik Sai. "
+            "I will be guiding you through Section 1: The Formal Mathematical Foundations of TraceGuard AI. "
+            "In theoretical computer science, before building any software system, we must first establish the formal language class "
+            "capable of expressing our problem. In this section, we ground our network inspection engine in the foundational principles "
+            "of the Chomsky hierarchy, Kleene's Theorem, and the mathematical properties of deterministic finite automata."
+        ),
+        "slideNotes": (
+            "Section 01 Divider. Grounded in Chomsky Type-3 Regular Languages, Kleene's Theorem, and Deterministic Finite Automata (Σ*)."
+        ),
+        "keyPoints": [
+            "Section 01: Formal Mathematical Foundations",
+            "Chomsky Type-3 Regular Grammar Bedrock",
+            "Equivalence via Kleene's Theorem"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "What is the Chomsky hierarchy, and where does your model sit?",
+                "answer": "The Chomsky hierarchy classifies formal grammars into four levels: Type-0 (Unrestricted / Turing Machines), Type-1 (Context-Sensitive), Type-2 (Context-Free / Pushdown Automata), and Type-3 (Regular / Finite Automata). TraceGuard AI's core protocol validator operates at Type-3.",
+                "q": "What is the Chomsky hierarchy, and where does your model sit?",
+                "a": "The Chomsky hierarchy classifies formal grammars into four levels: Type-0 (Unrestricted / Turing Machines), Type-1 (Context-Sensitive), Type-2 (Context-Free / Pushdown Automata), and Type-3 (Regular / Finite Automata). TraceGuard AI's core protocol validator operates at Type-3."
+            }
+        ]
+    },
+    # SLIDE 6
+    {
+        "slideNumber": 6,
+        "title": "04 // REGULAR LANGUAGE THEORY: Regular Languages & Kleene's Law",
+        "category": "FORMAL LANGUAGE THEORY & DECIDABILITY",
+        "section": "Regular Languages & Kleene's Law",
+        "presenterId": "P2",
+        "presenterName": "Karthik Sai",
+        "presenterStartSlide": 5,
+        "presenterEndSlide": 9,
+        "estimatedDuration": "45s",
+        "spokenScript": (
+            "In formal language theory, Type-3 regular grammars occupy the foundational tier of the Chomsky hierarchy. "
+            "By Kleene's Theorem, regular languages are precisely those recognized by finite-state automata. "
+            "Why is this theorem critical for high-speed network security? First, a Deterministic Finite Automaton possesses the memoryless state property: "
+            "each state transition depends strictly and exclusively on the current active state q and the next incoming event symbol σ. "
+            "It requires no auxiliary tape and no unbounded stack. Second, language membership is decidable in strict linear time O(|w|), "
+            "where |w| represents the number of observed packets in a session trace. While higher-level grammars like Pushdown Automata "
+            "or Turing Machines offer greater expressive power, their parsing algorithms introduce super-linear complexity or undecidability. "
+            "Type-3 DFAs provide the exact mathematical sweet spot: sufficient expressiveness to validate protocol ordering, with guaranteed line-rate execution."
+        ),
+        "slideNotes": (
+            "Explains Chomsky Type-3 properties: Kleene's equivalence between regular languages and DFAs, "
+            "memoryless Markovian state transitions, and linear-time O(|w|) recognition."
+        ),
+        "keyPoints": [
+            "Type-3 Regular Grammar equivalence via Kleene's Theorem",
+            "Memoryless Markovian property: transitions depend only on current state and symbol",
+            "Linear time complexity O(|w|) for trace decidability"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Can regular expressions express protocol state transitions?",
+                "answer": "Yes, by Kleene's Theorem, every regular expression has an equivalent DFA. However, evaluating regular expressions via string matching involves backtracking, whereas a pre-compiled DFA guarantees O(1) step transitions without backtracking.",
+                "q": "Can regular expressions express protocol state transitions?",
+                "a": "Yes, by Kleene's Theorem, every regular expression has an equivalent DFA. However, evaluating regular expressions via string matching involves backtracking, whereas a pre-compiled DFA guarantees O(1) step transitions without backtracking."
+            }
+        ]
+    },
+    # SLIDE 7
+    {
+        "slideNumber": 7,
+        "title": "05 // MATHEMATICAL COMPLETENESS: Total Transition Completeness",
+        "category": "TOTAL FUNCTION INVARIANT & DECIDABILITY",
+        "section": "Total Transition Completeness",
+        "presenterId": "P2",
+        "presenterName": "Karthik Sai",
+        "presenterStartSlide": 5,
+        "presenterEndSlide": 9,
+        "estimatedDuration": "40s",
+        "spokenScript": (
+            "This slide represents our primary mathematical invariant: Total Transition Function Completeness. "
+            "In many textbook automata and informal implementations, transition functions are left partial: if an unexpected event arrives, "
+            "the automaton simply lacks a transition arrow. In cybersecurity, an undefined transition is a fatal vulnerability—it leads "
+            "to unhandled exceptions, undefined behavior, or silent bypasses. In TraceGuard AI, we formally enforce that δ is a total function: "
+            "For all states q in Q, and for all alphabet symbols σ in Σ, δ(q, σ) maps deterministically to a well-defined state in Q. "
+            "With 9 states and 13 discrete alphabet symbols, our state transition matrix contains exactly 9 times 13 equals 117 fully defined cells, "
+            "leaving zero mathematical loopholes."
+        ),
+        "slideNotes": (
+            "Details total function invariant: 9 states x 13 symbols = 117 defined cells. "
+            "Formal theorem: ∀q ∈ Q, ∀σ ∈ Σ, δ(q, σ) ∈ Q. Eliminates unhandled state exceptions."
+        ),
+        "keyPoints": [
+            "Total function invariant: ∀q ∈ Q, ∀σ ∈ Σ, δ(q, σ) ∈ Q",
+            "9 states × 13 event symbols = 117 fully mapped transitions",
+            "Zero undefined cells prevents crash vulnerabilities and unhandled bypasses"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "What is the difference between a partial DFA and a complete DFA?",
+                "answer": "A partial DFA has missing transitions for certain state-symbol pairs, where unexpected inputs cause an undefined state or crash. A complete DFA defines δ for every pair in Q × Σ, mapping illegal inputs explicitly to an absorbing non-accepting TRAP state.",
+                "q": "What is the difference between a partial DFA and a complete DFA?",
+                "a": "A partial DFA has missing transitions for certain state-symbol pairs, where unexpected inputs cause an undefined state or crash. A complete DFA defines δ for every pair in Q × Σ, mapping illegal inputs explicitly to an absorbing non-accepting TRAP state."
+            }
+        ]
+    },
+    # SLIDE 8
+    {
+        "slideNumber": 8,
+        "title": "06 // AUTOMATON SPECIFICATION: Formal 5-Tuple Definition",
+        "category": "FORMAL AUTOMATON DEFINITION: M = (Q, Σ, δ, q₀, F)",
+        "section": "Formal 5-Tuple Definition",
+        "presenterId": "P2",
+        "presenterName": "Karthik Sai",
+        "presenterStartSlide": 5,
+        "presenterEndSlide": 9,
+        "estimatedDuration": "40s",
+        "spokenScript": (
+            "Here we formalize the complete mathematical specification of our protocol inspector as a 5-tuple: M = (Q, Σ, δ, q₀, F). "
+            "Let us examine each component: Q is the set of 9 finite states: eight representing legal operational protocol conditions, "
+            "plus one dedicated absorbing TRAP sink state. Σ is the input alphabet of 13 discrete symbols, abstracting HTTP network events. "
+            "δ is the transition function, mapping Q cross Σ to Q across our 117-cell matrix. q₀ is the initial state, designated as IDLE, "
+            "representing an uninitialized network connection. And F is the set of accepting states, which is the singleton set containing exclusively "
+            "the CLOSED state. A network session is accepted if and only if it terminates gracefully in CLOSED."
+        ),
+        "slideNotes": (
+            "Formulates the 5-tuple: M = (Q, Σ, δ, q₀, F). Q (9 states), Σ (13 symbols), δ (117 cells), "
+            "q₀ (IDLE), and F ({CLOSED})."
+        ),
+        "keyPoints": [
+            "Formal 5-Tuple: M = (Q, Σ, δ, q₀, F)",
+            "|Q| = 9 states, |Σ| = 13 symbols, |δ| = 117 mappings",
+            "q₀ = IDLE; F = {CLOSED} (singleton accepting set)"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Why is F a singleton set {CLOSED}? Why not accept other completed states?",
+                "answer": "In formal protocol verification, a session is only fully compliant if it gracefully executes teardown. Intermediate states like RESPONSE_SENT represent active connections, not completed conversations.",
+                "q": "Why is F a singleton set {CLOSED}? Why not accept other completed states?",
+                "a": "In formal protocol verification, a session is only fully compliant if it gracefully executes teardown. Intermediate states like RESPONSE_SENT represent active connections, not completed conversations."
+            }
+        ]
+    },
+    # SLIDE 9
+    {
+        "slideNumber": 9,
+        "title": "07 // STATE REGISTER TAXONOMY: State Space Q & Accepting Boundary",
+        "category": "STATE SPACE PARTITIONING & TOPOLOGY",
+        "section": "State Space Q & Accepting Boundary",
+        "presenterId": "P2",
+        "presenterName": "Karthik Sai",
+        "presenterStartSlide": 5,
+        "presenterEndSlide": 9,
+        "estimatedDuration": "40s",
+        "spokenScript": (
+            "To understand the topology of our state space Q, we partition the 9 states into three functional operational tiers: "
+            "First, Handshake & Entry: beginning at initial state IDLE, transitioning to CONNECTED upon successful TCP synchronization. "
+            "Second, Auth & Dispatch: encompassing REQUEST_RECEIVED, AUTH_CHECKED, AUTH_FAILED, RESPONSE_SENT, and ERROR—modeling the full operational "
+            "request-response lifecycle. And third, Terminal Boundaries: On the legal side, we have CLOSED in F, representing graceful connection teardown. "
+            "This is our sole accepting state. On the violation side, we have TRAP not in F. TRAP is an absorbing dead-end state: once entered, "
+            "all 13 transitions loop indefinitely back into TRAP. An attacker cannot escape TRAP by sending subsequent valid packets. "
+            "To detail our 13-symbol event alphabet and walk you through our graph topology and empirical trace proofs, I now invite Ojas Mohbansi to the podium."
+        ),
+        "slideNotes": (
+            "State Space Q taxonomy: Handshake & Entry (IDLE, CONNECTED), Auth & Dispatch (REQUEST_RECEIVED, AUTH_CHECKED, "
+            "AUTH_FAILED, RESPONSE_SENT, ERROR), and Terminal Boundaries (CLOSED ∈ F vs TRAP ∉ F). "
+            "Hands over to Ojas Mohbansi."
+        ),
+        "keyPoints": [
+            "Three functional tiers: Handshake & Entry, Auth & Dispatch, Terminal Boundaries",
+            "Accepting boundary: CLOSED ∈ F",
+            "Violation boundary: TRAP ∉ F with absorbing self-loops on all 13 symbols"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Can an attacker escape the TRAP state by sending an AUTH_SUCCESS or CLOSE event?",
+                "answer": "No. In our matrix, ∀σ ∈ Σ, δ(TRAP, σ) = TRAP. Once TRAP is reached, every symbol maps back to TRAP. The session is irrevocably classified as an exploit.",
+                "q": "Can an attacker escape the TRAP state by sending an AUTH_SUCCESS or CLOSE event?",
+                "a": "No. In our matrix, ∀σ ∈ Σ, δ(TRAP, σ) = TRAP. Once TRAP is reached, every symbol maps back to TRAP. The session is irrevocably classified as an exploit."
+            }
+        ]
+    },
+    # SLIDE 10
+    {
+        "slideNumber": 10,
+        "title": "08 // INPUT ALPHABET Σ (|Σ| = 13): 13-Symbol Protocol Event Alphabet",
+        "category": "INPUT ALPHABET SPECIFICATION (|Σ| = 13)",
+        "section": "13-Symbol Event Alphabet",
+        "presenterId": "P3",
+        "presenterName": "Ojas Mohbansi",
+        "presenterStartSlide": 10,
+        "presenterEndSlide": 14,
+        "estimatedDuration": "45s",
+        "spokenScript": (
+            "Thank you, Karthik. Respected members of the evaluation committee, my name is Ojas Mohbansi. "
+            "I will present the Input Alphabet, the State Graph Topology, and our Formal Trace Verification Proofs. "
+            "In formal language theory, an automaton requires an alphabet Σ. In TraceGuard AI, our pre-processing pipeline translates raw network "
+            "packets into a discrete, well-defined 13-symbol alphabet grouped into four functional categories: "
+            "First, Session Controls: CONNECT, CLOSE, and TIMEOUT—governing TCP session boundaries. "
+            "Second, Authentication & Request: REQUEST, AUTH_SUCCESS, and AUTH_FAILURE—tracking client intent and credential verification. "
+            "Third, Status Responses: RESPONSE_200, RESPONSE_301, and RESP_401_403—modeling standard HTTP server replies. "
+            "And fourth, Faults & Violations: RESPONSE_500, MALFORMED, and ERROR_RESPONSE—capturing protocol corruption and server faults. "
+            "Every observable packet is deterministically abstracted into exactly one of these 13 symbols."
+        ),
+        "slideNotes": (
+            "Details the 13 alphabet symbols across 4 classes: Session (3: CONNECT, CLOSE, TIMEOUT), "
+            "Auth & Req (3: REQUEST, AUTH_SUCCESS, AUTH_FAILURE), Status (4: RESPONSE_200, RESPONSE_301, RESP_401_403, RESPONSE_500), "
+            "and Faults (3: RESPONSE_500, MALFORMED, ERROR_RESPONSE)."
+        ),
+        "keyPoints": [
+            "Input alphabet |Σ| = 13 discrete HTTP session symbols",
+            "4 functional classes: Session (3), Auth & Req (3), Status (4), Faults (3)",
+            "Deterministic mapping from network packet frames to alphabet symbols"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "How does the protocol parser map raw TCP packets to the 13 discrete symbols?",
+                "answer": "The parser inspects TCP flags (SYN/FIN for CONNECT/CLOSE), HTTP request methods (GET/POST for REQUEST), authentication headers, and response status codes (200, 301, 401, 500). Corrupted bytes map to MALFORMED.",
+                "q": "How does the protocol parser map raw TCP packets to the 13 discrete symbols?",
+                "a": "The parser inspects TCP flags (SYN/FIN for CONNECT/CLOSE), HTTP request methods (GET/POST for REQUEST), authentication headers, and response status codes (200, 301, 401, 500). Corrupted bytes map to MALFORMED."
+            }
+        ]
+    },
+    # SLIDE 11
+    {
+        "slideNumber": 11,
+        "title": "09 // COMPLETE DIRECTED STATE DIAGRAM: 9-State Total DFA Topology",
+        "category": "GRAPH TOPOLOGY & TRANSITION MATRIX",
+        "section": "Complete Directed State Diagram",
+        "presenterId": "P3",
+        "presenterName": "Ojas Mohbansi",
+        "presenterStartSlide": 10,
+        "presenterEndSlide": 14,
+        "estimatedDuration": "40s",
+        "spokenScript": (
+            "This slide displays the complete directed transition graph of our 9-state automaton. "
+            "Notice three critical structural topological properties: "
+            "First, the Canonical Golden Path: an unbroken sequence of green edges leading from initial state IDLE, through CONNECTED, "
+            "REQUEST_RECEIVED, AUTH_CHECKED, and RESPONSE_SENT, terminating in the double-circle accepting state CLOSED. "
+            "Second, the Keep-Alive Cycle: modern HTTP permits persistent connections. When a response is delivered, the automaton permits "
+            "a cycle back from RESPONSE_SENT to REQUEST_RECEIVED upon receiving subsequent REQUEST symbols, preserving state across multi-request sessions "
+            "without re-establishing TCP handshakes. And third, the Absorbing Sink Topology: notice the dense cluster of red arrows converging into TRAP. "
+            "Any protocol action that violates sequential grammar immediately routes into TRAP, where a self-loop traps the adversary indefinitely."
+        ),
+        "slideNotes": (
+            "9-state directed graph topology visualizer: green forward canonical path, keep-alive loop (RESPONSE_SENT -> REQUEST_RECEIVED), "
+            "and red converging violation arrows into TRAP."
+        ),
+        "keyPoints": [
+            "Canonical Golden Path from IDLE to CLOSED ∈ F",
+            "Keep-alive cyclic loops: RESPONSE_SENT xrightarrow{REQUEST} REQUEST_RECEIVED",
+            "Absorbing TRAP sink with dense converging violation edges"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Does the keep-alive loop allow an unbounded number of requests?",
+                "answer": "Yes, standard HTTP/1.1 keep-alive allows multiple requests over one TCP connection. Our DFA models this as a regular cycle. Volumetric abuse over this cycle is detected by our parallel Isolation Forest ML engine.",
+                "q": "Does the keep-alive loop allow an unbounded number of requests?",
+                "a": "Yes, standard HTTP/1.1 keep-alive allows multiple requests over one TCP connection. Our DFA models this as a regular cycle. Volumetric abuse over this cycle is detected by our parallel Isolation Forest ML engine."
+            }
+        ]
+    },
+    # SLIDE 12
+    {
+        "slideNumber": 12,
+        "title": "10 // MATRIX PARTITIONING: 117-Cell Matrix Distribution",
+        "category": "MATRIX COMPLETENESS & PARTITIONING",
+        "section": "117-Cell Matrix Distribution",
+        "presenterId": "P3",
+        "presenterName": "Ojas Mohbansi",
+        "presenterStartSlide": 10,
+        "presenterEndSlide": 14,
+        "estimatedDuration": "40s",
+        "spokenScript": (
+            "Here we analyze the distribution of our 117-cell state transition matrix. "
+            "Out of the 117 possible state-symbol combinations: Exactly 41 transitions correspond to valid protocol operations—including "
+            "initial handshakes, credential verification, payload dispatch, keep-alive loops, and graceful teardowns. "
+            "Exactly 76 transitions map directly into the absorbing TRAP state. This reveals a fundamental cybersecurity truth: "
+            "protocol specifications are highly constrained languages. Nearly two-thirds of all syntactically possible state-symbol events "
+            "represent illegal behavior. By explicitly defining these 76 violation cells, TraceGuard AI converts the vast majority of arbitrary packet "
+            "injections into immediate, deterministic traps."
+        ),
+        "slideNotes": (
+            "Numerical breakdown of the 117 matrix entries: 41 legal transitions (forward, loop, teardown) "
+            "vs 76 violation transitions mapping to TRAP."
+        ),
+        "keyPoints": [
+            "Total 117 cells = 41 legal/loop transitions + 76 TRAP transitions",
+            "Nearly 65% of syntactically possible transitions represent protocol violations",
+            "Defensive density: traps illegal out-of-order execution across all protocol phases"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Why are there so many TRAP transitions (76 out of 117)?",
+                "answer": "Network protocols are highly constrained formal languages. In any given operational state, only 2 to 4 alphabet symbols are legal according to RFC specs. All other symbols represent out-of-order packets, invalid flags, or malicious injections.",
+                "q": "Why are there so many TRAP transitions (76 out of 117)?",
+                "a": "Network protocols are highly constrained formal languages. In any given operational state, only 2 to 4 alphabet symbols are legal according to RFC specs. All other symbols represent out-of-order packets, invalid flags, or malicious injections."
+            }
+        ]
+    },
+    # SLIDE 13
+    {
+        "slideNumber": 13,
+        "title": "11 // CANONICAL EXECUTION TRACE w₁: Valid Protocol Sequence",
+        "category": "FORMAL TRACE VERIFICATION (ACCEPTED)",
+        "section": "Canonical Execution Trace w₁",
+        "presenterId": "P3",
+        "presenterName": "Ojas Mohbansi",
+        "presenterStartSlide": 10,
+        "presenterEndSlide": 14,
+        "estimatedDuration": "45s",
+        "spokenScript": (
+            "To prove language decidability empirically, let us trace a legal protocol conversation, string w₁. "
+            "We begin at step 0 in initial state IDLE. "
+            "Step 1: Symbol CONNECT is processed. δ(IDLE, CONNECT) transitions the automaton to CONNECTED. "
+            "Step 2: The client issues REQUEST. The automaton moves to REQUEST_RECEIVED. "
+            "Step 3: Identity verification succeeds via AUTH_SUCCESS, transitioning to AUTH_CHECKED. "
+            "Step 4: The server delivers RESPONSE_200, moving to RESPONSE_SENT. "
+            "Step 5: The session closes cleanly via CLOSE, reaching CLOSED. "
+            "Because the input string is exhausted and the final state is CLOSED, which belongs to our accepting set F, "
+            "the formal verdict is: ACCEPTED (w₁ in L(M)). All RFC sequence invariants are mathematically validated."
+        ),
+        "slideNotes": (
+            "Step-by-step trace verification for w₁ = <CONNECT, REQUEST, AUTH_SUCCESS, RESPONSE_200, CLOSE>. "
+            "Reaches CLOSED ∈ F. Formal verdict: ACCEPTED (w₁ ∈ L(M))."
+        ),
+        "keyPoints": [
+            "Canonical trace w₁ = <CONNECT, REQUEST, AUTH_SUCCESS, RESPONSE_200, CLOSE>",
+            "Step transitions: IDLE → CONNECTED → REQ_RCVD → AUTH_CHK → RESP_SENT → CLOSED",
+            "Formal verdict: ACCEPTED (δ*(q₀, w₁) = CLOSED ∈ F ⇒ w₁ ∈ L(M))"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "What happens if trace w₁ halts at RESPONSE_SENT without receiving a CLOSE?",
+                "answer": "If the trace halts at RESPONSE_SENT, the final state does not belong to F = {CLOSED}. Under our Three-Way Classification, it is classified as an Incomplete Valid Prefix: legal so far, but incomplete.",
+                "q": "What happens if trace w₁ halts at RESPONSE_SENT without receiving a CLOSE?",
+                "a": "If the trace halts at RESPONSE_SENT, the final state does not belong to F = {CLOSED}. Under our Three-Way Classification, it is classified as an Incomplete Valid Prefix: legal so far, but incomplete."
+            }
+        ]
+    },
+    # SLIDE 14
+    {
+        "slideNumber": 14,
+        "title": "12 // ADVERSARIAL TRACE w₂: Out-of-Order Exploit Rejection",
+        "category": "ADVERSARIAL ATTACK TRACE (REJECTED)",
+        "section": "Out-of-Order Exploit Rejection w₂",
+        "presenterId": "P3",
+        "presenterName": "Ojas Mohbansi",
+        "presenterStartSlide": 10,
+        "presenterEndSlide": 14,
+        "estimatedDuration": "45s",
+        "spokenScript": (
+            "Now let us examine an active attack: adversarial trace w₂, representing an out-of-order execution exploit. "
+            "Step 1: The attacker initiates a connection with CONNECT. The automaton enters CONNECTED. "
+            "Step 2: Suddenly, before sending any REQUEST or completing authentication, the server or an adversary injects RESPONSE_200. "
+            "In a stateless firewall, this packet looks harmless—it is a valid HTTP 200 payload. But in TraceGuard AI, our total transition matrix "
+            "evaluates δ(CONNECTED, RESPONSE_200). Because receiving a response without a request violates protocol causality, this transition maps strictly to TRAP. "
+            "Step 3 and 4: Even if the attacker subsequently sends legitimate REQUEST and CLOSE packets, the absorbing property of TRAP ensures that δ(TRAP, σ) = TRAP. "
+            "The trace halts in TRAP not in F. The verdict is: REJECTED (w₂ not in L(M)). We have not merely flagged an anomaly; we have established a deterministic causal proof of an exploit. "
+            "To formalize this trace classification mathematically and present our system architecture and machine learning pipeline, I now hand over the presentation to Darpan Jain."
+        ),
+        "slideNotes": (
+            "Adversarial trace verification for w₂ = <CONNECT, RESPONSE_200, REQUEST, CLOSE>. "
+            "Unprompted RESPONSE_200 in CONNECTED forces transition to TRAP. Formal verdict: REJECTED (w₂ ∉ L(M)). "
+            "Hands over to Darpan Jain."
+        ),
+        "keyPoints": [
+            "Adversarial trace w₂ = <CONNECT, RESPONSE_200, REQUEST, CLOSE>",
+            "Causal proof: δ(CONNECTED, RESPONSE_200) = TRAP ∉ F",
+            "Absorbing property retains TRAP across subsequent symbols; verdict REJECTED"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Why is injecting a RESPONSE_200 right after CONNECT considered an exploit?",
+                "answer": "In HTTP, servers only emit status responses in reply to a client request. Emitting an unprompted 200 response indicates TCP session hijacking, out-of-order injection, or authentication bypass attempting to force a state change.",
+                "q": "Why is injecting a RESPONSE_200 right after CONNECT considered an exploit?",
+                "a": "In HTTP, servers only emit status responses in reply to a client request. Emitting an unprompted 200 response indicates TCP session hijacking, out-of-order injection, or authentication bypass attempting to force a state change."
+            }
+        ]
+    },
+    # SLIDE 15
+    {
+        "slideNumber": 15,
+        "title": "13 // EXTENDED TRANSITION δ*(q₀, w): Three-Way Language Classification",
+        "category": "LANGUAGE RECOGNITION & THREE-WAY VERDICT",
+        "section": "Three-Way Language Classification",
+        "presenterId": "P4",
+        "presenterName": "Darpan Jain",
+        "presenterStartSlide": 15,
+        "presenterEndSlide": 18,
+        "estimatedDuration": "45s",
+        "spokenScript": (
+            "Thank you, Ojas. Respected professors and members of the examination committee, my name is Darpan Jain. "
+            "I will present our Extended Transition Function, the System Architecture, and the Machine Learning Anomaly Guard. "
+            "In formal language theory, an automaton processes strings of arbitrary length through the Extended Transition Function, denoted δ*. "
+            "Defined inductively: The base case on the empty string ε is δ*(q, ε) = q. For any string w and symbol a, δ*(q, wa) = δ(δ*(q, w), a). "
+            "In real-world network monitoring, an ongoing connection is not simply accepted or rejected at any random moment. "
+            "TraceGuard AI operationalizes δ* into a Three-Way Language Classification: "
+            "Category 1: ACCEPTED—when δ*(q₀, w) belongs to F. The session has executed legally and completed a graceful teardown in CLOSED. "
+            "Category 2: INCOMPLETE VALID PREFIX—when δ*(q₀, w) is not in F union {TRAP}. The session is actively in progress; all transitions so far "
+            "have been legal, but it has not yet reached the closing boundary. And Category 3: REJECTED—when δ*(q₀, w) equals TRAP. "
+            "The sequence has violated protocol grammar and is permanently contained."
+        ),
+        "slideNotes": (
+            "Inductive definition of extended transition function δ*: δ*(q, ε) = q; δ*(q, wa) = δ(δ*(q, w), a). "
+            "Three-way language classification: 1. Accepted (δ* ∈ F), 2. Incomplete Valid Prefix (δ* ∉ F ∪ {TRAP}), 3. Rejected (δ* = TRAP)."
+        ),
+        "keyPoints": [
+            "Inductive extended transition function δ*: Q × Σ* → Q",
+            "1. ACCEPTED: δ*(q₀, w) ∈ F (CLOSED)",
+            "2. INCOMPLETE VALID PREFIX: δ*(q₀, w) ∉ F ∪ {TRAP} (ongoing legal session)",
+            "3. REJECTED: δ*(q₀, w) = TRAP (permanent protocol violation)"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Why is a three-way verdict necessary instead of standard binary acceptance (yes/no)?",
+                "answer": "In real-time packet inspection, sessions are ongoing. A binary DFA would classify an active, completely legal session as 'rejected' simply because the final CLOSE packet has not yet arrived. Our three-way model properly recognizes valid ongoing prefixes.",
+                "q": "Why is a three-way verdict necessary instead of standard binary acceptance (yes/no)?",
+                "a": "In real-time packet inspection, sessions are ongoing. A binary DFA would classify an active, completely legal session as 'rejected' simply because the final CLOSE packet has not yet arrived. Our three-way model properly recognizes valid ongoing prefixes."
+            }
+        ]
+    },
+    # SLIDE 16
+    {
+        "slideNumber": 16,
+        "title": "SECTION 02 // SYSTEM IMPLEMENTATION: Hybrid Triad Detection Engine",
+        "category": "SECTION 02 // SYSTEM IMPLEMENTATION",
+        "section": "Hybrid Triad Detection Engine",
+        "presenterId": "P4",
+        "presenterName": "Darpan Jain",
+        "presenterStartSlide": 15,
+        "presenterEndSlide": 18,
+        "estimatedDuration": "30s",
+        "spokenScript": (
+            "This brings us to Section 2: System Implementation. "
+            "Here, our team translates formal automata theory into a production-grade software implementation: the TraceGuard AI Hybrid Triad Engine. "
+            "While finite automata excel at detecting structural sequence violations, network attacks also manifest as volumetric floods, "
+            "brute-force attempts, or timing anomalies that follow valid protocol syntax. To achieve defense-in-depth, our architecture "
+            "unites the deterministic FSM guard with an unsupervised Isolation Forest machine learning model, mediated by an arbitrated consensus engine."
+        ),
+        "slideNotes": (
+            "Section 02 Divider: System Implementation. Transitioning from theoretical formal language definitions "
+            "to engineering architecture combining FSM Guard, Isolation Forest ML, and Consensus Arbiter."
+        ),
+        "keyPoints": [
+            "Section 02: Systems Engineering & Implementation",
+            "Hybrid Triad Architecture: Deterministic FSM + Isolation Forest ML + Consensus Arbiter",
+            "Defense-in-depth: sequence verification plus volumetric anomaly detection"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Why can't an FSM detect DDoS floods by itself?",
+                "answer": "An FSM evaluates the grammatical sequence of symbols, not their arrival frequency or volumetric rate. A client sending 100,000 valid HTTP GET requests per second follows valid grammar. That volumetric anomaly requires statistical feature extraction, which our Isolation Forest handles.",
+                "q": "Why can't an FSM detect DDoS floods by itself?",
+                "a": "An FSM evaluates the grammatical sequence of symbols, not their arrival frequency or volumetric rate. A client sending 100,000 valid HTTP GET requests per second follows valid grammar. That volumetric anomaly requires statistical feature extraction, which our Isolation Forest handles."
+            }
+        ]
+    },
+    # SLIDE 17
+    {
+        "slideNumber": 17,
+        "title": "14 // END-TO-END VISUAL ARCHITECTURE: Ingestion & Analysis Pipeline",
+        "category": "SYSTEM ARCHITECTURE & DATA PIPELINE",
+        "section": "End-to-End Triad System Pipeline",
+        "presenterId": "P4",
+        "presenterName": "Darpan Jain",
+        "presenterStartSlide": 15,
+        "presenterEndSlide": 18,
+        "estimatedDuration": "45s",
+        "spokenScript": (
+            "This slide illustrates the end-to-end ingestion and analysis pipeline of TraceGuard AI. "
+            "Let us trace a packet through the architecture: "
+            "Stage 1: Packet Capture & Parsing—live network frames are captured via libpcap and parsed by our protocol normalization module into standardized HTTP session contexts. "
+            "Stage 2: Session Event Bus—the parser maps protocol events into our 13-symbol alphabet and dispatches them simultaneously to our dual detection engines. "
+            "Stage 3: Parallel Dual-Engine Evaluation: In the top track, our Deterministic FSM Engine executes an O(1) matrix lookup on each event, verifying protocol state transitions. "
+            "In the bottom track, our Session Feature Extractor aggregates behavioral metrics and passes them to our Isolation Forest Anomaly Guard. "
+            "Stage 4: Consensus Arbiter—both scores are fused through our mathematical consensus formula. "
+            "And Stage 5: Presentation & Telemetry—verdicts and forensic state traces are broadcast in real time over WebSockets to our live analyst dashboard."
+        ),
+        "slideNotes": (
+            "End-to-end data pipeline: Packet Capture -> Protocol Parser -> Session Event Bus -> "
+            "Dual-Engine evaluation (FSM + Isolation Forest) -> Consensus Arbiter -> WebSocket Telemetry."
+        ),
+        "keyPoints": [
+            "Parallel dual-engine execution: deterministic FSM and statistical ML",
+            "Event bus abstracts raw network packets into formal alphabet symbols",
+            "Real-time WebSocket telemetry streams state transitions and risk scores to dashboard"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "What is the end-to-end packet processing latency through your pipeline?",
+                "answer": "Packet parsing takes ~0.08ms, FSM matrix lookup takes <0.12ms, and Isolation Forest feature scoring takes ~0.75ms. The total pipeline delivers consensus decisions in under 1.0 millisecond per session event.",
+                "q": "What is the end-to-end packet processing latency through your pipeline?",
+                "a": "Packet parsing takes ~0.08ms, FSM matrix lookup takes <0.12ms, and Isolation Forest feature scoring takes ~0.75ms. The total pipeline delivers consensus decisions in under 1.0 millisecond per session event."
+            }
+        ]
+    },
+    # SLIDE 18
+    {
+        "slideNumber": 18,
+        "title": "15 // STATISTICAL ANOMALY GUARD: Unsupervised Isolation Forest ML",
+        "category": "MACHINE LEARNING ARCHITECTURE",
+        "section": "Unsupervised Isolation Forest ML",
+        "presenterId": "P4",
+        "presenterName": "Darpan Jain",
+        "presenterStartSlide": 15,
+        "presenterEndSlide": 18,
+        "estimatedDuration": "50s",
+        "spokenScript": (
+            "Now let us examine the statistical machine learning tier: the Unsupervised Isolation Forest. "
+            "Why did we select an Isolation Forest rather than a supervised neural network? "
+            "Because modern networks exhibit zero-day attacks with no prior training labels. Isolation Forest operates entirely unsupervised based on a geometric insight: "
+            "anomalous data points are few and different, meaning they are isolated in fewer random partitioning splits than normal clusters. "
+            "Our engine extracts 15 numerical session features, spanning: Volumetric metrics: packet counts, total bytes transferred, and average payload size; "
+            "Temporal dynamics: overall session duration and inter-packet arrival variance; and Error profiles: HTTP error response ratios and authentication failure frequencies. "
+            "The anomaly score s(x,n) is computed as 2 to the power of negative E(h(x)) over c(n), where E(h(x)) is the average path depth across our ensemble of isolation trees, "
+            "and c(n) is the average path depth of an unsuccessful search in a Binary Search Tree. When volumetric floods or brute-force spikes occur, their path depths are significantly shorter, "
+            "driving the score towards 1.0. To explain how our Consensus Arbiter combines these ML scores with our deterministic FSM proofs, I now invite Panda to the podium."
+        ),
+        "slideNotes": (
+            "Details Isolation Forest ML anomaly scoring: 15 session features across Volumetric, Temporal, and Error profiles. "
+            "Path depth scoring formula: s(x,n) = 2^(-E(h(x))/c(n)). Shorter tree paths indicate anomalous outliers. "
+            "Hands over to Panda."
+        ),
+        "keyPoints": [
+            "Unsupervised tree ensemble requires no labeled zero-day training data",
+            "15 numerical features: volumetric bytes, temporal jitter, and error ratios",
+            "Path depth anomaly score s(x,n) = 2^(-E(h(x))/c(n))"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "What happens if traffic volume changes due to a legitimate flash crowd?",
+                "answer": "A flash crowd may temporarily increase the ML anomaly score S_ML. However, because the traffic follows valid protocol grammar, S_FSM remains 0.0. The hybrid score S_h will only reach 0.4*S_ML (at most 0.40), keeping it below high-severity alert thresholds.",
+                "q": "What happens if traffic volume changes due to a legitimate flash crowd?",
+                "a": "A flash crowd may temporarily increase the ML anomaly score S_ML. However, because the traffic follows valid protocol grammar, S_FSM remains 0.0. The hybrid score S_h will only reach 0.4*S_ML (at most 0.40), keeping it below high-severity alert thresholds."
+            }
+        ]
+    },
+    # SLIDE 19
+    {
+        "slideNumber": 19,
+        "title": "16 // HYBRID CONSENSUS ARBITRATION: Multi-Detector Benchmark & Risk Floor Rule",
+        "category": "HYBRID SCORING INTEGRITY & CONSENSUS ARBITRATION",
+        "section": "Detector Benchmark & Risk Floor Rule",
+        "presenterId": "P5",
+        "presenterName": "Panda",
+        "presenterStartSlide": 19,
+        "presenterEndSlide": 22,
+        "estimatedDuration": "50s",
+        "spokenScript": (
+            "Thank you, Darpan. Respected faculty examiners and members of the committee, my name is Panda. "
+            "I will conclude our presentation by covering Hybrid Consensus Arbitration, our Live Demonstration Laboratory, our Chomsky Roadmap, and our Final Academic Conclusions. "
+            "When combining deterministic logic with statistical machine learning, a critical architectural question arises: How do we resolve conflicting signals? "
+            "If an attacker crafts an exploit that subtly violates protocol sequence order but closely mimics normal traffic volume, a naive average might allow the statistical model to suppress the alarm. "
+            "TraceGuard AI solves this through our Weighted Consensus Formula with a Mandatory 60% Risk Floor: "
+            "S_h = 0.6 times S_FSM plus 0.4 times S_ML. We assign 60% weight to formal protocol proof and 40% weight to statistical outlier probability. "
+            "Crucially, we enforce our Risk Floor Invariant: If the DFA transitions into TRAP, S_FSM is immediately set to 1.0. "
+            "Even if the Isolation Forest evaluates S_ML = 0.0, the resulting hybrid score is mathematically guaranteed to be at least 0.60—triggering an immediate, non-negotiable High-Severity incident. "
+            "As our benchmark table shows: Pure ML suffers from high false alarms; signature engines like Snort cannot verify state sequences; TraceGuard AI delivers sub-millisecond latency, zero false positives on compliant grammar, and total explainability."
+        ),
+        "slideNotes": (
+            "Hybrid scoring formula: S_h = 0.6*S_FSM + 0.4*S_ML with 60% risk floor rule. "
+            "If State == TRAP, S_FSM = 1.0 => S_h >= 0.60 guaranteed. "
+            "Compares Pure ML, Snort, and TraceGuard AI across latency, zero-day detection, and explainability."
+        ),
+        "keyPoints": [
+            "Hybrid formula: S_h = 0.6·S_FSM + 0.4·S_ML",
+            "60% Risk Floor: State = TRAP ⇒ S_FSM = 1.0 ⇒ S_h ≥ 0.60 regardless of ML output",
+            "Benchmark superiority: sub-millisecond latency, zero false positives on grammar, full explainability"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Can you prove mathematically why the risk floor is at least 60%?",
+                "answer": "When an FSM violation occurs, state = TRAP, which sets S_FSM = 1.0. Since S_h = 0.6*S_FSM + 0.4*S_ML and S_ML ≥ 0.0, the minimum possible value of S_h is 0.6*(1.0) + 0.4*(0.0) = 0.60. It cannot fall below 60%.",
+                "q": "Can you prove mathematically why the risk floor is at least 60%?",
+                "a": "When an FSM violation occurs, state = TRAP, which sets S_FSM = 1.0. Since S_h = 0.6*S_FSM + 0.4*S_ML and S_ML ≥ 0.0, the minimum possible value of S_h is 0.6*(1.0) + 0.4*(0.0) = 0.60. It cannot fall below 60%."
+            }
+        ]
+    },
+    # SLIDE 20
+    {
+        "slideNumber": 20,
+        "title": "17 // LIVE DEMONSTRATION SUITE: Interactive Automata Laboratory",
+        "category": "LABORATORY CAPABILITIES & DEMO RUNBOOK",
+        "section": "Interactive Automata Laboratory",
+        "presenterId": "P5",
+        "presenterName": "Panda",
+        "presenterStartSlide": 19,
+        "presenterEndSlide": 22,
+        "estimatedDuration": "45s",
+        "spokenScript": (
+            "To enable hands-on academic evaluation, our team developed the Interactive Automata Laboratory embedded directly inside our application. "
+            "The laboratory provides four interactive verification tools: "
+            "First, a Live ReactFlow State Canvas: visually rendering our 9 states with dynamic active-state glowing nodes and instantaneous red highlights when TRAP is reached. "
+            "Second, a Step-by-Step Transition Debugger: allowing an evaluator to input arbitrary packet sequences and step forward or backward, viewing the formal quantified proof δ(q, σ) = q' at each transition. "
+            "Third, a Searchable 117-Cell Matrix Explorer: enabling professors to inspect every single state-symbol transition cell in real time. "
+            "And fourth, an Edge-Case Exploit Suite: offering one-click scenarios for keep-alive loops, auth bypass attempts, and out-of-order attacks. "
+            "We welcome the committee to test any custom sequence in this laboratory during our live demo."
+        ),
+        "slideNotes": (
+            "Showcases the 4 interactive lab tools: Live ReactFlow 9-state canvas, transition debugger with step controls, "
+            "117-cell matrix explorer, and edge-case exploit test presets. Live demonstration ready."
+        ),
+        "keyPoints": [
+            "Live ReactFlow 9-state interactive canvas with TRAP visual cues",
+            "Step-by-step transition debugger with formal mathematical proofs",
+            "Searchable 117-cell complete transition matrix explorer",
+            "One-click edge-case exploit presets for viva evaluation"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Can the laboratory simulate custom packet sequences crafted by examiners?",
+                "answer": "Yes. The laboratory features a custom trace builder where examiners can enter any sequence of the 13 alphabet symbols, step through transitions in real time, and observe whether the sequence halts in CLOSED or gets absorbed in TRAP.",
+                "q": "Can the laboratory simulate custom packet sequences crafted by examiners?",
+                "a": "Yes. The laboratory features a custom trace builder where examiners can enter any sequence of the 13 alphabet symbols, step through transitions in real time, and observe whether the sequence halts in CLOSED or gets absorbed in TRAP."
+            }
+        ]
+    },
+    # SLIDE 21
+    {
+        "slideNumber": 21,
+        "title": "18 // CRITICAL EVALUATION & ROADMAP: Scope Limits & Chomsky Ascent",
+        "category": "EMPIRICAL EVALUATION & FUTURE RESEARCH",
+        "section": "Scope Limits & Chomsky Ascent",
+        "presenterId": "P5",
+        "presenterName": "Panda",
+        "presenterStartSlide": 19,
+        "presenterEndSlide": 22,
+        "estimatedDuration": "45s",
+        "spokenScript": (
+            "True academic rigor requires recognizing the boundary limits of one's current model. "
+            "In our current implementation, TraceGuard AI operates on abstracted HTTP session event streams and synthetic benchmark corpora, "
+            "demonstrating proof-of-concept correctness without parsing raw Layer-2 bitstreams. "
+            "To push formal automata theory further into enterprise network security, we propose an Upward Chomsky Ascent: "
+            "First, Ascending to Pushdown Automata (Type-2): regular languages cannot count unbounded matching pairs. By incorporating a stack automaton, "
+            "we can recognize context-free languages of the form aⁿbⁿ, enabling the validation of deeply nested JSON objects, XML tags, and recursive RPC payload delimiters. "
+            "Second, Product Automata for Concurrent Streams: modern protocols like HTTP/2 and HTTP/3 multiplex hundreds of concurrent bidirectional streams "
+            "over a single connection. By constructing the tensor product of multiple DFAs, we can model asynchronous interleaving without state explosion. "
+            "And third, Multi-Protocol Automata: extending our 5-tuple formulation to model TLS 1.3 cryptographic handshakes and SSH key exchanges."
+        ),
+        "slideNotes": (
+            "Empirical limits & Upward Chomsky Ascent roadmap: Pushdown Automata (Type-2, aⁿbⁿ for nested JSON/XML), "
+            "Product Automata (modeling multiplexed HTTP/2 streams), and Multi-Protocol FSMs (TLS/SSH)."
+        ),
+        "keyPoints": [
+            "Academic scope limits: session-level abstraction on benchmark corpora",
+            "Chomsky Ascent 1: Pushdown Automata (Type-2, aⁿbⁿ) for recursive payload delimiters",
+            "Chomsky Ascent 2: Product Automata for concurrent multiplexed HTTP/2 streams",
+            "Chomsky Ascent 3: Formal state machines for TLS 1.3 and SSH cryptographic handshakes"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "Why can't regular DFAs validate nested JSON payloads?",
+                "answer": "By the Pumping Lemma for Regular Languages, finite automata lack memory to track unbounded matching opening and closing braces { ... }. Parsing nested structures requires a Context-Free Grammar parsed by a Pushdown Automaton with a stack.",
+                "q": "Why can't regular DFAs validate nested JSON payloads?",
+                "a": "By the Pumping Lemma for Regular Languages, finite automata lack memory to track unbounded matching opening and closing braces { ... }. Parsing nested structures requires a Context-Free Grammar parsed by a Pushdown Automaton with a stack."
+            }
+        ]
+    },
+    # SLIDE 22
+    {
+        "slideNumber": 22,
+        "title": "HALTING STATE REACHED // Q.E.D.: Zero False Positives Proven",
+        "category": "CONCLUSION & DEFENSE ACKNOWLEDGEMENT",
+        "section": "Conclusion & Key Academic Contributions",
+        "presenterId": "P5",
+        "presenterName": "Panda",
+        "presenterStartSlide": 19,
+        "presenterEndSlide": 22,
+        "estimatedDuration": "40s",
+        "spokenScript": (
+            "In conclusion, respected committee members, TraceGuard AI bridges the gap between formal computer science theory and practical cybersecurity engineering. "
+            "We have proven that: A 9-state Deterministic Finite Automaton with 117 totally defined transitions guarantees constant O(1) protocol validation. "
+            "Sequential protocol violations are causally identified and absorbed in TRAP. And zero false positives on specification-compliant grammar "
+            "is not an empirical hope, but a mathematical certainty. Our automated test suite of 32 formal pytest verification checks passes with 100% compliance. "
+            "Our presentation has reached its terminal accepting state: CLOSED in F. Quod Erat Demonstrandum—Q.E.D. "
+            "On behalf of Tanmay, Karthik Sai, Ojas Mohbansi, Darpan Jain, and myself, thank you for your time and attention. We now welcome your questions."
+        ),
+        "slideNotes": (
+            "Closing viva defense slide. Summarizes core findings: 32/32 tests passing, complete 9-state DFA, "
+            "mathematical proof of zero false positives on compliant grammar. Terminal state: CLOSED ∈ F reached. Q.E.D. "
+            "Invites committee questions."
+        ),
+        "keyPoints": [
+            "Formal proof of zero false positives on specification-compliant protocol grammar",
+            "Constant O(1) step execution time with causal exploit explainability",
+            "32/32 automated unit and integration tests passing with 100% compliance",
+            "Halting state CLOSED ∈ F reached; Q.E.D. viva defense conclusion"
+        ],
+        "defenseQuestions": [
+            {
+                "question": "What is the single most important takeaway from this capstone project?",
+                "answer": "Formal automata theory is not obsolete—it is the foundational guarantee of deterministic correctness in cybersecurity. By combining O(1) DFA sequence validation with ML anomaly detection, we solve the false-positive dilemma with mathematical rigor.",
+                "q": "What is the single most important takeaway from this capstone project?",
+                "a": "Formal automata theory is not obsolete—it is the foundational guarantee of deterministic correctness in cybersecurity. By combining O(1) DFA sequence validation with ML anomaly detection, we solve the false-positive dilemma with mathematical rigor."
+            }
+        ]
+    }
+]
+
+# Assemble the full manifest object
+manifest = {
+    "presentationTitle": "TraceGuard AI — Theory of Computation Monograph & Defense",
+    "canonicalFile": "presentation/TraceGuard AI — Editorial Theory of Computation Deck.pptx",
+    "totalSlides": 22,
+    "aspectRatio": "16:9",
+    "resolution": "1920x1080",
+    "generatedAt": datetime.utcnow().isoformat() + "Z",
+    "phase": "Phase 21",
+    "version": "21.0.0",
+    "presenters": PRESENTERS,
+    "slides": []
+}
+
+for s in SLIDES_DATA:
+    slide_num = s["slideNumber"]
+    p_info = PRESENTERS[s["presenterId"]]
+    
+    slide_entry = {
+        "slideNumber": slide_num,
+        "slideIndex": slide_num,
+        "title": s["title"],
+        "category": s["category"],
+        "section": s["section"],
+        "presenterId": s["presenterId"],
+        "presenterName": s["presenterName"],
+        "presenterStartSlide": s["presenterStartSlide"],
+        "presenterEndSlide": s["presenterEndSlide"],
+        "presenter": {
+            "id": p_info["id"],
+            "name": p_info["name"],
+            "role": p_info["role"],
+            "topic": p_info["topic"],
+            "allocatedDuration": p_info["allocatedDuration"],
+            "startSlide": p_info["startSlide"],
+            "endSlide": p_info["endSlide"],
+            "allocatedSlides": p_info["slides"]
+        },
+        "spokenScript": s["spokenScript"],
+        "slideNotes": s["slideNotes"],
+        "speakerNotes": s["slideNotes"],
+        "keyPoints": s["keyPoints"],
+        "defenseQuestions": s["defenseQuestions"],
+        "estimatedDuration": s["estimatedDuration"],
+        "image": f"/slides/slide_{slide_num:02d}.png",
+        "imageAsset": f"/slides/slide_{slide_num:02d}.png",
+        "imageFilename": f"slide_{slide_num:02d}.png",
+        "aspectRatio": "16:9",
+        "resolution": "1920x1080"
+    }
+    manifest["slides"].append(slide_entry)
+
+# Write to frontend and QA locations
+out_frontend = Path("frontend/src/data/presentationManifest.json")
+out_qa = Path("qa/phase21/presentation_manifest.json")
+
+out_frontend.parent.mkdir(parents=True, exist_ok=True)
+out_qa.parent.mkdir(parents=True, exist_ok=True)
+
+with open(out_frontend, "w", encoding="utf-8") as f:
+    json.dump(manifest, f, indent=2, ensure_ascii=False)
+
+with open(out_qa, "w", encoding="utf-8") as f:
+    json.dump(manifest, f, indent=2, ensure_ascii=False)
+
+print(f"SUCCESS: Generated Phase 21 presentation manifest ({len(manifest['slides'])} slides).")
+print(f"  - Frontend: {out_frontend}")
+print(f"  - QA Audit: {out_qa}")

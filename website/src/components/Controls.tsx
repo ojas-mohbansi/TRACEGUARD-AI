@@ -34,9 +34,9 @@ export function Badge({
   pulse?: boolean
 }) {
   return (
-    <span className={cx('inline-flex h-7 items-center gap-2 rounded-control px-3 text-[13px] font-medium', badgeTones[tone], className)}>
+    <span className={cx('inline-flex min-h-7 py-1 items-center gap-2 rounded-control px-3 text-xs sm:text-[13px] font-medium leading-tight text-balance', badgeTones[tone], className)}>
       {pulse ? (
-        <span className="relative flex size-2" aria-hidden>
+        <span className="relative flex size-2 shrink-0" aria-hidden>
           <span className="round absolute inset-0 animate-ping rounded-full bg-current opacity-60" />
           <span className="round relative size-2 rounded-full bg-current" />
         </span>

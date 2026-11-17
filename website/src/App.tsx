@@ -3,6 +3,7 @@ import type { ComponentType, ReactNode } from 'react'
 
 import { brand } from './content'
 import { match, scrollToHash, useLocation } from './lib/router'
+import { updateDocumentMetadata } from './seo'
 import { Home } from './pages/Home'
 import { NotFound } from './pages/NotFound'
 import { Footer } from './sections/Footer'
@@ -53,11 +54,10 @@ export function App() {
   const hit = resolve(path)
   const main = useRef<HTMLElement>(null)
   const first = useRef(true)
-  const title = hit ? hit.title : 'Page not found — Protocol State TRAP'
 
   useEffect(() => {
-    document.title = title.includes(brand.name) ? title : `${title} | ${brand.name}`
-  }, [title])
+    updateDocumentMetadata(path)
+  }, [path])
 
   // On navigation: jump to the hash target or the top, and move focus to <main>.
   useEffect(() => {

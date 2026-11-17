@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { X } from 'lucide-react'
 import { useEffect, useId, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import type { ReactNode } from 'react'
 
 import { cx } from '../lib/cx'
@@ -69,16 +70,18 @@ export function Sheet({
     }
   }, [open])
 
-  return (
+  if (typeof document === 'undefined') return null
+
+  return createPortal(
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-[60]">
+        <div className="fixed inset-0 z-[100]">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
             onClick={onClose}
             aria-hidden
           />
@@ -92,16 +95,16 @@ export function Sheet({
             exit={{ x: side === 'right' ? '100%' : '-100%' }}
             transition={{ type: 'spring', stiffness: 380, damping: 38 }}
             className={cx(
-              'depth absolute inset-y-0 flex w-[min(400px,100%)] flex-col overflow-y-auto bg-surface p-4',
+              'depth absolute inset-y-0 flex w-[min(340px,85vw)] flex-col overflow-y-auto bg-surface-2 p-5 border-l border-line shadow-2xl',
               side === 'right' ? 'right-0' : 'left-0',
               className,
             )}
           >
-            <div className="flex items-center justify-between pb-2 pl-2">
-              <h2 id={titleId} className="text-[14px] font-medium text-muted">
+            <div className="flex items-center justify-between pb-3 border-b border-line">
+              <h2 id={titleId} className="text-[13px] font-mono uppercase tracking-wider text-muted">
                 {title}
               </h2>
-              <IconButton onClick={onClose} aria-label="Close">
+              <IconButton onClick={onClose} aria-label="Close menu">
                 <X className="size-5" aria-hidden />
               </IconButton>
             </div>
@@ -109,6 +112,7 @@ export function Sheet({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }

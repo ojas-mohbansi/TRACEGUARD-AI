@@ -1,127 +1,85 @@
-# TraceGuard AI — Documentation Suite
+# TraceGuard AI — Comprehensive Documentation Suite & Academic Monograph
 
-Welcome to the comprehensive technical, theoretical, and operational documentation suite for **TraceGuard AI** — a high-performance, mathematically rigorous Network Protocol Finite State Machine (FSM) Verification and Hybrid Machine Learning Intrusion Detection System.
-
-This directory contains the complete theoretical proofs, architectural blueprints, deployment guides, examiner viva preparation registers, presentation guides, and historical phase artifacts.
+**Repository:** `C:\Projects\FSM-NIDS`  
+**Official Repository:** `https://github.com/ojas-mohbansi/TRACEGUARD-AI`  
+**Academic Focus:** Theory of Computation, Formal Languages & Automata Theory, Hybrid Network Intrusion Detection  
+**Status:** **100% PRODUCTION READY & CONSOLIDATED**  
 
 ---
 
-## 1. Documentation Map & Directory Tree
+## 1. Executive Summary
 
-```text
-docs/
-├── README.md                            # You are here: Documentation suite overview & navigation guide
-├── DOCUMENTATION_INDEX.md               # Master catalog, metadata index, and cross-reference matrix
-├── REPOSITORY_CLEANUP_REPORT.md         # Safe cleanup audit, archival rationale, and preservation sign-off
-│
-├── [Academic & Theoretical Foundations]
-│   ├── FORMAL_AUTOMATON.md              # Mathematical specification: M = (Q, Σ, δ, q0, F), decidability, proofs
-│   ├── TRANSITION_TABLE.md              # Exhaustive 117-cell deterministic transition matrix (9 states × 13 symbols)
-│   ├── TOC_THEORY.md                    # Regular languages, Chomsky Hierarchy, Pumping Lemma, Trap absorbing state
-│   ├── ALGORITHM_EXPLANATION.md         # FSM verification, Isolation Forest ML, and hybrid consensus logic
-│   └── VIVA_PREPARATION.md              # 60 viva voce defense questions, mathematical derivations & proofs
-│
-├── [System Architecture & Engineering]
-│   ├── ARCHITECTURE.md                  # High-level component topology, packet ingestion, and dataflow
-│   ├── API_CONTRACTS.md                 # REST API endpoints, schemas, and WebSocket telemetry contracts
-│   ├── DATA_SCHEMA.md                   # Database models, event telemetry schemas, and relational entities
-│   ├── SECURITY_MODEL.md                # Threat model, token authentication, capture privacy, and tenant isolation
-│   ├── CI_CD.md                         # Continuous integration, automated test runners, and linting
-│   ├── DEPLOYMENT.md                    # Docker, local development, and enterprise deployment topologies
-│   ├── SAAS_ARCHITECTURE.md             # Multi-tenant scaling, cloud telemetry ingestion, and worker queues
-│   ├── SAAS_ROADMAP.md                  # Future roadmap for enterprise cloud deployment
-│   └── BRAND_SYSTEM.md                  # Visual identity tokens, typography, dark/light themes, and CSS mapping
-│
-├── [Demonstrations & Operations]
-│   ├── ACADEMIC_DEMONSTRATION.md        # Step-by-step evaluator demonstration walkthrough
-│   ├── DEMO_RUNBOOK.md                  # Quick-start operator guide for running local demo workflows
-│   ├── FINAL_PRESENTATION_SCRIPT.md     # Timed live web demonstration script for browser showcase
-│   ├── PROJECT_REPORT.md                # Comprehensive university assignment project report
-│   ├── RELEASE_READINESS.md             # Production readiness checklist, benchmark criteria & sign-off
-│   ├── GITHUB_RELEASE_READINESS.md      # GitHub repository submission & packaging guide
-│   ├── FINAL_RELEASE_VERIFICATION.md    # Multi-agent verification logs and test pass guarantees
-│   ├── FINAL_SUBMISSION_MANIFEST.md     # Official project submission deliverables manifest
-│   ├── SUBMISSION_CHECKLIST.md          # Comprehensive submission criteria audit
-│   ├── IMPLEMENTATION_LOG.md            # Chronological engineering log across all phases
-│   └── KNOWN_LIMITATIONS.md             # Formal automata boundaries, protocol scope & packet limitations
-│
-├── [Benchmark & Analytics (Phase 17)]
-│   ├── PHASE17_BENCHMARK_METHODOLOGY.md # Evaluation methodology, synthetic attack suites, and baseline metrics
-│   ├── PHASE17_ENGINE_ANALYTICS.md      # Analytical throughput, latency, and false positive metrics
-│   ├── PHASE17_FINAL_REPORT.md          # Phase 17 benchmark and local academic mode completion report
-│   ├── PHASE17_FSM_DETECTION_ANALYSIS.md# In-depth analysis of FSM vs ML detection rates across scenarios
-│   └── PHASE17_LOCAL_ACADEMIC_MODE.md   # Deterministic local academic evaluation mode specification
-│
-├── presentation/                        # Presenter guides & team oral defense coordination
-│   ├── PRESENTATION_TEAM_OVERVIEW.md    # Presenter team assignments, speaking order, time limits & handoffs
-│   ├── presenter_1.md                   # Presenter 1: Intro, Problem Statement & Scope (Slides 1-3, 2.5 min)
-│   ├── presenter_2.md                   # Presenter 2: Formal HTTP DFA, 5-Tuple, Transitions & TRAP (Slides 4-8, 3.5 min)
-│   ├── presenter_3.md                   # Presenter 3: ML Isolation Forest, Consensus Formula & Benchmark (Slides 9-11, 2.5 min)
-│   ├── presenter_4.md                   # Presenter 4: Architecture, Pipeline & Threats Forensics (Slide 12, 2.5 min)
-│   └── presenter_5.md                   # Presenter 5: Live Workflow, Evidence, Limitations & Defense Q&A (Slides 13-14, 2.5 min)
-│
-└── archive/                             # Historical milestone reports & earlier phase audits
-    ├── BRAND_REBRAND_*.md               # Phase 12 brand rebrand audits, QA reports, and screenshot indices (6 files)
-    ├── PHASE14_*.md                     # Phase 14 application inventory, defect register, coverage & signoff (9 files)
-    ├── PHASE15_*.md                     # Phase 15 auth, navigation, threat forensics, and network architecture (6 files)
-    └── PHASE16_*.md                     # Phase 16 evidence, ML calibration, privacy, FSM proofs & diagnostics (15 files)
+**TraceGuard AI** is an academic and enterprise-grade cybersecurity platform that validates network protocol event sequences against a formal **Deterministic Finite Automaton (Complete DFA)** and correlates deterministic state violations with an **Isolation Forest** statistical machine learning model.
+
+### Theoretical Foundation:
+$$\mathcal{M} = (Q, \Sigma, \delta, q_0, F)$$
+$$|Q| = 9 \text{ States}, \quad |\Sigma| = 13 \text{ Input Symbols}, \quad |Q \times \Sigma| = 117 \text{ Total Transitions}$$
+$$q_0 = \text{IDLE}, \quad F = \{ \text{CLOSED} \}, \quad \text{Sink} = \text{TRAP}$$
+
+### Hybrid Consensus Formula:
+$$S_h = \max(0.60 \cdot S_{\text{FSM}} + 0.40 \cdot S_{\text{ML}}, \; \mathbb{I}_{\text{FSM}} \cdot 60)$$
+*(Guarantees an unbreakable 60% risk floor upon any deterministic protocol violation into $\text{TRAP}$).*
+
+---
+
+## 2. Essential Documentation Catalog
+
+The documentation in `docs/` has been consolidated into **8 essential, comprehensive documents** that cover the entire technical, theoretical, operational, and academic surface of the project:
+
+| Document | Primary Domain | Core Contents & Key Deliverables |
+|---|---|---|
+| **[01_SYSTEM_ARCHITECTURE.md](file:///C:/Projects/FSM-NIDS/docs/01_SYSTEM_ARCHITECTURE.md)** | System Architecture | End-to-end multi-tier architecture, FastAPI backend, React SPA frontend, Cloudflare Workers website, SQLite/SQLAlchemy schema, multi-tenancy, Local Academic Mode, and packet privacy safeguards. |
+| **[02_THEORY_OF_COMPUTATION_AND_AUTOMATA.md](file:///C:/Projects/FSM-NIDS/docs/02_THEORY_OF_COMPUTATION_AND_AUTOMATA.md)** | Automata Theory | Formal 5-tuple specification, complete 117-entry transition matrix, language recognition $L(M)$, absorbing trap proofs, $O(1)$ step complexity proofs, and formal detection proofs against out-of-order attacks. |
+| **[03_HYBRID_DETECTION_AND_ML_ENGINE.md](file:///C:/Projects/FSM-NIDS/docs/03_HYBRID_DETECTION_AND_ML_ENGINE.md)** | Hybrid ML Detection | Authoritative hybrid scoring formula, 60% FSM risk floor proof, 11-D feature vector, Isolation Forest calibration ($\tau = 0.55$), 4 detection quadrants, tri-engine attribution, and benchmark corpus validation. |
+| **[04_API_CONTRACTS_AND_PROTOCOLS.md](file:///C:/Projects/FSM-NIDS/docs/04_API_CONTRACTS_AND_PROTOCOLS.md)** | API & Protocol Reference | Complete RESTful API contracts (`/auth`, `/fsm`, `/threats`, `/dashboard`, `/network`, `/benchmark`), request/response JSON schemas, and real-time WebSocket telemetry protocol (`/ws/telemetry`). |
+| **[05_DEPLOYMENT_OPERATIONS_AND_RUNBOOK.md](file:///C:/Projects/FSM-NIDS/docs/05_DEPLOYMENT_OPERATIONS_AND_RUNBOOK.md)** | Operations & Runbook | Local multi-service startup, Windows Npcap driver setup, 10-step interactive live viva demonstration walkthrough, Cloudflare Workers edge deployment, and CI/CD quality gates. |
+| **[06_ACADEMIC_VIVA_AND_MONOGRAPH.md](file:///C:/Projects/FSM-NIDS/docs/06_ACADEMIC_VIVA_AND_MONOGRAPH.md)** | Viva Voce Defense Guide | Complete 60-question oral examination bank across 7 categories with spoken answers and technical justifications, project report summary, author roster, and submission checklist. |
+| **[07_PROJECT_HISTORY_AUDIT_AND_BRAND.md](file:///C:/Projects/FSM-NIDS/docs/07_PROJECT_HISTORY_AUDIT_AND_BRAND.md)** | History, Brand & Audits | Chronological engineering evolution across Phases 1–22, official brand identity system, color tokens, typography, release readiness matrix, and final verification sign-off. |
+| **[README.md](file:///C:/Projects/FSM-NIDS/docs/README.md)** | Master Gateway | This authoritative gateway index, quickstart instructions, and academic team overview. |
+
+---
+
+## 3. Presentation Guides & Student Author Allocations
+
+Individual speaker rehearsal guides for the authoritative 22-slide Theory of Computation presentation deck are located in the [docs/presentation/](file:///C:/Projects/FSM-NIDS/docs/presentation/) subfolder:
+
+- **Presenter 1: Tanmay** (Slides 1–4) — [presenter_1.md](file:///C:/Projects/FSM-NIDS/docs/presentation/presenter_1.md)
+  *Project Overview, Problem Statement, Paradigm Shift & Research Scope.*
+- **Presenter 2: Karthik Sai** (Slides 5–9) — [presenter_2.md](file:///C:/Projects/FSM-NIDS/docs/presentation/presenter_2.md)
+  *Formal 5-Tuple, State Space Analysis, 13-Symbol Alphabet, Transition Matrix.*
+- **Presenter 3: Ojas Mohbansi** (Slides 10–14) — [presenter_3.md](file:///C:/Projects/FSM-NIDS/docs/presentation/presenter_3.md)
+  *DFA Equivalence & Proofs, Language Acceptance $L(M)$, Trap Sink Irreversibility.*
+- **Presenter 4: Darpan Jain** (Slides 15–18) — [presenter_4.md](file:///C:/Projects/FSM-NIDS/docs/presentation/presenter_4.md)
+  *Dual-Engine Pipeline, Isolation Forest ML Calibration, 60% FSM Risk Floor.*
+- **Presenter 5: Panda** (Slides 19–22) — [presenter_5.md](file:///C:/Projects/FSM-NIDS/docs/presentation/presenter_5.md)
+  *Performance Benchmarks, Live Attack Scenarios, SOC Dashboard, Final Conclusions.*
+- **Team Overview** — [PRESENTATION_TEAM_OVERVIEW.md](file:///C:/Projects/FSM-NIDS/docs/presentation/PRESENTATION_TEAM_OVERVIEW.md)
+
+---
+
+## 4. Quickstart: Running TraceGuard AI
+
+Launch the three core development services:
+
+```powershell
+# Terminal 1: Backend API Gateway (Port 8000)
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --app-dir backend
+
+# Terminal 2: SaaS Frontend SPA (Port 5174)
+bun run --cwd frontend dev
+
+# Terminal 3: Public Academic Portal (Port 5303)
+bun run --cwd website dev
 ```
 
----
-
-## 2. Reading Roadmap by Role
-
-### A. For University Evaluators & Theory of Computation Examiners
-If evaluating mathematical rigor, formal language properties, and academic depth:
-1. Start with [`FORMAL_AUTOMATON.md`](FORMAL_AUTOMATON.md) for the 5-tuple definition $\mathcal{M} = (Q, \Sigma, \delta, q_0, F)$, state specifications, and decidability proofs.
-2. Review [`TRANSITION_TABLE.md`](TRANSITION_TABLE.md) for the complete $9 \times 13 = 117$ transition matrix showing the absorbing $\text{TRAP}$ state behavior.
-3. Consult [`TOC_THEORY.md`](TOC_THEORY.md) for regular language classification, Chomsky hierarchy placement, and Pumping Lemma derivations.
-4. Read [`ALGORITHM_EXPLANATION.md`](ALGORITHM_EXPLANATION.md) for the hybrid consensus formula $S_h = 0.6 \cdot S_{FSM} + 0.4 \cdot S_{ML}$ and mathematical threshold guarantees.
-5. Review [`VIVA_PREPARATION.md`](VIVA_PREPARATION.md) for the 60-question viva defense register.
-
-### B. For Software Engineers & System Architects
-If reviewing codebase structure, APIs, models, and deployment:
-1. Start with [`ARCHITECTURE.md`](ARCHITECTURE.md) to understand the FastAPI backend, asyncio pipeline, and React frontend.
-2. Review [`API_CONTRACTS.md`](API_CONTRACTS.md) and [`DATA_SCHEMA.md`](DATA_SCHEMA.md) for data exchange contracts.
-3. Review [`SECURITY_MODEL.md`](SECURITY_MODEL.md) for cryptographic tokens, packet privacy, and tenant isolation.
-4. Consult [`DEPLOYMENT.md`](DEPLOYMENT.md) and [`CI_CD.md`](CI_CD.md) for development workflows and Docker containers.
-
-### C. For Presentation Team & Oral Defense Speakers
-If rehearsing the defense presentation:
-1. Review [`presentation/PRESENTATION_TEAM_OVERVIEW.md`](presentation/PRESENTATION_TEAM_OVERVIEW.md) for master speaker allocations, timing budgets, and handoff protocols.
-2. Read your individual presenter script in [`presentation/`](presentation/):
-   - [`presenter_1.md`](presentation/presenter_1.md) (Slides 1-3)
-   - [`presenter_2.md`](presentation/presenter_2.md) (Slides 4-8)
-   - [`presenter_3.md`](presentation/presenter_3.md) (Slides 9-11)
-   - [`presenter_4.md`](presentation/presenter_4.md) (Slide 12)
-   - [`presenter_5.md`](presentation/presenter_5.md) (Slides 13-14)
-3. For live system demonstrations during the viva, follow [`FINAL_PRESENTATION_SCRIPT.md`](FINAL_PRESENTATION_SCRIPT.md) and [`DEMO_RUNBOOK.md`](DEMO_RUNBOOK.md).
-
-### D. For Quality Assurance & Audit Reviewers
-1. Read [`DOCUMENTATION_INDEX.md`](DOCUMENTATION_INDEX.md) for the complete catalog of all 78 documentation assets.
-2. Review [`REPOSITORY_CLEANUP_REPORT.md`](REPOSITORY_CLEANUP_REPORT.md) and [`qa/phase18/documentation_reconciliation.md`](../qa/phase18/documentation_reconciliation.md) for archival records and preservation verification.
+- **SaaS Application**: `http://localhost:5174/`
+- **Interactive Swagger Docs**: `http://127.0.0.1:8000/docs`
+- **Public Academic Website**: `http://localhost:5303/`
+- **Workers Local Preview**: `http://127.0.0.1:8787/`
+- **Automated Tests**: Run `pytest backend/tests/ -q` (149/149 pass).
 
 ---
 
-## 3. Core Academic Invariants Summary
+## 5. Historical Archive
 
-All documentation adheres strictly to the canonical project invariants:
-
-| Invariant | Value / Formula | Governing Document |
-| :--- | :--- | :--- |
-| **States ($Q$)** | 9 discrete states: `START`, `REQ_METHOD`, `REQ_URI`, `REQ_VER`, `REQ_HDRS`, `REQ_BODY`, `RES_STATUS`, `RES_HDRS`, `TRAP` | [`FORMAL_AUTOMATON.md`](FORMAL_AUTOMATON.md) |
-| **Alphabet ($\Sigma$)** | 13 symbols: `EV_TCP_SYN`, `EV_REQ_METHOD`, `EV_REQ_URI`, `EV_REQ_HTTP11`, `EV_HDR_HOST`, `EV_HDR_CONTENT_LEN`, `EV_HDR_TRANSFER_ENC`, `EV_HDR_MISC`, `EV_BODY_CHUNK`, `EV_RES_STATUS_200`, `EV_RES_HDR_MISC`, `EV_TCP_FIN`, `EV_INVALID_TOKEN` | [`FORMAL_AUTOMATON.md`](FORMAL_AUTOMATON.md) |
-| **Transition Matrix ($\delta$)** | $9 \times 13 = 117$ deterministic cells; non-standard or malformed transitions lead irrevocably to `TRAP` | [`TRANSITION_TABLE.md`](TRANSITION_TABLE.md) |
-| **Accepting States ($F$)** | $F = \{ \text{RES\_HDRS} \}$ | [`FORMAL_AUTOMATON.md`](FORMAL_AUTOMATON.md) |
-| **Trap Property** | $\forall \sigma \in \Sigma: \delta(\text{TRAP}, \sigma) = \text{TRAP}$ (Absorbing State, Sink) | [`TOC_THEORY.md`](TOC_THEORY.md) |
-| **Hybrid Consensus Formula** | $S_h = 0.60 \cdot S_{FSM} + 0.40 \cdot S_{ML}$ | [`ALGORITHM_EXPLANATION.md`](ALGORITHM_EXPLANATION.md) |
-| **FSM Violation Floor** | When $S_{FSM} = 1.0$, $S_h \ge 0.60$ (guaranteed malicious triage regardless of ML score) | [`ALGORITHM_EXPLANATION.md`](ALGORITHM_EXPLANATION.md) |
-
----
-
-## 4. Archive Documentation Policy
-
-Historical milestone reports that served specific sprint verification needs in previous phases (Phases 12, 14, 15, 16) are safely preserved in [`docs/archive/`](archive/). 
-
-- **Preservation Principle**: No technical data or historical proof is deleted; older phase-specific audit files are archived to maintain clarity in the active documentation root.
-- **Detailed Rationale**: A complete registry of all 36 archived files with the explicit rationale for each is documented in [`REPOSITORY_CLEANUP_REPORT.md`](REPOSITORY_CLEANUP_REPORT.md).
+All pre-consolidation intermediate phase reports and audit notes are preserved in [docs/archive/](file:///C:/Projects/FSM-NIDS/docs/archive/) for complete historical continuity and provenance tracking.

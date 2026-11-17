@@ -1,7 +1,7 @@
-import { ArrowRight, Menu } from 'lucide-react'
+import { Menu } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import { IconButton } from '../components/Button'
+import { ButtonLink, IconButton } from '../components/Button'
 import { Logo } from '../components/Logo'
 import { Sheet } from '../components/Sheet'
 import { brand, cta, nav } from '../content'
@@ -10,8 +10,18 @@ import { isCurrent, Link, useLocation } from '../lib/router'
 
 function GithubIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" className={className} aria-hidden>
-      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+      <path d="M9 18c-4.51 2-5-2-7-2" />
     </svg>
   )
 }
@@ -22,7 +32,7 @@ export function Nav() {
   const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 12)
+    const on = () => setScrolled(window.scrollY > 8)
     on()
     window.addEventListener('scroll', on, { passive: true })
     return () => window.removeEventListener('scroll', on)
@@ -34,25 +44,22 @@ export function Nav() {
   return (
     <header
       className={cx(
-        'fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color,box-shadow] duration-200',
+        'fixed inset-x-0 top-0 z-50 transition-[background-color,backdrop-filter,border-color] duration-200 border-b',
         scrolled
-          ? 'bg-[#07090E]/95 border-b border-white/[0.12] shadow-sm backdrop-blur-xl'
-          : 'bg-[#0E131F]/90 border-b border-white/[0.08] backdrop-blur-md',
+          ? 'bg-[#060810]/90 border-line-mid backdrop-blur-md shadow-[0_1px_3px_rgba(0,0,0,0.5)]'
+          : 'bg-[#060810]/75 border-line backdrop-blur-md',
       )}
     >
       <div className="mx-auto flex h-16 max-w-[1320px] items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        {/* Brand: Icon + Official Wordmark SVG */}
         <Link
           href="/"
           aria-label="TraceGuard AI home"
-          className="-m-2 inline-flex items-center rounded-lg p-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+          className="inline-flex items-center rounded-[8px] p-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-signal"
         >
-          <Logo size={28} showBadge={true} />
+          <Logo />
         </Link>
-
-        {/* Desktop Navigation Links */}
-        <nav aria-label="Main" className="hidden lg:flex items-center gap-1.5">
-          <ul className="flex items-center gap-1">
+        <nav aria-label="Main Navigation" className="hidden lg:block">
+          <ul className="flex items-center gap-1 font-mono text-[13px]">
             {nav.map((n) => {
               const current = isCurrent(n.href, path)
               return (
@@ -61,10 +68,10 @@ export function Nav() {
                     href={n.href}
                     aria-current={current ? 'page' : undefined}
                     className={cx(
-                      'inline-flex h-8 items-center rounded-md px-3 text-xs font-mono font-medium transition-all duration-150',
+                      'inline-flex h-9 items-center rounded-[8px] px-3.5 font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-signal',
                       current
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-xs font-semibold'
-                        : 'text-slate-300 hover:text-white hover:bg-white/[0.05] border border-transparent',
+                        ? 'bg-signal-wash text-signal-soft border border-signal-border/50'
+                        : 'text-muted hover:text-white hover:bg-white/[0.04]',
                     )}
                   >
                     {n.label}
@@ -74,46 +81,35 @@ export function Nav() {
             })}
           </ul>
         </nav>
-
-        {/* Right Action Cluster */}
         <div className="flex items-center gap-2.5">
-          {/* GitHub Repository Link */}
           <a
             href={brand.github}
             target="_blank"
-            rel="noreferrer"
-            className="hidden sm:inline-flex items-center gap-2 h-8 px-3 rounded-md text-xs font-mono font-medium text-slate-300 hover:text-white bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.1] transition-colors"
-            aria-label="GitHub Repository (opens in new tab)"
+            rel="noopener noreferrer"
+            className="inline-flex h-9 items-center gap-2 rounded-[8px] border border-line bg-surface-2 px-3 text-xs font-mono font-medium text-soft hover:border-signal-border hover:bg-signal-wash hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-signal"
+            aria-label="TraceGuard AI GitHub Repository (opens in new tab)"
           >
-            <GithubIcon className="size-3.5 text-slate-400" />
-            <span className="hidden md:inline">GitHub</span>
+            <GithubIcon className="size-4 shrink-0" />
+            <span className="hidden sm:inline">GitHub</span>
           </a>
-
-          {/* Primary CTA (SaaS Theme Emerald Action) */}
-          <Link
-            href={cta.href}
-            className="hidden sm:inline-flex items-center gap-1.5 h-8 px-3.5 rounded-md bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs transition-all shadow-xs active:scale-95"
-          >
-            <span>{cta.label}</span>
-            <ArrowRight className="size-3 text-slate-950" />
-          </Link>
-
-          {/* Mobile Drawer Toggle */}
+          <div className="hidden sm:inline-flex">
+            <ButtonLink href={cta.href} variant="signal" size="sm">
+              {cta.label}
+            </ButtonLink>
+          </div>
           <IconButton
             onClick={() => setOpen(true)}
-            aria-label="Open menu"
+            aria-label="Open navigation menu"
             aria-expanded={open}
-            className="lg:hidden h-8 w-8 rounded-md border border-white/[0.1] bg-white/[0.03] text-slate-300 hover:text-white hover:bg-white/[0.08]"
+            className="lg:hidden"
           >
-            <Menu className="size-4" aria-hidden />
+            <Menu className="size-5" aria-hidden="true" />
           </IconButton>
         </div>
       </div>
-
-      {/* Mobile Drawer */}
-      <Sheet open={open} onClose={() => setOpen(false)} title="Menu">
-        <nav aria-label="Mobile" className="mt-4 flex flex-1 flex-col">
-          <ul className="flex flex-col gap-1.5">
+      <Sheet open={open} onClose={() => setOpen(false)} title="Navigation Menu">
+        <nav aria-label="Mobile Navigation" className="mt-4 flex flex-1 flex-col">
+          <ul className="flex flex-col gap-1 font-mono">
             {[{ label: 'Home', href: '/' }, ...nav].map((n) => {
               const current = isCurrent(n.href, path)
               return (
@@ -122,10 +118,10 @@ export function Nav() {
                     href={n.href}
                     aria-current={current ? 'page' : undefined}
                     className={cx(
-                      'flex h-12 items-center rounded-lg px-4 text-[15px] font-mono font-medium tracking-tight transition-colors',
+                      'flex h-12 items-center rounded-[12px] px-4 text-base font-medium tracking-tight focus:outline-none focus-visible:ring-2 focus-visible:ring-signal',
                       current
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 font-semibold'
-                        : 'text-slate-300 hover:bg-white/[0.05] hover:text-white',
+                        ? 'bg-signal-wash text-signal-soft border border-signal-border/50'
+                        : 'text-soft hover:bg-white/[0.05]',
                     )}
                   >
                     {n.label}
@@ -134,27 +130,24 @@ export function Nav() {
               )
             })}
           </ul>
-
-          <div className="mt-auto space-y-2.5 pt-6">
+          <div className="mt-auto pt-6 flex flex-col gap-3">
             <a
               href={brand.github}
               target="_blank"
-              rel="noreferrer"
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-white/[0.12] bg-white/[0.05] px-4 text-xs font-mono font-medium text-slate-200 hover:bg-white/[0.08] hover:text-white transition-colors"
+              rel="noopener noreferrer"
+              className="flex h-11 items-center justify-center gap-2.5 rounded-[12px] border border-line bg-surface-2 px-4 font-mono text-sm font-medium text-soft hover:text-white hover:border-signal-border transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-signal"
+              aria-label="TraceGuard AI GitHub Repository (opens in new tab)"
             >
-              <GithubIcon className="size-4 text-slate-300" />
+              <GithubIcon className="size-4 shrink-0 text-signal-soft" />
               <span>GitHub Repository</span>
             </a>
-            <Link
-              href={cta.href}
-              className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 px-4 text-xs font-semibold text-slate-950 transition-all shadow-xs"
-            >
-              <span>{cta.label}</span>
-              <ArrowRight className="size-3.5 text-slate-950" />
-            </Link>
+            <ButtonLink href={cta.href} variant="signal" size="lg" className="w-full">
+              {cta.label}
+            </ButtonLink>
           </div>
         </nav>
       </Sheet>
     </header>
   )
 }
+

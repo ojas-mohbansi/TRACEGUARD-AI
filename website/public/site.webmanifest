@@ -1,0 +1,17 @@
+{
+  "name": "TraceGuard AI",
+  "short_name": "TraceGuard",
+  "description": "Formal Protocol Verification & Network Intrusion Detection",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#060810",
+  "theme_color": "#060810",
+  "icons": [
+    {
+      "src": "/brand/traceguard-ai-icon-color.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
