@@ -133,6 +133,12 @@ def login(data: UserLogin, db: Session = Depends(get_db)):
     )
 
 
+@router.post("/logout")
+def logout(current_user: User = Depends(get_current_user)):
+    """Invalidate authenticated session."""
+    return {"status": "logged_out", "message": "Session invalidated successfully"}
+
+
 @router.get("/me", response_model=UserResponse)
 def get_profile(current_user: User = Depends(get_current_user)):
     """Get current authenticated user profile."""

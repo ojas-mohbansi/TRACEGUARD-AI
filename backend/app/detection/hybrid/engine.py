@@ -68,7 +68,22 @@ class HybridEngine:
 
         risk_score = int(round(min(100.0, max(0.0, combined_score))))
         severity = self._risk_to_severity(risk_score)
-        prediction = "anomalous" if risk_score >= 40 or fsm_violation else "normal"
+
+        # ML anomaly flag: anomaly score strictly >= 0.70 for statistical significance
+        ml_anomalous = bool(ml_result and ml_anomaly_score >= 0.70)
+
+        # Exact component attribution
+        if fsm_violation and ml_anomalous:
+            attribution = "hybrid"
+        elif fsm_violation:
+            attribution = "fsm"
+        elif ml_anomalous:
+            attribution = "ml"
+        else:
+            attribution = "none"
+
+        # Hybrid prediction rule: anomalous if risk_score >= 40 or protocol violation detected
+        prediction = "anomalous" if (risk_score >= 40 or fsm_violation) else "normal"
 
         explanation_parts = []
         if fsm_violation:
@@ -76,7 +91,7 @@ class HybridEngine:
         else:
             explanation_parts.append("Protocol sequence conforms to HTTP state machine.")
 
-        if ml_anomaly_score > 0.5:
+        if ml_anomalous:
             explanation_parts.append(f"ML Isolation Forest detected statistical anomaly (score: {ml_anomaly_score:.2f}).")
         else:
             explanation_parts.append(f"ML statistical profile within normal limits (score: {ml_anomaly_score:.2f}).")
@@ -87,11 +102,13 @@ class HybridEngine:
 
         return {
             "session_id": session_id,
-            "engine": "hybrid",
+            "engine": attribution if attribution != "none" else "hybrid",
+            "attribution": attribution,
             "prediction": prediction,
             "risk_score": risk_score,
             "severity": severity,
             "fsm_violation": fsm_violation,
+            "ml_anomalous": ml_anomalous,
             "ml_anomaly_score": round(ml_anomaly_score, 4),
             "explanation": explanation,
             "responsible_events": responsible_events,
@@ -103,6 +120,11 @@ class HybridEngine:
                 "severity": severity,
                 "fsm_weight": self.fsm_weight,
                 "ml_weight": self.ml_weight,
+                "fsm_score": fsm_score,
+                "ml_score": ml_score,
+                "formula": f"max(0.6 * {fsm_score} + 0.4 * {ml_score:.1f}, 60.0)" if fsm_violation else f"0.6 * {fsm_score} + 0.4 * {ml_score:.1f}",
+                "floor_applied": bool(fsm_violation and combined_score < 60.0),
+                "attribution": attribution,
                 "explanation": explanation
             }
         }

@@ -30,6 +30,7 @@ const STATE_POSITIONS = {
   RESPONSE_SENT: { x: 950, y: 180 },
   ERROR: { x: 700, y: 420 },
   CLOSED: { x: 1200, y: 180 },
+  TRAP: { x: 600, y: 560 },
 };
 
 export function ProtocolExplorer() {
@@ -66,23 +67,23 @@ export function ProtocolExplorer() {
           label: (
             <div className="text-center font-mono">
               <div className="text-[11px] font-bold tracking-wider">{st.label || st.id}</div>
-              <div className="text-[9px] text-[#91A0B5] truncate max-w-[120px]">{st.description}</div>
+              <div className="text-[9px] text-[var(--tg-text-muted)] truncate max-w-[120px]">{st.description}</div>
             </div>
           ),
         },
         style: {
-          background: isCurrent ? '#161F2D' : '#101622',
-          color: isCurrent ? '#42D6B2' : '#EDF3FA',
+          background: isCurrent ? 'var(--tg-bg-elevated)' : 'var(--tg-bg-surface)',
+          color: isCurrent ? 'var(--tg-accent-emerald)' : 'var(--tg-text-primary)',
           border: isCurrent
-            ? '2px solid #42D6B2'
+            ? '2px solid var(--tg-accent-emerald)'
             : isInitial
-            ? '1.5px dashed #54A7FF'
+            ? '1.5px dashed var(--tg-status-info)'
             : isFinal
-            ? '1.5px solid #F5B84B'
-            : '1px solid #253247',
+            ? '1.5px solid var(--tg-status-warning)'
+            : '1px solid var(--tg-border-subtle)',
           borderRadius: '12px',
           padding: '10px 14px',
-          boxShadow: isCurrent ? '0 0 15px rgba(66, 214, 178, 0.35)' : 'none',
+          boxShadow: isCurrent ? '0 0 15px rgba(16, 185, 129, 0.25)' : 'none',
           transition: 'all 0.3s ease',
         },
       };
@@ -107,16 +108,16 @@ export function ProtocolExplorer() {
         lastValidation.from === tr.from &&
         lastValidation.event === tr.event;
 
-      let strokeColor = '#253247';
+      let strokeColor = 'var(--tg-border-strong)';
       let strokeWidth = 1.5;
       let animated = false;
 
       if (isTraversed && lastValidation.valid) {
-        strokeColor = '#42D6B2';
+        strokeColor = 'var(--tg-accent-emerald)';
         strokeWidth = 3;
         animated = true;
       } else if (isInvalidActive) {
-        strokeColor = '#FF647C';
+        strokeColor = 'var(--tg-status-danger)';
         strokeWidth = 3;
         animated = true;
       }
@@ -127,8 +128,8 @@ export function ProtocolExplorer() {
         target: tr.to,
         label: tr.event,
         animated,
-        labelStyle: { fill: strokeColor, fontFamily: 'monospace', fontSize: 10, fontWeight: 600 },
-        labelBgStyle: { fill: '#080B12', fillOpacity: 0.85, rx: 4, ry: 4 },
+        labelStyle: { fill: strokeColor, fontFamily: 'JetBrains Mono', fontSize: 10, fontWeight: 600 },
+        labelBgStyle: { fill: 'var(--tg-bg-surface)', fillOpacity: 0.95, rx: 4, ry: 4 },
         style: { stroke: strokeColor, strokeWidth },
         markerEnd: {
           type: MarkerType.ArrowClosed,
@@ -229,20 +230,20 @@ export function ProtocolExplorer() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold font-mono tracking-tight text-[#EDF3FA]">
+          <h1 className="text-xl font-bold font-mono tracking-tight text-[var(--tg-text-primary)]">
             PROTOCOL FSM EXPLORER & PLAYBACK
           </h1>
-          <p className="text-xs text-[#91A0B5] mt-0.5">
+          <p className="text-xs text-[var(--tg-text-muted)] mt-0.5">
             Interactive state transition diagram and dynamic invariant violation debugger
           </p>
         </div>
       </div>
 
       {/* Playback Controls & Sequence Input */}
-      <div className="p-5 rounded-xl bg-[#101622] border border-[#253247] space-y-4">
+      <div className="tg-panel p-5 space-y-4">
         <div className="flex flex-col lg:flex-row items-stretch lg:items-end gap-3">
           <div className="flex-1">
-            <label className="block text-[11px] font-mono text-[#91A0B5] mb-1.5 uppercase">
+            <label className="block text-[11px] font-mono text-[var(--tg-text-muted)] mb-1.5 uppercase">
               Event Sequence (Comma Separated)
             </label>
             <input
@@ -252,7 +253,7 @@ export function ProtocolExplorer() {
                 setInputSequence(e.target.value);
                 handleReset();
               }}
-              className="w-full px-3 py-2 rounded-lg bg-[#161F2D] border border-[#253247] text-xs font-mono text-[#EDF3FA] focus:outline-none focus:border-[#42D6B2]"
+              className="tg-input text-xs font-mono"
               placeholder="e.g. CONNECT, REQUEST, AUTH_SUCCESS, RESPONSE_200, CLOSE"
             />
           </div>
@@ -260,7 +261,7 @@ export function ProtocolExplorer() {
           <div className="flex items-center space-x-2">
             <button
               onClick={() => setIsPlaying(!isPlaying)}
-              className="px-4 py-2 rounded-lg bg-[#42D6B2] hover:bg-[#38b99a] text-[#080B12] font-bold font-mono text-xs flex items-center space-x-1.5 transition"
+              className="tg-btn-primary text-xs"
             >
               <Play className="w-3.5 h-3.5 fill-current" />
               <span>{isPlaying ? 'Pause' : 'Auto Play'}</span>
@@ -269,7 +270,7 @@ export function ProtocolExplorer() {
             <button
               onClick={handleStepForward}
               disabled={isPlaying || currentStepIndex + 1 >= parsedEvents.length}
-              className="px-3 py-2 rounded-lg bg-[#161F2D] hover:bg-[#253247] border border-[#253247] text-xs font-mono text-[#EDF3FA] flex items-center space-x-1.5 transition disabled:opacity-40"
+              className="tg-btn-secondary text-xs disabled:opacity-40"
             >
               <StepForward className="w-3.5 h-3.5" />
               <span>Step</span>
@@ -277,7 +278,7 @@ export function ProtocolExplorer() {
 
             <button
               onClick={handleReset}
-              className="px-3 py-2 rounded-lg bg-[#161F2D] hover:bg-[#253247] border border-[#253247] text-xs font-mono text-[#91A0B5] hover:text-[#EDF3FA] flex items-center space-x-1.5 transition"
+              className="tg-btn-secondary text-xs"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset</span>
@@ -286,8 +287,8 @@ export function ProtocolExplorer() {
         </div>
 
         {/* Preset Sequence Pills */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#253247]/60">
-          <span className="text-[11px] font-mono text-[#91A0B5]">Quick Presets:</span>
+        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[var(--tg-border-subtle)]">
+          <span className="text-[11px] font-mono text-[var(--tg-text-muted)]">Quick Presets:</span>
           {[
             {
               name: 'Normal 200 OK',
@@ -312,7 +313,7 @@ export function ProtocolExplorer() {
                 setInputSequence(preset.seq);
                 handleReset();
               }}
-              className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#161F2D] hover:bg-[#253247] text-[#54A7FF] border border-[#54A7FF]/30 transition"
+              className="px-2 py-0.5 rounded text-[10px] font-mono bg-[var(--tg-bg-canvas)] hover:bg-[var(--tg-bg-hover)] text-[var(--tg-accent-emerald)] border border-emerald-500/20 transition"
             >
               {preset.name}
             </button>
@@ -323,7 +324,7 @@ export function ProtocolExplorer() {
       {/* Main Flow Canvas & Stepper Log */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* ReactFlow Interactive Canvas */}
-        <div className="lg:col-span-8 h-[550px] rounded-xl bg-[#101622] border border-[#253247] overflow-hidden relative">
+        <div className="lg:col-span-8 h-[550px] tg-panel overflow-hidden relative">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -331,33 +332,33 @@ export function ProtocolExplorer() {
             onEdgesChange={onEdgesChange}
             fitView
           >
-            <Background color="#253247" gap={20} size={1} />
-            <Controls className="bg-[#101622] border border-[#253247] text-[#EDF3FA]" />
+            <Background color="var(--tg-border-subtle)" gap={20} size={1} />
+            <Controls className="bg-[var(--tg-bg-base)] border border-[var(--tg-border-subtle)] text-[var(--tg-text-primary)]" />
             <MiniMap
-              nodeColor={(n) => (n.id === currentState ? '#42D6B2' : '#253247')}
-              maskColor="rgba(8, 11, 18, 0.7)"
-              className="border border-[#253247] rounded-lg overflow-hidden"
+              nodeColor={(n) => (n.id === currentState ? 'var(--tg-accent-emerald)' : 'var(--tg-border-strong)')}
+              maskColor="var(--tg-bg-overlay)"
+              className="border border-[var(--tg-border-subtle)] rounded-lg overflow-hidden"
             />
           </ReactFlow>
 
-          <div className="absolute top-4 left-4 p-2.5 rounded-lg bg-[#080B12]/80 backdrop-blur border border-[#253247] text-xs font-mono space-y-1">
+          <div className="absolute top-4 left-4 p-2.5 rounded-lg bg-[var(--tg-bg-base)]/80 backdrop-blur border border-[var(--tg-border-subtle)] text-xs font-mono space-y-1">
             <div className="flex items-center space-x-2">
-              <span className="text-[#91A0B5]">ACTIVE STATE:</span>
-              <span className="text-[#42D6B2] font-bold">{currentState}</span>
+              <span className="text-[var(--tg-text-muted)]">ACTIVE STATE:</span>
+              <span className="text-[var(--tg-accent-emerald)] font-bold">{currentState}</span>
             </div>
-            <div className="text-[10px] text-[#91A0B5]">
+            <div className="text-[10px] text-[var(--tg-text-muted)]">
               Step: {currentStepIndex + 1} / {parsedEvents.length}
             </div>
           </div>
         </div>
 
         {/* Step-by-Step Validation Feed */}
-        <div className="lg:col-span-4 p-5 rounded-xl bg-[#101622] border border-[#253247] flex flex-col h-[550px]">
+        <div className="lg:col-span-4 p-5 tg-panel flex flex-col h-[550px]">
           <div className="mb-3">
-            <h3 className="text-xs font-semibold font-mono uppercase text-[#EDF3FA]">
+            <h3 className="text-xs font-semibold font-mono uppercase text-[var(--tg-text-primary)]">
               Step Playback Audit Log
             </h3>
-            <p className="text-[10px] text-[#91A0B5]">Real-time invariant checking</p>
+            <p className="text-[10px] text-[var(--tg-text-muted)]">Real-time invariant checking</p>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2 pr-1">
@@ -367,15 +368,15 @@ export function ProtocolExplorer() {
                   key={idx}
                   className={`p-2.5 rounded-lg border font-mono text-xs ${
                     log.valid
-                      ? 'bg-[#161F2D]/50 border-[#42D6B2]/30 text-[#EDF3FA]'
-                      : 'bg-[#FF647C]/15 border-[#FF647C]/40 text-[#FF647C]'
+                      ? 'bg-emerald-500/10 border-emerald-500/30 text-[var(--tg-text-primary)]'
+                      : 'bg-rose-500/10 border-rose-500/30 text-[var(--tg-status-danger)]'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-[#91A0B5]">Step {log.step}</span>
+                    <span className="text-[10px] text-[var(--tg-text-muted)]">Step {log.step}</span>
                     <span
                       className={`text-[10px] font-bold ${
-                        log.valid ? 'text-[#42D6B2]' : 'text-[#FF647C]'
+                        log.valid ? 'text-[var(--tg-accent-emerald)]' : 'text-[var(--tg-status-danger)]'
                       }`}
                     >
                       {log.valid ? 'COMPLIANT' : 'VIOLATION'}
@@ -385,7 +386,7 @@ export function ProtocolExplorer() {
                 </div>
               ))
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center text-xs font-mono text-[#91A0B5]">
+              <div className="h-full flex flex-col items-center justify-center text-center text-xs font-mono text-[var(--tg-text-muted)]">
                 <GitBranch className="w-8 h-8 opacity-40 mb-2" />
                 <span>Press Step or Auto Play to begin transition simulation.</span>
               </div>

@@ -63,7 +63,8 @@ async def start_simulation(
         event_count=event_count,
         speed=req.speed,
         anomaly_ratio=req.anomaly_ratio,
-        seed=req.seed
+        seed=req.seed,
+        workspace_id=ctx.workspace_id
     )
     active_simulators[sim_id] = simulator
 

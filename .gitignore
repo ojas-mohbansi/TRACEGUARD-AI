@@ -98,5 +98,7 @@ Thumbs.db
 
 # Submission generated deliverables & duplicate directory copies
 # Note: Keeps submission reports in git while excluding the zip archive and duplicated source tree
-submission/TraceGuard_AI_Submission.zip
+submission/*.zip
 submission/TraceGuard_AI/
+qa/screenshots/shot*.png
+qa/screenshots/test_*.png

@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 import wsService from '../services/websocket';
 
 export function useWebSocket(eventType = null, onMessageCallback = null) {
-  const [status, setStatus] = useState('disconnected');
+  const [status, setStatus] = useState(() => wsService.getStatus());
   const [lastMessage, setLastMessage] = useState(null);
 
   useEffect(() => {
+    // Sync current status immediately in case it changed prior to hook mount
+    setStatus(wsService.getStatus());
+
     // Connect on mount
     wsService.connect();
 

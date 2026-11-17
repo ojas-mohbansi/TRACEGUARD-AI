@@ -20,6 +20,7 @@ class EngineDistribution(BaseModel):
     fsm: int = 0
     ml: int = 0
     hybrid: int = 0
+    unknown: int = 0
 
 
 class DashboardSummaryResponse(BaseModel):

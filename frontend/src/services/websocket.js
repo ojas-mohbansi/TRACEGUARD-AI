@@ -1,7 +1,10 @@
 class WebSocketService {
   constructor() {
     this.ws = null;
-    this.url = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/events';
+    const defaultWsUrl = typeof window !== 'undefined' && window.location.hostname === '127.0.0.1'
+      ? 'ws://127.0.0.1:8000/ws/events'
+      : 'ws://localhost:8000/ws/events';
+    this.url = import.meta.env.VITE_WS_URL || defaultWsUrl;
     this.listeners = new Map(); // type -> Set(callbacks)
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 20;
@@ -95,6 +98,20 @@ class WebSocketService {
   onStatusChange(callback) {
     this.statusListeners.add(callback);
     return () => this.statusListeners.delete(callback);
+  }
+
+  getStatus() {
+    if (!this.ws) return 'disconnected';
+    switch (this.ws.readyState) {
+      case WebSocket.CONNECTING:
+        return 'connecting';
+      case WebSocket.OPEN:
+        return 'connected';
+      case WebSocket.CLOSING:
+      case WebSocket.CLOSED:
+      default:
+        return 'disconnected';
+    }
   }
 
   _notifyStatus(status) {

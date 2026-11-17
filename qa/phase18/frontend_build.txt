@@ -1,0 +1,33 @@
+
+> traceguard-ai-frontend@1.0.0 build
+> vite build
+
+[36mvite v8.3.8 [32mbuilding client environment for production...[36m[39m
+transforming...
+✓ 2507 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                              3.14 kB │ gzip:   1.05 kB
+dist/assets/vendor-reactflow-8hax8RNO.css    6.99 kB │ gzip:   1.52 kB
+dist/assets/index-DuEb1AaQ.css              76.60 kB │ gzip:  12.77 kB
+dist/assets/useApi-yzioQim6.js               0.49 kB │ gzip:   0.34 kB
+dist/assets/rolldown-runtime-XKyaHtl9.js     0.72 kB │ gzip:   0.42 kB
+dist/assets/EmptyState-H-FqormX.js           1.35 kB │ gzip:   0.63 kB
+dist/assets/Login-CQj6hgjg.js                4.42 kB │ gzip:   1.55 kB
+dist/assets/Signup-DmUN-xbS.js               5.36 kB │ gzip:   1.50 kB
+dist/assets/Datasets-BxqXCZ80.js             6.25 kB │ gzip:   2.05 kB
+dist/assets/Settings-C18v_y34.js             6.65 kB │ gzip:   1.83 kB
+dist/assets/ProtocolExplorer-Doq3z1Tc.js     8.46 kB │ gzip:   3.05 kB
+dist/assets/Landing-BbUBlCL5.js             17.00 kB │ gzip:   3.28 kB
+dist/assets/Dashboard-DGlqPJ0n.js           19.08 kB │ gzip:   4.78 kB
+dist/assets/DetectionLab-BGWE8Wpv.js        25.08 kB │ gzip:   4.78 kB
+dist/assets/LiveMonitor-BlYoOfw2.js         26.13 kB │ gzip:   5.97 kB
+dist/assets/AutomataLab-Di95dKdc.js         27.66 kB │ gzip:   7.36 kB
+dist/assets/vendor-icons-Cx7BGw1a.js        28.56 kB │ gzip:  10.09 kB
+dist/assets/Threats-BGB9CZ6K.js             41.80 kB │ gzip:   8.80 kB
+dist/assets/index-Bo5Vfh8a.js              108.56 kB │ gzip:  31.50 kB
+dist/assets/vendor-reactflow-B8fHqiak.js   149.33 kB │ gzip:  48.77 kB
+dist/assets/vendor-react-D1pezC2s.js       252.27 kB │ gzip:  80.20 kB
+dist/assets/vendor-recharts-BkRtL2U1.js    401.21 kB │ gzip: 110.91 kB
+
+[32m✓ built in 357ms[39m

@@ -46,17 +46,18 @@ class FSMEngine:
         """Return the FSM definition conforming to GET /api/protocols/http/fsm."""
         return HTTP_FSM_DEFINITION
 
-    def validate_session(self, events: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def validate_session(self, events: List[Dict[str, Any]], strict_trap: bool = False) -> Dict[str, Any]:
         """Validate an event stream for a single session against the FSM.
 
         Args:
             events: List of event dicts belonging to a single session. Each event
                     typically contains event_id, session_id, event_type, timestamp.
+            strict_trap: If True, strictly locks into absorbing dead state TRAP upon first violation.
 
         Returns:
             Dict containing session_id, prediction, risk_score, severity,
             fsm_violation flag, violations, transition_history, explanation,
-            responsible_events, and processing_time_ms.
+            responsible_events, processing_time_ms, and final_state.
         """
         start_time = time.perf_counter()
 
@@ -74,6 +75,8 @@ class FSMEngine:
                 "explanation": "No events provided for session.",
                 "responsible_events": [],
                 "processing_time_ms": round(elapsed_ms, 3),
+                "initial_state": self.initial_state,
+                "final_state": self.initial_state,
             }
 
         session_id = str(events[0].get("session_id", "unknown"))
@@ -89,6 +92,16 @@ class FSMEngine:
             event_type = str(event.get("event_type", ""))
             prev_state = current_state
 
+            # If strictly in absorbing TRAP state, execute self-loop delta(TRAP, sigma) = TRAP
+            if current_state == State.TRAP:
+                transition_history.append({
+                    "from": State.TRAP,
+                    "to": State.TRAP,
+                    "event": event_type,
+                    "valid": False,
+                })
+                continue
+
             lookup_key = (current_state, event_type)
             next_state = self.transition_map.get(lookup_key)
 
@@ -102,7 +115,7 @@ class FSMEngine:
                 })
                 current_state = next_state
             else:
-                # Invalid / Unexpected transition
+                # Invalid / Unexpected transition -> Transition to absorbing dead state TRAP
                 expected_events = self.valid_events.get(current_state, [])
                 
                 # Check if this event type exists anywhere in the protocol
@@ -124,7 +137,8 @@ class FSMEngine:
                     "previous_state": prev_state,
                     "incoming_event": event_type,
                     "expected_transitions": expected_events,
-                    "actual_transition": f"{current_state} -> ? via {event_type}",
+                    "actual_transition": f"{current_state} -> TRAP via {event_type}",
+                    "next_state": State.TRAP,
                     "violation_reason": violation_reason,
                 }
                 violations.append(violation_entry)
@@ -133,10 +147,11 @@ class FSMEngine:
 
                 transition_history.append({
                     "from": prev_state,
-                    "to": current_state,  # State does not advance or is stuck
+                    "to": State.TRAP,
                     "event": event_type,
                     "valid": False,
                 })
+                current_state = State.TRAP if strict_trap else current_state
 
         # Check completeness: Did the session terminate in a valid final state?
         is_incomplete = (current_state not in self.final_states)
@@ -200,4 +215,6 @@ class FSMEngine:
             "explanation": explanation,
             "responsible_events": responsible_events,
             "processing_time_ms": round(elapsed_ms, 3),
+            "initial_state": self.initial_state,
+            "final_state": State.TRAP if fsm_violation else current_state,
         }

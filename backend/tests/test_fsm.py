@@ -116,7 +116,7 @@ def test_get_definition(fsm):
     """6. get_definition() returns correct number of states and transitions."""
     definition = fsm.get_definition()
     assert definition["protocol"] == "HTTP"
-    assert len(definition["states"]) == 8
+    assert len(definition["states"]) == 9
     assert len(definition["transitions"]) == 15
     assert len(definition["event_types"]) == 13
 
@@ -124,7 +124,7 @@ def test_get_definition(fsm):
     state_ids = {s["id"] for s in definition["states"]}
     expected_states = {
         "IDLE", "CONNECTED", "REQUEST_RECEIVED", "AUTH_CHECKED",
-        "AUTH_FAILED", "RESPONSE_SENT", "ERROR", "CLOSED"
+        "AUTH_FAILED", "RESPONSE_SENT", "ERROR", "CLOSED", "TRAP"
     }
     assert state_ids == expected_states
 

@@ -1,71 +1,128 @@
 /**
- * TRACEGUARD AI — UNIFIED DESIGN SYSTEM TOKENS & FOUNDATIONS
- * Established under design-taste-frontend, ui-ux-pro-max, emil-design-eng, and accessibility principles.
- * Technical, calm, editorial, precise, high-contrast, zero-slop network security instrument.
+ * TRACEGUARD AI — OFFICIAL DESIGN SYSTEM TOKENS & FOUNDATIONS
+ * 
+ * Compliant with TraceGuard AI Brand Kit:
+ * - Primary Base / Deep Ink: #0E131F (Obsidian Canvas)
+ * - Brand Blue: #3B82F6 (Precision Ink / Verification Flow)
+ * - Emerald Accent: #10B981 (Formal Automata Safe State / Synthesis)
+ * - Paper White: #FFFFFF (Crisp Neutral High-Contrast Ground)
+ * 
+ * Philosophy: design-taste-frontend, ui-ux-pro-max, emil-design-eng, wcag-aa/aaa
+ * High-density network security console, high contrast, calibrated visual hierarchy.
  */
 
 :root {
-  /* ── Color Palette: Technical Ink & Precision Emerald ── */
-  --tg-bg-root: #0A0D14;
-  --tg-bg-base: #0E131F;
-  --tg-bg-surface: #141B2B;
-  --tg-bg-elevated: #1B2438;
-  --tg-bg-hover: #222E47;
-  --tg-bg-active: #2A3856;
+  /* ═══════════════════════════════════════════════════════════
+     1. BRAND CORE IDENTIFIERS (OFFICIAL BRAND BOOK)
+     ═══════════════════════════════════════════════════════════ */
+  --tg-brand-primary: #0E131F;
+  --tg-brand-blue: #3B82F6;
+  --tg-brand-emerald: #10B981;
+  --tg-brand-paper: #FFFFFF;
 
-  /* ── Borders & Outlines ── */
-  --tg-border-subtle: rgba(255, 255, 255, 0.07);
-  --tg-border-default: rgba(255, 255, 255, 0.12);
-  --tg-border-strong: rgba(255, 255, 255, 0.20);
+  /* ═══════════════════════════════════════════════════════════
+     2. SURFACE ARCHITECTURE (LIGHT THEME - PRIMARY DEFAULT)
+     Crisp Paper White (#FFFFFF) grounded on #F8FAFC
+     ═══════════════════════════════════════════════════════════ */
+  --tg-bg-canvas: #F1F5F9;
+  --tg-bg-root: #F8FAFC;
+  --tg-bg-base: #FFFFFF;
+  --tg-bg-surface: #FFFFFF;
+  --tg-bg-elevated: #F8FAFC;
+  --tg-bg-hover: #F1F5F9;
+  --tg-bg-active: #E2E8F0;
+  --tg-bg-overlay: rgba(255, 255, 255, 0.88);
+
+  /* ═══════════════════════════════════════════════════════════
+     3. BORDERS & STRUCTURAL DIVIDERS
+     ═══════════════════════════════════════════════════════════ */
+  --tg-border-subtle: rgba(14, 19, 31, 0.08);
+  --tg-border-default: rgba(14, 19, 31, 0.14);
+  --tg-border-strong: rgba(14, 19, 31, 0.25);
   --tg-border-focus: #10B981;
+  --tg-border-focus-blue: #3B82F6;
 
-  /* ── Typography & Text Hierarchies ── */
-  --tg-text-primary: #F8FAFC;
-  --tg-text-secondary: #CBD5E1;
-  --tg-text-muted: #8896AB;
-  --tg-text-disabled: #475569;
+  /* ═══════════════════════════════════════════════════════════
+     4. TYPOGRAPHY & TEXT HIERARCHY
+     WCAG 2.2 AAA Contrast (Deep Ink #0E131F on White = 18.56:1)
+     ═══════════════════════════════════════════════════════════ */
+  --tg-text-primary: #0E131F;    /* Deep Ink: 18.56:1 AAA */
+  --tg-text-secondary: #334155;  /* Slate-700: 10.35:1 AAA */
+  --tg-text-muted: #64748B;      /* Slate-500: 4.76:1 AA */
+  --tg-text-disabled: #94A3B8;   /* Slate-400 */
+  --tg-text-inverse: #FFFFFF;
 
-  /* ── Semantic Status & Engine Accents ── */
-  --tg-accent-emerald: #10B981;
+  /* ═══════════════════════════════════════════════════════════
+     5. SEMANTIC STATUS & ACCENT PALETTE (LIGHT-CALIBRATED)
+     ═══════════════════════════════════════════════════════════ */
+  /* Emerald Safe / FSM Automata */
+  --tg-accent-emerald: #059669;
   --tg-accent-emerald-subtle: rgba(16, 185, 129, 0.12);
-  --tg-accent-emerald-glow: rgba(16, 185, 129, 0.25);
+  --tg-accent-emerald-glow: rgba(16, 185, 129, 0.22);
+  --tg-accent-emerald-hover: #047857;
 
-  --tg-accent-cyan: #06B6D4;
-  --tg-accent-cyan-subtle: rgba(6, 182, 212, 0.12);
+  /* Brand Blue / Telemetry / Verification */
+  --tg-accent-blue: #2563EB;
+  --tg-accent-blue-subtle: rgba(59, 130, 246, 0.10);
+  --tg-accent-blue-glow: rgba(59, 130, 246, 0.20);
+  --tg-accent-blue-hover: #1D4ED8;
 
-  --tg-accent-indigo: #6366F1;
-  --tg-accent-indigo-subtle: rgba(99, 102, 241, 0.12);
+  /* Cyan Protocol Accent */
+  --tg-accent-cyan: #0284C7;
+  --tg-accent-cyan-subtle: rgba(2, 132, 199, 0.10);
 
-  --tg-status-warning: #F59E0B;
+  /* Warning / Latent Anomaly */
+  --tg-status-warning: #D97706;
   --tg-status-warning-subtle: rgba(245, 158, 11, 0.12);
+  --tg-status-warning-hover: #B45309;
 
-  --tg-status-danger: #EF4444;
+  /* Danger / Attack / Critical Breach */
+  --tg-status-danger: #DC2626;
   --tg-status-danger-subtle: rgba(239, 68, 68, 0.12);
+  --tg-status-danger-hover: #B91C1C;
 
-  --tg-status-info: #3B82F6;
-  --tg-status-info-subtle: rgba(59, 130, 246, 0.12);
+  /* Info / Active Stream */
+  --tg-status-info: #2563EB;
+  --tg-status-info-subtle: rgba(37, 99, 235, 0.10);
 
-  /* ── Detection Engine Color Mapping ── */
-  --tg-engine-fsm: #10B981;
-  --tg-engine-ml: #3B82F6;
-  --tg-engine-hybrid: #F59E0B;
+  /* Engine Specific Colors */
+  --tg-engine-fsm: #059669;
+  --tg-engine-ml: #2563EB;
+  --tg-engine-hybrid: #D97706;
 
-  /* ── Typography Scale ── */
+  /* ═══════════════════════════════════════════════════════════
+     6. TYPOGRAPHY SCALE & METRICS
+     ═══════════════════════════════════════════════════════════ */
   --tg-font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --tg-font-display: 'Plus Jakarta Sans', var(--tg-font-sans);
   --tg-font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, monospace;
 
-  /* ── Spacing Scale (8pt rhythmic system) ── */
-  --tg-space-1: 0.25rem; /* 4px */
-  --tg-space-2: 0.5rem;  /* 8px */
-  --tg-space-3: 0.75rem; /* 12px */
-  --tg-space-4: 1rem;    /* 16px */
-  --tg-space-5: 1.25rem; /* 20px */
-  --tg-space-6: 1.5rem;  /* 24px */
-  --tg-space-8: 2rem;    /* 32px */
-  --tg-space-10: 2.5rem; /* 40px */
-  --tg-space-12: 3rem;   /* 48px */
+  /* Font Weights */
+  --tg-font-regular: 400;
+  --tg-font-medium: 500;
+  --tg-font-semibold: 600;
+  --tg-font-bold: 700;
 
-  /* ── Radii ── */
+  /* ═══════════════════════════════════════════════════════════
+     7. SPACING & RHYTHM (8pt base system)
+     ═══════════════════════════════════════════════════════════ */
+  --tg-space-0-5: 0.125rem; /* 2px */
+  --tg-space-1: 0.25rem;   /* 4px */
+  --tg-space-1-5: 0.375rem; /* 6px */
+  --tg-space-2: 0.5rem;    /* 8px */
+  --tg-space-2-5: 0.625rem; /* 10px */
+  --tg-space-3: 0.75rem;   /* 12px */
+  --tg-space-4: 1rem;      /* 16px */
+  --tg-space-5: 1.25rem;   /* 20px */
+  --tg-space-6: 1.5rem;    /* 24px */
+  --tg-space-8: 2rem;      /* 32px */
+  --tg-space-10: 2.5rem;   /* 40px */
+  --tg-space-12: 3rem;     /* 48px */
+  --tg-space-16: 4rem;     /* 64px */
+
+  /* ═══════════════════════════════════════════════════════════
+     8. RADII & ELEVATIONS
+     ═══════════════════════════════════════════════════════════ */
   --tg-radius-xs: 4px;
   --tg-radius-sm: 6px;
   --tg-radius-md: 8px;
@@ -73,18 +130,80 @@
   --tg-radius-xl: 16px;
   --tg-radius-full: 9999px;
 
-  /* ── Shadows (Layered elevation, no harsh glow) ── */
-  --tg-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
-  --tg-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --tg-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+  --tg-shadow-sm: 0 1px 2px 0 rgba(14, 19, 31, 0.05);
+  --tg-shadow-md: 0 4px 6px -1px rgba(14, 19, 31, 0.07), 0 2px 4px -2px rgba(14, 19, 31, 0.04);
+  --tg-shadow-lg: 0 10px 15px -3px rgba(14, 19, 31, 0.09), 0 4px 6px -4px rgba(14, 19, 31, 0.04);
+  --tg-shadow-glow-emerald: 0 0 14px -2px rgba(16, 185, 129, 0.25);
+  --tg-shadow-glow-blue: 0 0 14px -2px rgba(59, 130, 246, 0.25);
 
-  /* ── Emil Motion & Transition Timings ── */
+  /* ═══════════════════════════════════════════════════════════
+     9. EMIL MOTION & INTERACTION TIMINGS
+     ═══════════════════════════════════════════════════════════ */
   --tg-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --tg-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --tg-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --tg-duration-instant: 100ms;
   --tg-duration-fast: 150ms;
   --tg-duration-normal: 220ms;
   --tg-duration-slow: 350ms;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DARK THEME PRESERVATION (OPTIONAL SECONDARY PALETTE)
+   Activated via [data-theme="dark"] or .dark class
+   ═══════════════════════════════════════════════════════════════ */
+:root[data-theme="dark"],
+.dark {
+  --tg-bg-canvas: #07090E;
+  --tg-bg-root: #0A0D14;
+  --tg-bg-base: #0E131F;
+  --tg-bg-surface: #141B2B;
+  --tg-bg-elevated: #1B2438;
+  --tg-bg-hover: #222E47;
+  --tg-bg-active: #2A3856;
+  --tg-bg-overlay: rgba(14, 19, 31, 0.85);
+
+  --tg-border-subtle: rgba(255, 255, 255, 0.08);
+  --tg-border-default: rgba(255, 255, 255, 0.14);
+  --tg-border-strong: rgba(255, 255, 255, 0.24);
+  --tg-border-focus: #10B981;
+  --tg-border-focus-blue: #3B82F6;
+
+  --tg-text-primary: #F8FAFC;    /* Contrast ratio > 15:1 */
+  --tg-text-secondary: #CBD5E1;  /* Contrast ratio > 10:1 */
+  --tg-text-muted: #8896AB;      /* Contrast ratio > 5.5:1 (AA compliant) */
+  --tg-text-disabled: #4B5563;
+  --tg-text-inverse: #0E131F;
+
+  --tg-accent-emerald: #10B981;
+  --tg-accent-emerald-subtle: rgba(16, 185, 129, 0.12);
+  --tg-accent-emerald-glow: rgba(16, 185, 129, 0.25);
+  --tg-accent-emerald-hover: #059669;
+
+  --tg-accent-blue: #3B82F6;
+  --tg-accent-blue-subtle: rgba(59, 130, 246, 0.12);
+  --tg-accent-blue-glow: rgba(59, 130, 246, 0.25);
+  --tg-accent-blue-hover: #2563EB;
+
+  --tg-accent-cyan: #06B6D4;
+  --tg-accent-cyan-subtle: rgba(6, 182, 212, 0.12);
+
+  --tg-status-warning: #F59E0B;
+  --tg-status-warning-subtle: rgba(245, 158, 11, 0.12);
+  --tg-status-warning-hover: #D97706;
+
+  --tg-status-danger: #EF4444;
+  --tg-status-danger-subtle: rgba(239, 68, 68, 0.12);
+  --tg-status-danger-hover: #DC2626;
+
+  --tg-status-info: #3B82F6;
+  --tg-status-info-subtle: rgba(59, 130, 246, 0.12);
+
+  --tg-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --tg-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.45), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --tg-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.55), 0 4px 6px -4px rgba(0, 0, 0, 0.35);
+  --tg-shadow-glow-emerald: 0 0 16px -2px rgba(16, 185, 129, 0.3);
+  --tg-shadow-glow-blue: 0 0 16px -2px rgba(59, 130, 246, 0.3);
 }
 
 /* Base Body Styles */
@@ -97,7 +216,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Interactive elements respect motion settings */
+/* Accessibility: Reduced Motion Settings */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
@@ -107,15 +226,19 @@ body {
   }
 }
 
-/* ── Reusable Component Utility Classes ── */
+/* ═══════════════════════════════════════════════════════════════
+   10. REUSABLE COMPONENT CONVENTIONS & UTILITIES
+   ═══════════════════════════════════════════════════════════════ */
 
-/* Cards and Panels */
+/* Panels & Cards */
 .tg-panel {
   background-color: var(--tg-bg-surface);
   border: 1px solid var(--tg-border-subtle);
   border-radius: var(--tg-radius-lg);
   box-shadow: var(--tg-shadow-sm);
-  transition: border-color var(--tg-duration-fast) var(--tg-ease-out), box-shadow var(--tg-duration-fast) var(--tg-ease-out);
+  transition: border-color var(--tg-duration-fast) var(--tg-ease-out),
+              box-shadow var(--tg-duration-fast) var(--tg-ease-out),
+              background-color var(--tg-duration-fast) var(--tg-ease-out);
 }
 
 .tg-panel:hover {
@@ -135,23 +258,54 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: #10B981;
-  color: #0A0D14;
+  background-color: var(--tg-accent-emerald);
+  color: #0E131F;
   font-weight: 600;
   font-size: 0.8125rem;
   padding: 0.5rem 1rem;
   border-radius: var(--tg-radius-md);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: transform var(--tg-duration-fast) var(--tg-ease-out), background-color var(--tg-duration-fast) var(--tg-ease-out);
+  transition: transform var(--tg-duration-fast) var(--tg-ease-out),
+              background-color var(--tg-duration-fast) var(--tg-ease-out),
+              box-shadow var(--tg-duration-fast) var(--tg-ease-out);
 }
 
 .tg-btn-primary:hover {
-  background-color: #059669;
+  background-color: var(--tg-accent-emerald-hover);
   transform: translateY(-1px);
+  box-shadow: var(--tg-shadow-glow-emerald);
 }
 
 .tg-btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.tg-btn-blue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--tg-accent-blue);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--tg-radius-md);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: transform var(--tg-duration-fast) var(--tg-ease-out),
+              background-color var(--tg-duration-fast) var(--tg-ease-out),
+              box-shadow var(--tg-duration-fast) var(--tg-ease-out);
+}
+
+.tg-btn-blue:hover {
+  background-color: var(--tg-accent-blue-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--tg-shadow-glow-blue);
+}
+
+.tg-btn-blue:active {
   transform: translateY(0) scale(0.98);
 }
 
@@ -168,7 +322,9 @@ body {
   border-radius: var(--tg-radius-md);
   border: 1px solid var(--tg-border-default);
   cursor: pointer;
-  transition: background-color var(--tg-duration-fast) var(--tg-ease-out), border-color var(--tg-duration-fast) var(--tg-ease-out), transform var(--tg-duration-fast) var(--tg-ease-out);
+  transition: background-color var(--tg-duration-fast) var(--tg-ease-out),
+              border-color var(--tg-duration-fast) var(--tg-ease-out),
+              transform var(--tg-duration-fast) var(--tg-ease-out);
 }
 
 .tg-btn-secondary:hover {
@@ -203,7 +359,7 @@ body {
 }
 
 .tg-badge-blue {
-  background-color: var(--tg-status-info-subtle);
+  background-color: var(--tg-accent-blue-subtle);
   color: #60A5FA;
   border-color: rgba(59, 130, 246, 0.25);
 }
@@ -226,7 +382,7 @@ body {
   border-color: var(--tg-border-subtle);
 }
 
-/* Form Controls */
+/* Form Inputs */
 .tg-input, .tg-select {
   width: 100%;
   background-color: var(--tg-bg-base);
@@ -236,7 +392,8 @@ body {
   padding: 0.5rem 0.75rem;
   font-size: 0.8125rem;
   outline: none;
-  transition: border-color var(--tg-duration-fast) var(--tg-ease-out), box-shadow var(--tg-duration-fast) var(--tg-ease-out);
+  transition: border-color var(--tg-duration-fast) var(--tg-ease-out),
+              box-shadow var(--tg-duration-fast) var(--tg-ease-out);
 }
 
 .tg-input:focus, .tg-select:focus {

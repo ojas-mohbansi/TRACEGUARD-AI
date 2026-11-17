@@ -1,387 +1,758 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
   Maximize2,
+  Minimize2,
   X,
-  Play,
-  RotateCcw,
+  Monitor,
+  User,
+  FileText,
+  HelpCircle,
+  BookOpen,
+  Sparkles,
+  Clock,
+  Layers,
   CheckCircle2,
   AlertTriangle,
-  GitBranch,
-  Cpu,
-  Layers,
-  BookOpen
+  Play,
+  RotateCcw,
+  Copy,
+  Check,
+  Volume2
 } from 'lucide-react';
-import api from '../services/api';
+import manifestData from '../data/presentationManifest.json';
 
-const PRESENTATION_STEPS = [
-  {
-    step: 1,
-    title: 'Problem Statement & Motivation',
-    subtitle: 'Why Network Intrusion Detection Needs Formal Automata',
-    content: (
-      <div className="space-y-4">
-        <p className="text-sm text-[#91A0B5] leading-relaxed">
-          Modern application protocols (HTTP, TLS, SSH) are fundamentally stateful communication systems. 
-          Standard signature-based firewalls inspect payload strings, while deep learning models compute statistical likelihoods. 
-          Neither mathematically verifies whether an observed sequence of protocol operations is legal according to specification.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-xl bg-[#161F2D] border border-[#253247]">
-            <h4 className="text-xs font-bold font-mono text-[#FF647C] mb-1">Out-of-Order Execution</h4>
-            <p className="text-[11px] text-[#91A0B5]">Attackers sending response packets before requests or accessing private endpoints before authentication.</p>
-          </div>
-          <div className="p-4 rounded-xl bg-[#161F2D] border border-[#253247]">
-            <h4 className="text-xs font-bold font-mono text-[#F5B84B] mb-1">State Tampering</h4>
-            <p className="text-[11px] text-[#91A0B5]">Injecting state modifications into existing sessions to bypass authentication gates.</p>
-          </div>
-          <div className="p-4 rounded-xl bg-[#161F2D] border border-[#253247]">
-            <h4 className="text-xs font-bold font-mono text-[#42D6B2] mb-1">The TOC Solution</h4>
-            <p className="text-[11px] text-[#91A0B5]">Model the protocol as a Deterministic Finite Automaton (DFA) that decides valid sequence membership with O(1) step time.</p>
-          </div>
-        </div>
-      </div>
-    ),
+// Presenter Color Themes for visual clarity
+const PRESENTER_THEMES = {
+  P1: {
+    badge: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+    ring: 'ring-amber-500/50',
+    border: 'border-amber-500/60',
+    dot: 'bg-amber-400',
+    accent: 'text-amber-400',
   },
-  {
-    step: 2,
-    title: 'The Finite Automaton Model',
-    subtitle: 'Formal Concepts: States, Alphabet, and Transitions',
-    content: (
-      <div className="space-y-4">
-        <p className="text-sm text-[#91A0B5] leading-relaxed">
-          In Theory of Computation, an automaton is an abstract mathematical machine that reads input strings symbol-by-symbol, transitioning between finite internal states according to a fixed transition function.
-        </p>
-        <div className="p-4 rounded-xl bg-[#080B12] border border-[#253247] font-mono text-xs text-[#EDF3FA] space-y-2">
-          <div className="text-[#42D6B2] font-bold">Key Theoretical Characteristics:</div>
-          <div>• <span className="text-[#54A7FF]">Memorylessness</span>: Future transitions depend strictly on current state and next input symbol.</div>
-          <div>• <span className="text-[#54A7FF]">Determinism</span>: For every pair of state and symbol, there is at most one legal next state.</div>
-          <div>• <span className="text-[#54A7FF]">Decidability</span>: Halting and membership are guaranteed in linear time O(|w|).</div>
-        </div>
-      </div>
-    ),
+  P2: {
+    badge: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40',
+    ring: 'ring-emerald-500/50',
+    border: 'border-emerald-500/60',
+    dot: 'bg-emerald-400',
+    accent: 'text-emerald-400',
   },
-  {
-    step: 3,
-    title: 'Formal 5-Tuple Definition: M = (Q, Σ, δ, q₀, F)',
-    subtitle: 'Mathematical Formulation of the HTTP Protocol Automaton',
-    content: (
-      <div className="space-y-4">
-        <div className="p-4 rounded-xl bg-[#080B12] border border-[#42D6B2]/40 text-center font-mono">
-          <span className="text-lg font-bold text-[#42D6B2]">M = (Q, Σ, δ, q₀, F)</span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-          <div className="p-3 rounded-lg bg-[#161F2D] border border-[#253247]">
-            <span className="text-[#54A7FF] font-bold">Q (9 States, incl. TRAP sink):</span>
-            <p className="text-[11px] text-[#91A0B5] mt-1">&#123;IDLE, CONNECTED, REQUEST_RECEIVED, AUTH_CHECKED, AUTH_FAILED, RESPONSE_SENT, ERROR, CLOSED, TRAP&#125;</p>
-          </div>
-          <div className="p-3 rounded-lg bg-[#161F2D] border border-[#253247]">
-            <span className="text-[#54A7FF] font-bold">Σ (13 Event Symbols):</span>
-            <p className="text-[11px] text-[#91A0B5] mt-1">&#123;CONNECT, REQUEST, AUTH_SUCCESS, AUTH_FAILURE, RESPONSE_200, RESPONSE_301, RESPONSE_401, RESPONSE_403, RESPONSE_500, CLOSE, TIMEOUT, MALFORMED, ERROR_RESPONSE&#125;</p>
-          </div>
-          <div className="p-3 rounded-lg bg-[#161F2D] border border-[#253247]">
-            <span className="text-[#54A7FF] font-bold">q₀ (Start State):</span>
-            <p className="text-[11px] text-[#91A0B5] mt-1">IDLE (Awaiting initial TCP connection)</p>
-          </div>
-          <div className="p-3 rounded-lg bg-[#161F2D] border border-[#253247]">
-            <span className="text-[#54A7FF] font-bold">F (Accepting States Set):</span>
-            <p className="text-[11px] text-[#91A0B5] mt-1">&#123;CLOSED&#125; (Clean termination)</p>
-          </div>
-        </div>
-      </div>
-    ),
+  P3: {
+    badge: 'bg-blue-500/20 text-blue-300 border-blue-500/40',
+    ring: 'ring-blue-500/50',
+    border: 'border-blue-500/60',
+    dot: 'bg-blue-400',
+    accent: 'text-blue-400',
   },
-  {
-    step: 4,
-    title: 'State Transition Diagram',
-    subtitle: 'Graph Topology and Directed Transitions',
-    content: (
-      <div className="space-y-4">
-        <p className="text-sm text-[#91A0B5] leading-relaxed">
-          The 15 valid transitions form a directed graph representing the lifecycle of an HTTP connection.
-          Nodes represent operational protocol phases, while edges represent observable network events.
-        </p>
-        <div className="p-4 rounded-xl bg-[#161F2D] border border-[#253247] space-y-2 font-mono text-xs">
-          <div className="flex justify-between items-center text-[11px]">
-            <span className="text-[#54A7FF]">Initial State:</span>
-            <span className="text-[#EDF3FA]">IDLE (In-Degree: 0, Out-Degree: 1)</span>
-          </div>
-          <div className="flex justify-between items-center text-[11px]">
-            <span className="text-[#54A7FF]">Cyclic Loop (Keep-Alive):</span>
-            <span className="text-[#EDF3FA]">RESPONSE_SENT &#8594; REQUEST &#8594; REQUEST_RECEIVED</span>
-          </div>
-          <div className="flex justify-between items-center text-[11px]">
-            <span className="text-[#54A7FF]">Terminal Sink:</span>
-            <span className="text-[#42D6B2]">CLOSED (In-Degree: 3, Out-Degree: 0)</span>
-          </div>
-          <div className="flex justify-between items-center text-[11px]">
-            <span className="text-[#54A7FF]">Total Matrix Cells:</span>
-            <span className="text-[#F5B84B]">|Q| × |Σ| = 117 (15 defined, 102 undefined/trap & self-loops)</span>
-          </div>
-        </div>
-      </div>
-    ),
+  P4: {
+    badge: 'bg-purple-500/20 text-purple-300 border-purple-500/40',
+    ring: 'ring-purple-500/50',
+    border: 'border-purple-500/60',
+    dot: 'bg-purple-400',
+    accent: 'text-purple-400',
   },
-  {
-    step: 5,
-    title: 'Executing a Valid HTTP Sequence',
-    subtitle: 'Demonstration of Sequence Acceptance (w ∈ L(M))',
-    interactive: true,
-    testSequence: ['CONNECT', 'REQUEST', 'AUTH_SUCCESS', 'RESPONSE_200', 'CLOSE'],
-    description: 'This canonical sequence represents a valid authenticated transaction terminating gracefully in CLOSED.',
+  P5: {
+    badge: 'bg-rose-500/20 text-rose-300 border-rose-500/40',
+    ring: 'ring-rose-500/50',
+    border: 'border-rose-500/60',
+    dot: 'bg-rose-400',
+    accent: 'text-rose-400',
   },
-  {
-    step: 6,
-    title: 'Executing an Invalid HTTP Sequence',
-    subtitle: 'Immediate Invariant Violation Detection',
-    interactive: true,
-    testSequence: ['CONNECT', 'RESPONSE_200', 'REQUEST', 'CLOSE'],
-    description: 'The server transmits a response before a request was ever received. Transition δ(CONNECTED, RESPONSE_200) is undefined.',
-  },
-  {
-    step: 7,
-    title: 'Incomplete Prefix vs. Acceptance',
-    subtitle: 'Distinguishing Language Acceptance from Transition Validity',
-    interactive: true,
-    testSequence: ['CONNECT', 'REQUEST', 'AUTH_SUCCESS'],
-    description: 'All 3 transitions are completely legal, but execution terminates in AUTH_CHECKED ∉ F. It is a valid prefix, not a rejection.',
-  },
-  {
-    step: 8,
-    title: 'Machine Learning Anomaly Detection',
-    subtitle: 'Statistical Profiling via Isolation Forest',
-    content: (
-      <div className="space-y-4">
-        <p className="text-sm text-[#91A0B5] leading-relaxed">
-          While the FSM enforces strict structural protocol rules, Machine Learning (Isolation Forest) models statistical deviations.
-          It extracts 15 session-level features: duration, packet counts, inter-arrival time variance, error ratios, and byte distributions.
-        </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
-          <div className="p-3 rounded-lg bg-[#161F2D] border border-[#253247]">
-            <span className="text-[#54A7FF] font-bold">FSM vs. ML Role:</span>
-            <p className="text-[11px] text-[#91A0B5] mt-1">FSM is primary: provides exact, zero-false-positive violation proofs. ML is secondary: detects volumetric brute-force floods that follow valid transitions.</p>
-          </div>
-          <div className="p-3 rounded-lg bg-[#161F2D] border border-[#253247]">
-            <span className="text-[#42D6B2] font-bold">Unsupervised Isolation:</span>
-            <p className="text-[11px] text-[#91A0B5] mt-1">Isolates anomalies without requiring prior labeled attack signatures by measuring tree path length.</p>
-          </div>
-        </div>
-      </div>
-    ),
-  },
-  {
-    step: 9,
-    title: 'Hybrid Engine Synthesis',
-    subtitle: 'Combining Mathematical Guarantees with Statistical Scores',
-    content: (
-      <div className="space-y-4">
-        <div className="p-4 rounded-xl bg-[#080B12] border border-[#253247] font-mono text-center space-y-2">
-          <div className="text-xs text-[#91A0B5]">HYBRID SCORING FORMULA:</div>
-          <div className="text-sm font-bold text-[#EDF3FA]">Hybrid = (0.6 × FSM_Score) + (0.4 × ML_Score)</div>
-          <div className="text-xs text-[#FF647C] font-semibold">Invariant Floor: If FSM_Violations &gt; 0 &#8658; Score = max(Score, 85)</div>
-        </div>
-        <p className="text-xs text-[#91A0B5] leading-relaxed">
-          The hybrid architecture ensures that proven formal protocol violations can never be dismissed or watered down by statistical variance, maintaining rigorous safety guarantees.
-        </p>
-      </div>
-    ),
-  },
-  {
-    step: 10,
-    title: 'Evaluation Metrics & Scope Limitations',
-    subtitle: 'Academic Conclusions and Research Boundaries',
-    content: (
-      <div className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-center font-mono">
-          <div className="p-3 rounded-lg bg-[#161F2D] border border-[#253247]">
-            <div className="text-xl font-bold text-[#42D6B2]">31 / 31</div>
-            <div className="text-[10px] text-[#91A0B5]">Automated Tests Passing</div>
-          </div>
-          <div className="p-3 rounded-lg bg-[#161F2D] border border-[#253247]">
-            <div className="text-xl font-bold text-[#54A7FF]">O(1)</div>
-            <div className="text-[10px] text-[#91A0B5]">Transition Lookup Time</div>
-          </div>
-          <div className="p-3 rounded-lg bg-[#161F2D] border border-[#253247]">
-            <div className="text-xl font-bold text-[#F5B84B]">0%</div>
-            <div className="text-[10px] text-[#91A0B5]">FSM False Positive Rate</div>
-          </div>
-        </div>
-        <div className="p-3 rounded-xl bg-[#161F2D]/60 border border-[#253247] text-xs text-[#91A0B5] space-y-1">
-          <span className="font-bold text-[#EDF3FA]">Educational Abstraction Note:</span>
-          <p>
-            This HTTP model is an educational abstraction designed for university demonstration of Theory of Computation concepts.
-            It models core session sequencing rather than the entire RFC 7230/9112 specification.
-          </p>
-        </div>
-      </div>
-    ),
-  },
-];
+};
 
 export function PresentationMode({ onClose }) {
+  const slides = manifestData?.slides || [];
+  const totalSlides = slides.length || 14;
+
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [executionResult, setExecutionResult] = useState(null);
-  const [executing, setExecuting] = useState(false);
+  const [viewMode, setViewMode] = useState('presenter'); // 'presenter' | 'audience'
+  const [presenterTab, setPresenterTab] = useState('script'); // 'script' | 'notes' | 'qa' | 'points'
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showThumbnails, setShowThumbnails] = useState(true);
+  const [expandedQA, setExpandedQA] = useState({});
+  const [copiedScript, setCopiedScript] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
-  const stepData = PRESENTATION_STEPS[currentIdx];
+  const containerRef = useRef(null);
+  const thumbnailStripRef = useRef(null);
+  const activeThumbnailRef = useRef(null);
 
-  const handleRunInteractive = async () => {
-    if (!stepData.testSequence) return;
-    setExecuting(true);
-    try {
-      const res = await api.stepExecuteAutomaton(stepData.testSequence);
-      setExecutionResult(res);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setExecuting(false);
-    }
+  const currentSlide = slides[currentIdx] || {
+    slideNumber: currentIdx + 1,
+    title: `Slide ${currentIdx + 1}`,
+    category: 'THEORY OF COMPUTATION',
+    presenter: { id: 'P1', name: 'Presenter 1', role: 'Speaker', topic: 'Overview', allocatedDuration: '2.5 mins' },
+    speakerNotes: '',
+    spokenScript: '',
+    defenseQuestions: [],
+    image: `/slides/slide_${String(currentIdx + 1).padStart(2, '0')}.png`,
+    keyPoints: [],
   };
 
+  const presenterId = currentSlide.presenter?.id || 'P1';
+  const theme = PRESENTER_THEMES[presenterId] || PRESENTER_THEMES.P1;
+
+  // Sync active thumbnail into view
+  useEffect(() => {
+    if (activeThumbnailRef.current && thumbnailStripRef.current) {
+      activeThumbnailRef.current.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'center',
+        block: 'nearest',
+      });
+    }
+    setImageLoaded(false);
+  }, [currentIdx]);
+
+  // Fullscreen event listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(Boolean(document.fullscreenElement));
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
+  // Navigation handlers
   const handleNext = () => {
-    if (currentIdx < PRESENTATION_STEPS.length - 1) {
-      setCurrentIdx(currentIdx + 1);
-      setExecutionResult(null);
+    if (currentIdx < totalSlides - 1) {
+      setCurrentIdx((prev) => prev + 1);
     }
   };
 
   const handlePrev = () => {
     if (currentIdx > 0) {
-      setCurrentIdx(currentIdx - 1);
-      setExecutionResult(null);
+      setCurrentIdx((prev) => prev - 1);
     }
   };
 
+  const handleFirst = () => setCurrentIdx(0);
+  const handleLast = () => setCurrentIdx(totalSlides - 1);
+
+  const toggleFullscreen = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        if (containerRef.current) {
+          await containerRef.current.requestFullscreen();
+        }
+      } else {
+        await document.exitFullscreen();
+      }
+    } catch (err) {
+      console.warn('Fullscreen request failed:', err);
+    }
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Ignore if user is inside an input or editable element
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'PageDown':
+        case ' ': // Spacebar
+          e.preventDefault();
+          handleNext();
+          break;
+        case 'ArrowLeft':
+        case 'PageUp':
+          e.preventDefault();
+          handlePrev();
+          break;
+        case 'Home':
+          e.preventDefault();
+          handleFirst();
+          break;
+        case 'End':
+          e.preventDefault();
+          handleLast();
+          break;
+        case 'f':
+        case 'F':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case 'p':
+        case 'P':
+        case 'v':
+        case 'V':
+          e.preventDefault();
+          setViewMode((prev) => (prev === 'presenter' ? 'audience' : 'presenter'));
+          break;
+        case 't':
+        case 'T':
+          e.preventDefault();
+          setShowThumbnails((prev) => !prev);
+          break;
+        case 'Escape':
+          // If in fullscreen, exit fullscreen. If not in fullscreen, close modal.
+          if (document.fullscreenElement) {
+            document.exitFullscreen().catch(() => {});
+          } else if (onClose) {
+            onClose();
+          }
+          break;
+        default:
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [currentIdx, totalSlides, onClose]);
+
+  // Copy script to clipboard
+  const handleCopyScript = () => {
+    if (!currentSlide.spokenScript) return;
+    navigator.clipboard.writeText(currentSlide.spokenScript);
+    setCopiedScript(true);
+    setTimeout(() => setCopiedScript(false), 2000);
+  };
+
+  // Toggle QA item expansion
+  const toggleQA = (idx) => {
+    setExpandedQA((prev) => ({
+      ...prev,
+      [idx]: !prev[idx],
+    }));
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-[#080B12]/95 backdrop-blur-md flex flex-col text-[#EDF3FA]">
-      {/* Top Bar */}
-      <div className="h-14 px-6 border-b border-[#253247] flex items-center justify-between bg-[#101622]/80">
-        <div className="flex items-center space-x-3">
-          <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#42D6B2]/10 border border-[#42D6B2]/30 text-[#42D6B2]">
-            TOC PRESENTATION MODE
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-50 flex flex-col bg-[#07090e] text-[#f8fafc] select-none font-sans overflow-hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-label="TraceGuard AI TOC Defense Presentation Mode"
+    >
+      {/* ── TOP HEADER / TOOLBAR ────────────────────────────────────── */}
+      <header className="h-14 px-4 sm:px-6 border-b border-white/10 flex items-center justify-between bg-[#0e131f]/95 backdrop-blur-md z-20 shrink-0">
+        {/* Left: Branding & Slide Index */}
+        <div className="flex items-center space-x-3 truncate">
+          <div className="flex items-center space-x-2">
+            <span className="px-2.5 py-0.5 rounded text-[10px] font-mono font-bold tracking-wider bg-emerald-500/20 border border-emerald-500/40 text-emerald-400">
+              TOC DEFENSE
+            </span>
+            <span className="hidden sm:inline-block text-xs font-semibold text-slate-300 truncate max-w-xs md:max-w-md">
+              TraceGuard AI Presentation
+            </span>
+          </div>
+
+          <span className="text-white/20">|</span>
+
+          <div className="flex items-center space-x-2 text-xs font-mono text-slate-400">
+            <span className="font-semibold text-white">Slide {currentIdx + 1}</span>
+            <span>/</span>
+            <span>{totalSlides}</span>
+          </div>
+        </div>
+
+        {/* Center: Current Presenter Pill (Visible on md+ screens) */}
+        <div className="hidden lg:flex items-center space-x-2.5 px-3 py-1 rounded-full bg-[#141b2b] border border-white/10">
+          <span className={`w-2 h-2 rounded-full ${theme.dot} animate-pulse`} />
+          <span className={`text-[11px] font-mono font-bold ${theme.accent}`}>
+            {currentSlide.presenter?.id}: {currentSlide.presenter?.name}
           </span>
-          <span className="text-xs text-[#91A0B5] font-mono">
-            Slide {stepData.step} of {PRESENTATION_STEPS.length}
+          <span className="text-white/20 text-xs">·</span>
+          <span className="text-[11px] text-slate-300 max-w-[200px] truncate">
+            {currentSlide.presenter?.topic}
+          </span>
+          <span className="text-white/20 text-xs">·</span>
+          <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1">
+            <Clock className="w-3 h-3 text-slate-400" />
+            {currentSlide.presenter?.allocatedDuration || '2.5m'}
           </span>
         </div>
 
+        {/* Right: View Toggles & Actions */}
         <div className="flex items-center space-x-2">
+          {/* View Mode Toggle Pill */}
+          <div className="flex items-center p-0.5 rounded-lg bg-[#141b2b] border border-white/10 text-xs font-mono">
+            <button
+              onClick={() => setViewMode('audience')}
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition ${
+                viewMode === 'audience'
+                  ? 'bg-blue-600 text-white font-bold shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Audience View: Fullscreen Slide Display (Shortcut: P or V)"
+              aria-label="Audience View"
+            >
+              <Monitor className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Audience</span>
+            </button>
+            <button
+              onClick={() => setViewMode('presenter')}
+              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-md transition ${
+                viewMode === 'presenter'
+                  ? 'bg-emerald-600 text-white font-bold shadow-sm'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+              title="Presenter View: Slide with Spoken Script & Defense Q&A (Shortcut: P or V)"
+              aria-label="Presenter View"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Presenter</span>
+            </button>
+          </div>
+
+          {/* Toggle Thumbnails */}
+          <button
+            onClick={() => setShowThumbnails((prev) => !prev)}
+            className={`p-2 rounded-lg border transition ${
+              showThumbnails
+                ? 'bg-[#141b2b] border-white/20 text-emerald-400'
+                : 'bg-[#0e131f] border-white/10 text-slate-400 hover:text-white'
+            }`}
+            title="Toggle Thumbnail Strip (Shortcut: T)"
+            aria-label="Toggle Thumbnails"
+          >
+            <Layers className="w-4 h-4" />
+          </button>
+
+          {/* Fullscreen Toggle */}
+          <button
+            onClick={toggleFullscreen}
+            className="p-2 rounded-lg bg-[#141b2b] border border-white/10 text-slate-400 hover:text-white hover:border-white/20 transition"
+            title={isFullscreen ? 'Exit Fullscreen (F)' : 'Enter Fullscreen (F)'}
+            aria-label="Toggle Fullscreen"
+          >
+            {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+
+          {/* Close Presentation Mode */}
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg bg-[#161F2D] hover:bg-[#253247] text-[#91A0B5] hover:text-[#EDF3FA] transition"
+            className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 hover:text-rose-300 transition"
+            title="Close Presentation Mode (Esc)"
+            aria-label="Close Presentation"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
+      </header>
+
+      {/* ── PRESENTATION PROGRESS LINE ──────────────────────────────── */}
+      <div className="w-full h-1 bg-[#141b2b]">
+        <div
+          className="h-full bg-gradient-to-r from-blue-500 via-emerald-400 to-emerald-500 transition-all duration-300"
+          style={{ width: `${((currentIdx + 1) / totalSlides) * 100}%` }}
+        />
       </div>
 
-      {/* Main Slide Content */}
-      <div className="flex-1 overflow-y-auto p-8 max-w-4xl mx-auto w-full flex flex-col justify-center">
-        <div className="mb-6">
-          <span className="text-[11px] font-mono text-[#42D6B2] uppercase tracking-wider">
-            STEP {stepData.step}: {stepData.subtitle}
-          </span>
-          <h2 className="text-2xl font-bold font-mono tracking-tight text-[#EDF3FA] mt-1">
-            {stepData.title}
-          </h2>
+      {/* ── MAIN WORKSPACE / SLIDE STAGE ────────────────────────────── */}
+      <main className="flex-1 min-h-0 flex overflow-hidden">
+        {/* SLIDE CANVAS (Center Stage) */}
+        <div
+          className={`flex-1 flex flex-col items-center justify-center p-3 sm:p-6 transition-all duration-300 relative ${
+            viewMode === 'presenter' ? 'lg:pr-3' : ''
+          }`}
+        >
+          {/* 16:9 Slide Screen Container */}
+          <div className="relative w-full h-full max-h-full flex items-center justify-center">
+            <div className="relative w-full max-w-6xl aspect-[16/9] max-h-full flex items-center justify-center rounded-xl overflow-hidden bg-black/60 border border-white/10 shadow-2xl">
+              {/* Image Loading Placeholder Skeleton */}
+              {!imageLoaded && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0d1117] text-slate-500 space-y-3">
+                  <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs font-mono">Loading Slide {currentIdx + 1}...</span>
+                </div>
+              )}
+
+              {/* Render High-Resolution Slide Image */}
+              <img
+                src={currentSlide.image || currentSlide.imageAsset || `/slides/slide_${String(currentIdx + 1).padStart(2, '0')}.png`}
+                alt={currentSlide.title || `Slide ${currentIdx + 1}`}
+                onLoad={() => setImageLoaded(true)}
+                className={`w-full h-full object-contain select-none transition-opacity duration-300 ${
+                  imageLoaded ? 'opacity-100' : 'opacity-0'
+                }`}
+              />
+
+              {/* Floating Slide Floating Navigation Overlays (Hover) */}
+              <button
+                onClick={handlePrev}
+                disabled={currentIdx === 0}
+                className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/85 text-white/70 hover:text-white border border-white/10 hover:border-white/30 backdrop-blur-md opacity-0 hover:opacity-100 focus:opacity-100 transition-all disabled:opacity-0 disabled:pointer-events-none"
+                aria-label="Previous Slide"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+
+              <button
+                onClick={handleNext}
+                disabled={currentIdx === totalSlides - 1}
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black/85 text-white/70 hover:text-white border border-white/10 hover:border-white/30 backdrop-blur-md opacity-0 hover:opacity-100 focus:opacity-100 transition-all disabled:opacity-0 disabled:pointer-events-none"
+                aria-label="Next Slide"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+
+              {/* Bottom Quick Indicator Pill */}
+              <div className="absolute bottom-3 left-4 px-2.5 py-1 rounded bg-black/70 backdrop-blur-md border border-white/10 text-[10px] font-mono text-slate-300 opacity-60 hover:opacity-100 transition-opacity">
+                {currentSlide.category}
+              </div>
+            </div>
+          </div>
         </div>
 
-        {stepData.content && <div>{stepData.content}</div>}
-
-        {stepData.interactive && (
-          <div className="space-y-4">
-            <p className="text-sm text-[#91A0B5]">{stepData.description}</p>
-            <div className="p-4 rounded-xl bg-[#080B12] border border-[#253247] space-y-3">
-              <div className="text-xs font-mono text-[#91A0B5]">
-                Target Event Sequence:
-              </div>
-              <div className="flex flex-wrap gap-1.5 font-mono text-xs">
-                {stepData.testSequence.map((sym, i) => (
-                  <span
-                    key={i}
-                    className="px-2 py-1 rounded bg-[#161F2D] border border-[#253247] text-[#54A7FF]"
+        {/* PRESENTER DRAWER / SIDEBAR (Presenter View Only) */}
+        {viewMode === 'presenter' && (
+          <aside className="w-full lg:w-[460px] xl:w-[500px] shrink-0 border-l border-white/10 bg-[#0e131f] flex flex-col z-10 transition-all duration-300 overflow-hidden">
+            {/* Presenter Metadata Card */}
+            <div className="p-4 border-b border-white/10 bg-[#141b2b]/60">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center space-x-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center font-mono font-bold text-sm border ${theme.badge}`}
                   >
-                    {sym}
+                    {presenterId}
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white leading-tight">
+                      {currentSlide.presenter?.name}
+                    </h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5">
+                      {currentSlide.presenter?.role}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono bg-white/5 border border-white/10 text-slate-300">
+                    <Clock className="w-3 h-3 mr-1 text-slate-400" />
+                    {currentSlide.presenter?.allocatedDuration}
                   </span>
-                ))}
+                </div>
               </div>
 
-              <div className="pt-2 flex items-center space-x-3">
-                <button
-                  onClick={handleRunInteractive}
-                  disabled={executing}
-                  className="px-4 py-2 rounded-xl text-xs font-mono font-bold bg-[#42D6B2] text-[#080B12] hover:bg-[#38bda0] transition flex items-center space-x-2 shadow-lg shadow-[#42D6B2]/20"
-                >
-                  <Play className="w-4 h-4 fill-current" />
-                  <span>{executing ? 'Executing...' : 'Run Sequence on DFA'}</span>
-                </button>
+              <div className="mt-2.5 pt-2 border-t border-white/5 flex items-center justify-between text-xs font-mono">
+                <span className="text-slate-400 text-[11px] truncate max-w-[280px]">
+                  Topic: <span className="text-white font-medium">{currentSlide.presenter?.topic}</span>
+                </span>
+                <span className={`text-[10px] font-bold ${theme.accent}`}>
+                  Slide {currentSlide.slideNumber}
+                </span>
               </div>
             </div>
 
-            {executionResult && (
-              <div
-                className={`p-4 rounded-xl border font-mono text-xs space-y-2 ${
-                  executionResult.verdict === 'ACCEPTED'
-                    ? 'bg-[#42D6B2]/10 border-[#42D6B2]/30 text-[#42D6B2]'
-                    : executionResult.verdict === 'INCOMPLETE_VALID'
-                    ? 'bg-[#F5B84B]/10 border-[#F5B84B]/30 text-[#F5B84B]'
-                    : 'bg-[#FF647C]/10 border-[#FF647C]/30 text-[#FF647C]'
+            {/* Presenter Tab Navigation */}
+            <div className="flex items-center border-b border-white/10 bg-[#0b0e17] px-2 pt-1 text-xs font-mono">
+              <button
+                onClick={() => setPresenterTab('script')}
+                className={`flex items-center space-x-1.5 px-3 py-2 border-b-2 font-medium transition ${
+                  presenterTab === 'script'
+                    ? 'border-emerald-400 text-emerald-400 font-bold bg-[#141b2b]/40'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
                 }`}
               >
-                <div className="flex items-center justify-between font-bold">
-                  <span>DFA VERDICT: {executionResult.verdict}</span>
-                  <span>Terminal State: {executionResult.final_state}</span>
-                </div>
-                {executionResult.rejection_reason && (
-                  <div className="text-[11px] leading-relaxed">
-                    {executionResult.rejection_reason}
-                  </div>
+                <FileText className="w-3.5 h-3.5" />
+                <span>Spoken Script</span>
+              </button>
+
+              <button
+                onClick={() => setPresenterTab('notes')}
+                className={`flex items-center space-x-1.5 px-3 py-2 border-b-2 font-medium transition ${
+                  presenterTab === 'notes'
+                    ? 'border-emerald-400 text-emerald-400 font-bold bg-[#141b2b]/40'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>Notes</span>
+              </button>
+
+              <button
+                onClick={() => setPresenterTab('qa')}
+                className={`flex items-center space-x-1.5 px-3 py-2 border-b-2 font-medium transition ${
+                  presenterTab === 'qa'
+                    ? 'border-emerald-400 text-emerald-400 font-bold bg-[#141b2b]/40'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>Defense Q&A</span>
+                {currentSlide.defenseQuestions?.length > 0 && (
+                  <span className="px-1.5 py-0.2 rounded-full text-[9px] bg-emerald-500/20 text-emerald-300 font-bold">
+                    {currentSlide.defenseQuestions.length}
+                  </span>
                 )}
-                <div className="pt-1 text-[10px] text-[#91A0B5] border-t border-white/10">
-                  Total Steps: {executionResult.steps.length} | All Transitions Valid: {String(executionResult.all_transitions_valid)} | Accepting State Reached: {String(executionResult.is_in_accepting_state)}
+              </button>
+
+              <button
+                onClick={() => setPresenterTab('points')}
+                className={`flex items-center space-x-1.5 px-3 py-2 border-b-2 font-medium transition ${
+                  presenterTab === 'points'
+                    ? 'border-emerald-400 text-emerald-400 font-bold bg-[#141b2b]/40'
+                    : 'border-transparent text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Invariants</span>
+              </button>
+            </div>
+
+            {/* Tab Body: Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {/* TAB 1: SPOKEN SCRIPT */}
+              {presenterTab === 'script' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-emerald-400 flex items-center gap-1.5">
+                      <Volume2 className="w-3.5 h-3.5" />
+                      READ-ALOUD VERBATIM SCRIPT
+                    </span>
+                    <button
+                      onClick={handleCopyScript}
+                      className="px-2 py-1 rounded text-[10px] font-mono bg-[#141b2b] hover:bg-[#1b2438] text-slate-300 hover:text-white border border-white/10 flex items-center gap-1 transition"
+                      title="Copy script to clipboard"
+                    >
+                      {copiedScript ? (
+                        <>
+                          <Check className="w-3 h-3 text-emerald-400" />
+                          <span className="text-emerald-400">Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3 h-3" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-[#141b2b] border border-white/10 text-slate-200 text-sm leading-relaxed whitespace-pre-line font-sans shadow-inner">
+                    {currentSlide.spokenScript || currentSlide.speakerNotes || (
+                      <p className="text-slate-500 italic text-xs">
+                        No verbatim script assigned for this slide. Refer to Speaker Notes tab.
+                      </p>
+                    )}
+                  </div>
+
+                  {currentSlide.presenter?.id && (
+                    <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-300/90 font-mono">
+                      💡 Tip: Keep pacing steady (approx. 130 words/minute). Pause on mathematical definitions.
+                    </div>
+                  )}
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+
+              {/* TAB 2: SPEAKER NOTES */}
+              {presenterTab === 'notes' && (
+                <div className="space-y-3">
+                  <span className="text-[11px] font-mono text-slate-400">
+                    SLIDE CONTEXT & PEDAGOGICAL NOTES
+                  </span>
+                  <div className="p-4 rounded-xl bg-[#141b2b] border border-white/10 text-slate-300 text-xs leading-relaxed space-y-2">
+                    <p>{currentSlide.speakerNotes || 'No notes available for this slide.'}</p>
+                  </div>
+
+                  <div className="p-3 rounded-xl bg-[#0b0e17] border border-white/5 space-y-1.5 text-xs">
+                    <span className="text-[11px] font-bold text-slate-300 font-mono">Slide Title:</span>
+                    <p className="text-white font-medium">{currentSlide.title}</p>
+                    <span className="text-[10px] font-mono text-slate-400 block pt-1">
+                      Category: {currentSlide.category}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: DEFENSE Q&A */}
+              {presenterTab === 'qa' && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono text-blue-400 flex items-center gap-1.5">
+                      <HelpCircle className="w-3.5 h-3.5" />
+                      ANTICIPATED VIVA EXAMINER QUESTIONS
+                    </span>
+                    <span className="text-[10px] font-mono text-slate-400">
+                      {currentSlide.defenseQuestions?.length || 0} Questions
+                    </span>
+                  </div>
+
+                  {(!currentSlide.defenseQuestions || currentSlide.defenseQuestions.length === 0) ? (
+                    <div className="p-4 rounded-xl bg-[#141b2b] border border-white/10 text-center text-xs text-slate-400">
+                      No specific defense questions registered for this slide.
+                    </div>
+                  ) : (
+                    currentSlide.defenseQuestions.map((qa, qIdx) => {
+                      const isExpanded = expandedQA[qIdx] ?? true; // expanded by default
+                      return (
+                        <div
+                          key={qIdx}
+                          className="rounded-xl bg-[#141b2b] border border-white/10 overflow-hidden text-xs transition"
+                        >
+                          <button
+                            onClick={() => toggleQA(qIdx)}
+                            className="w-full p-3 text-left font-semibold text-white bg-[#182135] hover:bg-[#1e2a44] flex items-start justify-between gap-2 transition"
+                          >
+                            <span className="text-slate-100 font-mono leading-snug">
+                              Q{qIdx + 1}: {qa.question}
+                            </span>
+                            <span className="text-slate-400 shrink-0 font-mono text-[10px]">
+                              {isExpanded ? '▲' : '▼'}
+                            </span>
+                          </button>
+
+                          {isExpanded && (
+                            <div className="p-3.5 text-slate-300 leading-relaxed border-t border-white/10 bg-[#141b2b] text-[11px]">
+                              <span className="font-bold text-emerald-400 font-mono block mb-1">
+                                Defended Answer:
+                              </span>
+                              {qa.answer}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+
+              {/* TAB 4: INVARIANTS & TAKEAWAYS */}
+              {presenterTab === 'points' && (
+                <div className="space-y-3">
+                  <span className="text-[11px] font-mono text-amber-400 flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    ACADEMIC INVARIANTS & TAKEAWAYS
+                  </span>
+
+                  {currentSlide.keyPoints?.length > 0 ? (
+                    <ul className="space-y-2">
+                      {currentSlide.keyPoints.map((point, pIdx) => (
+                        <li
+                          key={pIdx}
+                          className="p-3 rounded-lg bg-[#141b2b] border border-white/10 text-xs text-slate-200 flex items-start gap-2.5"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0 mt-1.5" />
+                          <span>{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <div className="p-4 rounded-xl bg-[#141b2b] border border-white/10 space-y-2 text-xs font-mono">
+                      <div className="text-emerald-400 font-bold">TraceGuard AI Theoretical Invariants:</div>
+                      <div className="text-slate-300">• 9 States: IDLE, CONNECTED, REQ_RCVD, AUTH_CHK, AUTH_FAIL, RESP_SENT, ERR, CLOSED, TRAP</div>
+                      <div className="text-slate-300">• 13 Input Symbols: Exact network protocol events</div>
+                      <div className="text-slate-300">• 117 Total Transitions (Complete Transition Matrix)</div>
+                      <div className="text-slate-300">• O(1) step lookup, O(|w|) total sequence decidability</div>
+                      <div className="text-slate-300">• Absorbing TRAP state with self-loops</div>
+                      <div className="text-slate-300">• Hybrid formula: S_h = 0.6*S_FSM + 0.4*S_ML with 60% invariant floor</div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </aside>
         )}
-      </div>
+      </main>
 
-      {/* Bottom Navigation */}
-      <div className="h-16 px-8 border-t border-[#253247] flex items-center justify-between bg-[#101622]/80">
-        <button
-          onClick={handlePrev}
-          disabled={currentIdx === 0}
-          className="px-4 py-2 rounded-xl text-xs font-mono bg-[#161F2D] hover:bg-[#253247] text-[#EDF3FA] disabled:opacity-40 transition flex items-center space-x-2"
+      {/* ── BOTTOM THUMBNAIL STRIP (EXPANDABLE) ────────────────────── */}
+      {showThumbnails && (
+        <div
+          ref={thumbnailStripRef}
+          className="h-24 px-4 py-2 border-t border-white/10 bg-[#0b0e17] flex items-center space-x-3 overflow-x-auto shrink-0 z-20"
         >
-          <ChevronLeft className="w-4 h-4" />
-          <span>Previous Step</span>
-        </button>
+          {slides.map((s, idx) => {
+            const isActive = idx === currentIdx;
+            const sTheme = PRESENTER_THEMES[s.presenter?.id || 'P1'] || PRESENTER_THEMES.P1;
 
-        <div className="flex space-x-1.5">
-          {PRESENTATION_STEPS.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => {
-                setCurrentIdx(i);
-                setExecutionResult(null);
-              }}
-              className={`w-2.5 h-2.5 rounded-full transition-all ${
-                i === currentIdx ? 'bg-[#42D6B2] w-6' : 'bg-[#253247] hover:bg-[#91A0B5]'
-              }`}
-            />
-          ))}
+            return (
+              <button
+                key={s.id || idx}
+                ref={isActive ? activeThumbnailRef : null}
+                onClick={() => setCurrentIdx(idx)}
+                aria-label={`Jump to slide ${idx + 1}: ${s.title}`}
+                className={`relative group shrink-0 h-20 aspect-[16/9] rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                  isActive
+                    ? 'border-emerald-400 ring-2 ring-emerald-400/40 scale-105 shadow-lg shadow-emerald-500/20'
+                    : 'border-white/10 hover:border-white/30 opacity-70 hover:opacity-100'
+                }`}
+              >
+                {/* Thumbnail Image */}
+                <img
+                  src={s.image || s.imageAsset || `/slides/slide_${String(idx + 1).padStart(2, '0')}.png`}
+                  alt={`Thumbnail ${idx + 1}`}
+                  className="w-full h-full object-cover bg-black"
+                  loading="lazy"
+                />
+
+                {/* Overlay Badge: Slide Index */}
+                <div className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-black/80 text-white backdrop-blur-xs">
+                  {idx + 1}
+                </div>
+
+                {/* Overlay Badge: Presenter Pill */}
+                <div
+                  className={`absolute bottom-1 right-1 px-1.5 py-0.5 rounded text-[8px] font-mono font-bold backdrop-blur-xs ${sTheme.badge}`}
+                >
+                  {s.presenter?.id || 'P1'}
+                </div>
+
+                {/* Active Indicator Line */}
+                {isActive && (
+                  <div className="absolute inset-x-0 bottom-0 h-1 bg-emerald-400" />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── BOTTOM CONTROL BAR & KEYBOARD SHORTCUTS ────────────────── */}
+      <footer className="h-12 px-4 sm:px-6 border-t border-white/10 bg-[#0e131f] flex items-center justify-between text-xs font-mono shrink-0 z-20">
+        {/* Left: Previous Button */}
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={handlePrev}
+            disabled={currentIdx === 0}
+            className="px-3 py-1.5 rounded-lg bg-[#141b2b] hover:bg-[#1b2438] text-white disabled:opacity-30 disabled:pointer-events-none border border-white/10 hover:border-white/20 transition flex items-center space-x-1.5"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Prev</span>
+          </button>
+
+          <button
+            onClick={handleNext}
+            disabled={currentIdx === totalSlides - 1}
+            className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white disabled:opacity-30 disabled:pointer-events-none transition flex items-center space-x-1.5 font-bold shadow-md shadow-emerald-500/20"
+            aria-label="Next slide"
+          >
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
 
-        <button
-          onClick={handleNext}
-          disabled={currentIdx === PRESENTATION_STEPS.length - 1}
-          className="px-4 py-2 rounded-xl text-xs font-mono bg-[#161F2D] hover:bg-[#253247] text-[#EDF3FA] disabled:opacity-40 transition flex items-center space-x-2"
-        >
-          <span>Next Step</span>
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
+        {/* Center: Slide indicator & Title (Hidden on tiny screens) */}
+        <div className="hidden md:flex items-center space-x-2 text-slate-300 truncate max-w-md">
+          <span className="font-bold text-white truncate">{currentSlide.title}</span>
+        </div>
+
+        {/* Right: Keyboard Shortcuts Reference Legend */}
+        <div className="hidden sm:flex items-center space-x-3 text-[11px] text-slate-400">
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-[#141b2b] border border-white/10 text-[10px] text-slate-300">Space</kbd>
+            <kbd className="px-1.5 py-0.5 rounded bg-[#141b2b] border border-white/10 text-[10px] text-slate-300">→</kbd>
+            <span>Next</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-[#141b2b] border border-white/10 text-[10px] text-slate-300">F</kbd>
+            <span>Full</span>
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1.5 py-0.5 rounded bg-[#141b2b] border border-white/10 text-[10px] text-slate-300">Esc</kbd>
+            <span>Exit</span>
+          </span>
+        </div>
+      </footer>
     </div>
   );
 }

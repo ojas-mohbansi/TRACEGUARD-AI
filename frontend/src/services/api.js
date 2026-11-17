@@ -1,4 +1,8 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const defaultApiUrl = typeof window !== 'undefined' && window.location.hostname === '127.0.0.1'
+  ? 'http://127.0.0.1:8000'
+  : 'http://localhost:8000';
+
+const BASE_URL = import.meta.env.VITE_API_URL || defaultApiUrl;
 
 class ApiService {
   constructor() {
@@ -153,8 +157,9 @@ class ApiService {
   }
 
   // Dashboard
-  async getDashboardSummary() {
-    return this.request('/api/dashboard/summary');
+  async getDashboardSummary(timeRange = null) {
+    const query = timeRange && timeRange !== 'all' ? `?time_range=${encodeURIComponent(timeRange)}` : '';
+    return this.request(`/api/dashboard/summary${query}`);
   }
 
   // Health
@@ -177,20 +182,35 @@ class ApiService {
     });
   }
 
+  _cleanParams(params = {}) {
+    const cleaned = {};
+    for (const [key, value] of Object.entries(params)) {
+      if (value !== undefined && value !== null && value !== '' && value !== 'all') {
+        cleaned[key] = value;
+      }
+    }
+    return cleaned;
+  }
+
   // Events
   async getEvents(params = {}) {
-    const query = new URLSearchParams(params).toString();
+    const query = new URLSearchParams(this._cleanParams(params)).toString();
     return this.request(`/api/events${query ? `?${query}` : ''}`);
   }
 
   // Alerts
   async getAlerts(params = {}) {
-    const query = new URLSearchParams(params).toString();
+    const query = new URLSearchParams(this._cleanParams(params)).toString();
     return this.request(`/api/alerts${query ? `?${query}` : ''}`);
   }
 
   async getAlertDetail(alert_id) {
     return this.request(`/api/alerts/${alert_id}`);
+  }
+
+  async getAlertAnalytics(params = {}) {
+    const query = new URLSearchParams(this._cleanParams(params)).toString();
+    return this.request(`/api/alerts/analytics${query ? `?${query}` : ''}`);
   }
 
   async updateAlert(alert_id, updateData) {
@@ -245,6 +265,92 @@ class ApiService {
 
   getDatasetDownloadUrl(dataset_id) {
     return `${BASE_URL}/api/datasets/${dataset_id}/download`;
+  }
+
+  // Engine Activity & Attribution
+  async getEngineActivity(timeRange = 'all', includeDemo = true) {
+    const params = new URLSearchParams();
+    if (timeRange) params.append('time_range', timeRange);
+    params.append('include_demo', includeDemo ? 'true' : 'false');
+    return this.request(`/api/alerts/engine-activity?${params.toString()}`);
+  }
+
+  // Live Network Intelligence & PCAP Diagnostics
+  async getNetworkStatus() {
+    return this.request('/api/network/status');
+  }
+
+  async getNetworkInterfaces() {
+    return this.request('/api/network/interfaces');
+  }
+
+  async runNetworkDiagnostics() {
+    return this.request('/api/network/diagnose', {
+      method: 'POST',
+    });
+  }
+
+  async startLiveCapture(interfaceName = 'default') {
+    return this.request('/api/network/capture/start', {
+      method: 'POST',
+      body: JSON.stringify({ interface: interfaceName }),
+    });
+  }
+
+  async stopLiveCapture() {
+    return this.request('/api/network/capture/stop', {
+      method: 'POST',
+    });
+  }
+
+  async clearCaptureSession() {
+    return this.request('/api/network/clear', {
+      method: 'POST',
+    });
+  }
+
+  async uploadPcap(file, streamLive = false) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.request(`/api/network/pcap/upload?stream_live=${streamLive ? 'true' : 'false'}`, {
+      method: 'POST',
+      body: formData,
+    });
+  }
+
+  // Academic Detection Engine Showcase
+  async getShowcaseScenarios() {
+    return this.request('/api/detection/showcase/scenarios');
+  }
+
+  async runShowcaseScenario(scenario, customNotes = null) {
+    return this.request('/api/detection/showcase/run', {
+      method: 'POST',
+      body: JSON.stringify({ scenario, custom_notes: customNotes }),
+    });
+  }
+
+  async resetShowcaseData() {
+    return this.request('/api/detection/showcase/reset', {
+      method: 'POST',
+    });
+  }
+
+  // Academic Detection Benchmark (Targeting 25-35% FSM, 10-20% ML, 45-65% Hybrid)
+  async generateBenchmark(seed = 42) {
+    return this.request(`/api/detection/benchmark/generate?seed=${seed}`, {
+      method: 'POST',
+    });
+  }
+
+  async getBenchmarkStatus() {
+    return this.request('/api/detection/benchmark/status');
+  }
+
+  async resetBenchmark() {
+    return this.request('/api/detection/benchmark/reset', {
+      method: 'POST',
+    });
   }
 }
 

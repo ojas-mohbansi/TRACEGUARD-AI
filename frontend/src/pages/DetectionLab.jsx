@@ -33,6 +33,35 @@ export function DetectionLab() {
   const [runningEngines, setRunningEngines] = useState({ fsm: false, ml: false, hybrid: false });
   const [runSuccess, setRunSuccess] = useState(null);
 
+  // Showcase state
+  const [activeLabTab, setActiveLabTab] = useState('showcase'); // 'showcase' | 'benchmark'
+  const [showcaseRunning, setShowcaseRunning] = useState(false);
+  const [showcaseResult, setShowcaseResult] = useState(null);
+  const [showcaseResetMsg, setShowcaseResetMsg] = useState('');
+
+  const handleRunShowcase = async (scenarioId) => {
+    setShowcaseRunning(true);
+    setShowcaseResetMsg('');
+    try {
+      const res = await api.runShowcaseScenario(scenarioId);
+      setShowcaseResult(res);
+    } catch (err) {
+      alert(`Showcase run failed: ${err.message}`);
+    } finally {
+      setShowcaseRunning(false);
+    }
+  };
+
+  const handleResetShowcase = async () => {
+    try {
+      const res = await api.resetShowcaseData();
+      setShowcaseResetMsg(res.message);
+      setShowcaseResult(null);
+    } catch (err) {
+      alert(`Reset failed: ${err.message}`);
+    }
+  };
+
   const { data: datasetsData } = useApi(() => api.getDatasets());
 
   const {
@@ -46,14 +75,11 @@ export function DetectionLab() {
       return api.getDetectionComparison(selectedDatasetId);
     },
     [selectedDatasetId],
-    false
+    true
   );
 
   const handleSelectDataset = (dsId) => {
     setSelectedDatasetId(dsId);
-    if (dsId) {
-      setTimeout(() => refetchComparison(), 50);
-    }
   };
 
   const handleRunEngine = async (engine) => {
@@ -78,7 +104,9 @@ export function DetectionLab() {
     }
   };
 
-  const datasets = datasetsData?.datasets || [];
+  const datasets = Array.isArray(datasetsData)
+    ? datasetsData
+    : (datasetsData?.datasets || []);
   const engines = comparison?.engines || {};
 
   const metricKeys = [
@@ -98,23 +126,289 @@ export function DetectionLab() {
 
   return (
     <div className="space-y-6">
-      {/* Editorial Header */}
+      {/* Editorial Header & Tab Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[var(--tg-border-subtle)]">
         <div>
           <div className="flex items-center gap-2">
-            <FlaskConical className="w-4 h-4 text-emerald-400" />
+            <FlaskConical className="w-4 h-4 text-[var(--tg-accent-emerald)]" />
             <h1 className="text-lg font-semibold tracking-tight text-[var(--tg-text-primary)]">
-              Detection Benchmark Lab
+              Detection Benchmark & Academic Showcase Lab
             </h1>
           </div>
           <p className="text-xs text-[var(--tg-text-muted)] mt-1">
             Empirical comparative analysis of FSM state invariance, Isolation Forest ML anomaly scores, and Hybrid consensus.
           </p>
         </div>
+
+        {/* Lab Navigation Mode Tabs */}
+        <div className="flex items-center p-1 rounded-lg bg-[var(--tg-bg-surface)] border border-[var(--tg-border-subtle)] text-xs font-mono">
+          <button
+            onClick={() => setActiveLabTab('showcase')}
+            className={`px-3 py-1 rounded font-semibold transition-colors ${
+              activeLabTab === 'showcase'
+                ? 'bg-[var(--tg-accent-emerald)] text-black shadow-sm'
+                : 'text-[var(--tg-text-secondary)] hover:text-[var(--tg-text-primary)]'
+            }`}
+          >
+            Academic Showcase (4 Scenarios)
+          </button>
+          <button
+            onClick={() => setActiveLabTab('benchmark')}
+            className={`px-3 py-1 rounded font-semibold transition-colors ${
+              activeLabTab === 'benchmark'
+                ? 'bg-[var(--tg-accent-emerald)] text-black shadow-sm'
+                : 'text-[var(--tg-text-secondary)] hover:text-[var(--tg-text-primary)]'
+            }`}
+          >
+            Dataset Benchmarks
+          </button>
+        </div>
       </div>
 
-      {/* Dataset Selection & Benchmark Actions */}
-      <div className="tg-panel p-5 space-y-4">
+      {/* TAB 1: ACADEMIC DETECTION ENGINE SHOWCASE */}
+      {activeLabTab === 'showcase' && (
+        <div className="space-y-5">
+          {/* Showcase Control Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl tg-panel border border-[var(--tg-border-subtle)]">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-mono font-semibold text-[var(--tg-text-primary)] uppercase">
+                <Target className="w-4 h-4 text-[var(--tg-accent-emerald)]" />
+                <span>Detection Engine Showcase — Interactive Verification</span>
+              </div>
+              <p className="text-[11px] text-[var(--tg-text-muted)] mt-0.5">
+                Run controlled real-time sequences through the real detection pipeline to prove independent FSM and ML capabilities.
+              </p>
+            </div>
+
+            <button
+              onClick={handleResetShowcase}
+              className="tg-btn-secondary text-xs flex items-center gap-1.5 self-start sm:self-auto"
+              title="Clean demonstration alerts and events without touching real alerts"
+            >
+              <span>Reset Demo Data</span>
+            </button>
+          </div>
+
+          {showcaseResetMsg && (
+            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-[var(--tg-accent-emerald)] flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 shrink-0" />
+              <span>{showcaseResetMsg}</span>
+            </div>
+          )}
+
+          {/* 4 Interactive Scenario Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Scenario 1: Normal Flow */}
+            <div className="tg-panel p-4 flex flex-col justify-between space-y-3 font-mono border-t-2 border-t-emerald-500">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-[var(--tg-text-muted)] uppercase">Scenario 1</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">NORMAL</span>
+                </div>
+                <h3 className="text-xs font-bold text-[var(--tg-text-primary)] mt-1">Legitimate Flow</h3>
+                <p className="text-[11px] text-[var(--tg-text-secondary)] mt-1">
+                  Canonical HTTP DFA sequence (CONNECT → REQUEST → AUTH → 200 → CLOSE) with typical payload.
+                </p>
+                <div className="mt-2 text-[10px] text-[var(--tg-text-muted)] space-y-0.5 border-t border-[var(--tg-border-subtle)] pt-2">
+                  <div><strong>FSM:</strong> Conforms (CLOSED)</div>
+                  <div><strong>ML:</strong> Normal Profile</div>
+                  <div><strong>Result:</strong> No Alert</div>
+                </div>
+              </div>
+              <button
+                onClick={() => handleRunShowcase('normal')}
+                disabled={showcaseRunning}
+                className="w-full tg-btn-secondary text-xs flex items-center justify-center gap-1"
+              >
+                <Play className="w-3 h-3 fill-current text-[var(--tg-accent-emerald)]" />
+                <span>Run Legitimate</span>
+              </button>
+            </div>
+
+            {/* Scenario 2: FSM-Only Violation */}
+            <div className="tg-panel p-4 flex flex-col justify-between space-y-3 font-mono border-t-2 border-t-cyan-500">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-[var(--tg-text-muted)] uppercase">Scenario 2</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-bold">FSM ONLY</span>
+                </div>
+                <h3 className="text-xs font-bold text-[var(--tg-text-primary)] mt-1">FSM Violation</h3>
+                <p className="text-[11px] text-[var(--tg-text-secondary)] mt-1">
+                  Post-close illegal request transition violating state invariant into absorbing TRAP state.
+                </p>
+                <div className="mt-2 text-[10px] text-[var(--tg-text-muted)] space-y-0.5 border-t border-[var(--tg-border-subtle)] pt-2">
+                  <div><strong>FSM:</strong> Violation (TRAP)</div>
+                  <div><strong>ML:</strong> Normal Feature Profile</div>
+                  <div><strong>Attribution:</strong> <span className="text-cyan-400 font-bold">fsm (≥60% floor)</span></div>
+                </div>
+              </div>
+              <button
+                onClick={() => handleRunShowcase('fsm_only')}
+                disabled={showcaseRunning}
+                className="w-full tg-btn-secondary text-xs flex items-center justify-center gap-1 hover:border-cyan-500/40"
+              >
+                <Play className="w-3 h-3 fill-current text-cyan-400" />
+                <span>Run FSM Violation</span>
+              </button>
+            </div>
+
+            {/* Scenario 3: ML-Only Anomaly */}
+            <div className="tg-panel p-4 flex flex-col justify-between space-y-3 font-mono border-t-2 border-t-blue-500">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-[var(--tg-text-muted)] uppercase">Scenario 3</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold">ML ONLY</span>
+                </div>
+                <h3 className="text-xs font-bold text-[var(--tg-text-primary)] mt-1">ML Outlier</h3>
+                <p className="text-[11px] text-[var(--tg-text-secondary)] mt-1">
+                  Protocol conforms to DFA, but session exhibits anomalous 4.5MB exfiltration byte burst.
+                </p>
+                <div className="mt-2 text-[10px] text-[var(--tg-text-muted)] space-y-0.5 border-t border-[var(--tg-border-subtle)] pt-2">
+                  <div><strong>FSM:</strong> Conforms (CLOSED)</div>
+                  <div><strong>ML:</strong> Isolation Forest Outlier</div>
+                  <div><strong>Attribution:</strong> <span className="text-blue-400 font-bold">ml (S_ML ≥ 0.55)</span></div>
+                </div>
+              </div>
+              <button
+                onClick={() => handleRunShowcase('ml_only')}
+                disabled={showcaseRunning}
+                className="w-full tg-btn-secondary text-xs flex items-center justify-center gap-1 hover:border-blue-500/40"
+              >
+                <Play className="w-3 h-3 fill-current text-blue-400" />
+                <span>Run ML Outlier</span>
+              </button>
+            </div>
+
+            {/* Scenario 4: Hybrid Consensus */}
+            <div className="tg-panel p-4 flex flex-col justify-between space-y-3 font-mono border-t-2 border-t-purple-500">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] text-[var(--tg-text-muted)] uppercase">Scenario 4</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-400 font-bold">HYBRID</span>
+                </div>
+                <h3 className="text-xs font-bold text-[var(--tg-text-primary)] mt-1">Hybrid Consensus</h3>
+                <p className="text-[11px] text-[var(--tg-text-secondary)] mt-1">
+                  Out-of-order 200 response without prior request plus massive volume burst. Both engines flag.
+                </p>
+                <div className="mt-2 text-[10px] text-[var(--tg-text-muted)] space-y-0.5 border-t border-[var(--tg-border-subtle)] pt-2">
+                  <div><strong>FSM:</strong> Violation (TRAP)</div>
+                  <div><strong>ML:</strong> Statistical Outlier</div>
+                  <div><strong>Attribution:</strong> <span className="text-purple-400 font-bold">hybrid (Consensus)</span></div>
+                </div>
+              </div>
+              <button
+                onClick={() => handleRunShowcase('hybrid')}
+                disabled={showcaseRunning}
+                className="w-full tg-btn-primary text-xs flex items-center justify-center gap-1"
+              >
+                <Play className="w-3 h-3 fill-current text-purple-300" />
+                <span>Run Hybrid Consensus</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Showcase Live Execution Results Panel */}
+          {showcaseResult && (
+            <div className="tg-panel p-5 space-y-4 font-mono text-xs border border-[var(--tg-border-default)] animate-fadeIn">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[var(--tg-border-subtle)]">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs uppercase font-bold text-[var(--tg-text-primary)]">
+                      Showcase Execution Result: {showcaseResult.scenario.toUpperCase()}
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-[var(--tg-accent-emerald)] border border-emerald-500/30 font-bold">
+                      {showcaseResult.source_label}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-[var(--tg-text-muted)] mt-0.5">
+                    Session ID: <strong className="text-[var(--tg-text-primary)]">{showcaseResult.session_id}</strong> | Events: {showcaseResult.events_count}
+                  </div>
+                </div>
+
+                {showcaseResult.created_alert ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-[var(--tg-text-muted)]">Attributed Alert:</span>
+                    <span className={`px-2.5 py-1 rounded text-xs font-bold border ${
+                      showcaseResult.created_alert.engine === 'fsm'
+                        ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                        : showcaseResult.created_alert.engine === 'ml'
+                        ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
+                        : 'bg-purple-500/20 text-purple-300 border-purple-500/40'
+                    }`}>
+                      {showcaseResult.created_alert.engine.toUpperCase()} ENGINE (Risk: {showcaseResult.created_alert.risk_score}%)
+                    </span>
+                  </div>
+                ) : (
+                  <span className="px-2.5 py-1 rounded text-xs font-bold bg-emerald-500/10 text-[var(--tg-accent-emerald)] border border-emerald-500/30">
+                    NORMAL (No Alert Warranted)
+                  </span>
+                )}
+              </div>
+
+              {/* 3 Component Evaluation Columns */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Column 1: FSM Evaluation */}
+                <div className="p-3.5 rounded-lg bg-[var(--tg-bg-base)] border border-[var(--tg-border-subtle)] space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-cyan-400">1. Deterministic FSM</span>
+                    <span className={showcaseResult.fsm_evaluation.violation ? 'text-[var(--tg-status-danger)]' : 'text-[var(--tg-accent-emerald)]'}>
+                      {showcaseResult.fsm_evaluation.violation ? 'VIOLATION' : 'CONFORMS'}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-[var(--tg-text-secondary)] space-y-1">
+                    <div>Ending State: <strong className="text-[var(--tg-text-primary)]">{showcaseResult.fsm_evaluation.final_state}</strong></div>
+                    <div>FSM Score: <strong>{showcaseResult.fsm_evaluation.risk_score}%</strong></div>
+                    <div className="text-[10px] text-[var(--tg-text-muted)] leading-tight pt-1">
+                      {showcaseResult.fsm_evaluation.explanation}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Column 2: ML Evaluation */}
+                <div className="p-3.5 rounded-lg bg-[var(--tg-bg-base)] border border-[var(--tg-border-subtle)] space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-blue-400">2. Statistical ML</span>
+                    <span className={showcaseResult.ml_evaluation.prediction === 'anomalous' ? 'text-[var(--tg-status-danger)]' : 'text-[var(--tg-accent-emerald)]'}>
+                      {showcaseResult.ml_evaluation.prediction.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-[var(--tg-text-secondary)] space-y-1">
+                    <div>Anomaly Score S_ML: <strong>{showcaseResult.ml_evaluation.anomaly_score}</strong></div>
+                    <div>ML Risk Score: <strong>{showcaseResult.ml_evaluation.risk_score}%</strong></div>
+                    <div className="text-[10px] text-[var(--tg-text-muted)] leading-tight pt-1">
+                      Isolation Forest model evaluated 15 flow features without heuristic shortcuts.
+                    </div>
+                  </div>
+                </div>
+
+                {/* Column 3: Hybrid Synthesis */}
+                <div className="p-3.5 rounded-lg bg-[var(--tg-bg-base)] border border-[var(--tg-border-subtle)] space-y-2">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-purple-400">3. Hybrid Synthesis</span>
+                    <span className="text-[var(--tg-text-primary)] font-bold">
+                      S_h: {showcaseResult.hybrid_evaluation.combined_risk_score}%
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-[var(--tg-text-secondary)] space-y-1">
+                    <div>Attribution: <strong className="uppercase text-[var(--tg-accent-emerald)]">{showcaseResult.hybrid_evaluation.attribution}</strong></div>
+                    <div>Formula: <code>{showcaseResult.hybrid_evaluation.formula}</code></div>
+                    {showcaseResult.hybrid_evaluation.floor_applied && (
+                      <div className="text-[10px] text-amber-400 font-semibold">
+                        ★ Mandatory 60% FSM Risk Floor Applied
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 2: DATASET BENCHMARKS (PRESERVED FROM PHASE 15) */}
+      {activeLabTab === 'benchmark' && (
+        <>
+          <div className="tg-panel p-5 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
           {/* Target Dataset Dropdown */}
           <div className="md:col-span-6">
@@ -142,7 +436,7 @@ export function DetectionLab() {
               disabled={runningEngines.fsm || !selectedDatasetId}
               className="flex-1 tg-btn-secondary text-xs disabled:opacity-40"
             >
-              <Binary className="w-3.5 h-3.5 text-emerald-400" />
+              <Binary className="w-3.5 h-3.5 text-[var(--tg-accent-emerald)]" />
               <span>{runningEngines.fsm ? 'Running FSM...' : 'Run FSM'}</span>
             </button>
 
@@ -151,7 +445,7 @@ export function DetectionLab() {
               disabled={runningEngines.ml || !selectedDatasetId}
               className="flex-1 tg-btn-secondary text-xs disabled:opacity-40"
             >
-              <Cpu className="w-3.5 h-3.5 text-blue-400" />
+              <Cpu className="w-3.5 h-3.5 text-[var(--tg-accent-blue)]" />
               <span>{runningEngines.ml ? 'Running ML...' : 'Run ML'}</span>
             </button>
 
@@ -167,7 +461,7 @@ export function DetectionLab() {
         </div>
 
         {runSuccess && (
-          <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-400 flex items-center gap-2">
+          <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
             <CheckCircle className="w-4 h-4" />
             <span>{runSuccess}</span>
           </div>
@@ -195,17 +489,18 @@ export function DetectionLab() {
             <div className="h-72 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 10, right: 20, left: -10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                  <XAxis dataKey="metric" stroke="#8896AB" fontSize={11} tickLine={false} />
-                  <YAxis stroke="#8896AB" fontSize={11} tickLine={false} domain={[0, 100]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--tg-border-subtle)" />
+                  <XAxis dataKey="metric" stroke="var(--tg-text-muted)" fontSize={11} tickLine={false} />
+                  <YAxis stroke="var(--tg-text-muted)" fontSize={11} tickLine={false} domain={[0, 100]} />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: '#141B2B',
-                      borderColor: 'rgba(255,255,255,0.1)',
-                      borderRadius: '6px',
+                      backgroundColor: 'var(--tg-bg-surface)',
+                      borderColor: 'var(--tg-border-default)',
+                      borderRadius: '8px',
                       fontSize: '11px',
                       fontFamily: 'JetBrains Mono',
-                      color: '#F8FAFC',
+                      color: 'var(--tg-text-primary)',
+                      boxShadow: 'var(--tg-shadow-md)',
                     }}
                   />
                   <Legend
@@ -226,7 +521,7 @@ export function DetectionLab() {
             <div className="tg-panel p-5 space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-[var(--tg-border-subtle)]">
                 <div className="flex items-center gap-2">
-                  <Binary className="w-4 h-4 text-emerald-400" />
+                  <Binary className="w-4 h-4 text-[var(--tg-accent-emerald)]" />
                   <span className="text-xs font-mono font-semibold uppercase text-[var(--tg-text-primary)]">
                     FSM Engine
                   </span>
@@ -248,7 +543,7 @@ export function DetectionLab() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[var(--tg-text-muted)]">F1 Score</span>
-                  <span className="text-emerald-400 font-semibold">
+                  <span className="text-[var(--tg-accent-emerald)] font-semibold">
                     {engines.fsm?.f1_score !== undefined ? `${(engines.fsm.f1_score * 100).toFixed(1)}%` : '—'}
                   </span>
                 </div>
@@ -265,7 +560,7 @@ export function DetectionLab() {
             <div className="tg-panel p-5 space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-[var(--tg-border-subtle)]">
                 <div className="flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-blue-400" />
+                  <Cpu className="w-4 h-4 text-[var(--tg-accent-blue)]" />
                   <span className="text-xs font-mono font-semibold uppercase text-[var(--tg-text-primary)]">
                     Isolation Forest ML
                   </span>
@@ -287,7 +582,7 @@ export function DetectionLab() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[var(--tg-text-muted)]">F1 Score</span>
-                  <span className="text-blue-400 font-semibold">
+                  <span className="text-[var(--tg-accent-blue)] font-semibold">
                     {engines.ml?.f1_score !== undefined ? `${(engines.ml.f1_score * 100).toFixed(1)}%` : '—'}
                   </span>
                 </div>
@@ -304,7 +599,7 @@ export function DetectionLab() {
             <div className="tg-panel p-5 space-y-3">
               <div className="flex items-center justify-between pb-2 border-b border-[var(--tg-border-subtle)]">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <Sparkles className="w-4 h-4 text-[var(--tg-status-warning)]" />
                   <span className="text-xs font-mono font-semibold uppercase text-[var(--tg-text-primary)]">
                     Hybrid Consensus
                   </span>
@@ -326,7 +621,7 @@ export function DetectionLab() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[var(--tg-text-muted)]">F1 Score</span>
-                  <span className="text-amber-400 font-semibold">
+                  <span className="text-[var(--tg-status-warning)] font-semibold">
                     {engines.hybrid?.f1_score !== undefined ? `${(engines.hybrid.f1_score * 100).toFixed(1)}%` : '—'}
                   </span>
                 </div>
@@ -350,6 +645,8 @@ export function DetectionLab() {
             Choose a benchmark dataset from the selector above to inspect cross-engine evaluation scores or run inference on demand.
           </p>
         </div>
+      )}
+        </>
       )}
     </div>
   );

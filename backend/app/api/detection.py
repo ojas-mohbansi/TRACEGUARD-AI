@@ -89,8 +89,19 @@ def run_detection(req: DetectionRequest, db: Session = Depends(get_db)):
     fsm_eng, ml_eng, hybrid_eng = get_engines()
     results: List[DetectionResultItem] = []
 
-    # Query events for the requested sessions
-    query = db.query(NetworkEvent).filter(NetworkEvent.session_id.in_(req.session_ids))
+    session_ids = list(req.session_ids) if req.session_ids else []
+    if req.dataset_id and not session_ids:
+        session_ids = [
+            s[0] for s in db.query(NetworkEvent.session_id)
+            .filter(NetworkEvent.dataset_id == req.dataset_id)
+            .distinct()
+            .all()
+        ]
+
+    # Query events for the requested sessions or dataset
+    query = db.query(NetworkEvent)
+    if session_ids:
+        query = query.filter(NetworkEvent.session_id.in_(session_ids))
     if req.dataset_id:
         query = query.filter(NetworkEvent.dataset_id == req.dataset_id)
     all_events = query.order_by(NetworkEvent.timestamp.asc()).all()
@@ -100,7 +111,9 @@ def run_detection(req: DetectionRequest, db: Session = Depends(get_db)):
     for ev in all_events:
         sessions_map.setdefault(ev.session_id, []).append(ev)
 
-    for sid in req.session_ids:
+    target_session_ids = session_ids if session_ids else list(sessions_map.keys())
+
+    for sid in target_session_ids:
         events = sessions_map.get(sid, [])
         event_dicts = _events_to_dicts(events)
 

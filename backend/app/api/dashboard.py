@@ -1,6 +1,7 @@
 """Dashboard statistics API router with workspace isolation and PostgreSQL/SQLite cross-compatibility."""
+from typing import Optional
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.db.database import get_db, engine
@@ -13,16 +14,39 @@ router = APIRouter()
 
 @router.get("/summary", response_model=DashboardSummaryResponse)
 def get_dashboard_summary(
+    time_range: Optional[str] = Query(None),
+    include_demo: bool = Query(True),
     ctx: WorkspaceContext = Depends(get_current_workspace_context),
     db: Session = Depends(get_db)
 ):
-    """Compute and return live dashboard metrics scoped to current workspace."""
+    """Compute and return live dashboard metrics scoped to current workspace with optional time filtering."""
     if ctx.workspace_id == "default-workspace":
         event_filter = (NetworkEvent.workspace_id == ctx.workspace_id) | (NetworkEvent.workspace_id == None) | (NetworkEvent.workspace_id == "default-workspace")
         alert_filter = (Alert.workspace_id == ctx.workspace_id) | (Alert.workspace_id == None) | (Alert.workspace_id == "default-workspace")
     else:
         event_filter = (NetworkEvent.workspace_id == ctx.workspace_id)
         alert_filter = (Alert.workspace_id == ctx.workspace_id)
+
+    if not include_demo:
+        alert_filter = alert_filter & (Alert.dataset_id != "demo_showcase") & (~Alert.session_id.like("sess_demo_%"))
+        event_filter = event_filter & (NetworkEvent.dataset_id != "demo_showcase") & (~NetworkEvent.session_id.like("sess_demo_%"))
+
+    if time_range and time_range != "all":
+        now = datetime.utcnow()
+        if time_range == "1h":
+            cutoff = now - timedelta(hours=1)
+        elif time_range == "24h":
+            cutoff = now - timedelta(hours=24)
+        elif time_range == "7d":
+            cutoff = now - timedelta(days=7)
+        elif time_range == "30d":
+            cutoff = now - timedelta(days=30)
+        else:
+            cutoff = None
+
+        if cutoff:
+            event_filter = event_filter & (NetworkEvent.timestamp >= cutoff)
+            alert_filter = alert_filter & (Alert.timestamp >= cutoff)
 
     total_events = db.query(NetworkEvent).filter(event_filter).count()
     active_sessions = db.query(func.count(func.distinct(NetworkEvent.session_id))).filter(event_filter).scalar() or 0
@@ -95,11 +119,13 @@ def get_dashboard_summary(
         .group_by(Alert.engine)
         .all()
     )
-    dist_map = {e.lower(): c for e, c in engine_counts}
+    dist_map = {e.lower(): c for e, c in engine_counts if e}
+    unknown_count = sum(c for e, c in engine_counts if not e or e.lower() not in ["fsm", "ml", "hybrid"])
     engine_distribution = EngineDistribution(
         fsm=dist_map.get("fsm", 0),
         ml=dist_map.get("ml", 0),
-        hybrid=dist_map.get("hybrid", 0)
+        hybrid=dist_map.get("hybrid", 0),
+        unknown=unknown_count
     )
 
     return DashboardSummaryResponse(

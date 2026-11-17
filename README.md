@@ -1,5 +1,10 @@
 # TraceGuard AI — Formal Protocol Verification Meets Hybrid Intrusion Detection
 
+<div align="center">
+  <img src="frontend/public/traceguard-ai-horizontal-color.svg" alt="TraceGuard AI Logo" width="380" />
+  <p><strong>Network protocol state machine verification and hybrid intrusion detection platform that mathematically audits network traffic against formal automata.</strong></p>
+</div>
+
 [![Theory of Computation](https://img.shields.io/badge/Course-Theory%20of%20Computation-blue.svg)](#formal-theory-of-computation-model)
 [![DFA States](https://img.shields.io/badge/DFA%20States-9%20Total%20(1%20Sink)-10B981.svg)](#formal-theory-of-computation-model)
 [![Alphabet](https://img.shields.io/badge/Alphabet%20%CE%A3-13%20Symbols-3B82F6.svg)](#formal-theory-of-computation-model)
@@ -238,7 +243,7 @@ python -m pytest backend/tests/ -v
 
 ## 8. Academic Documentation Directory
 
-Detailed theoretical proofs and reports are available in the [`docs/`](docs/) directory:
+TraceGuard AI maintains a comprehensive documentation suite indexed in [`docs/README.md`](docs/README.md) and [`docs/DOCUMENTATION_INDEX.md`](docs/DOCUMENTATION_INDEX.md):
 
 - [FORMAL_AUTOMATON.md](docs/FORMAL_AUTOMATON.md) — Mathematical specification of $\mathcal{M} = (Q, \Sigma, \delta, q_0, F)$ and completeness theorems.
 - [TRANSITION_TABLE.md](docs/TRANSITION_TABLE.md) — Exhaustive 117-cell deterministic transition matrix.
@@ -246,9 +251,9 @@ Detailed theoretical proofs and reports are available in the [`docs/`](docs/) di
 - [ALGORITHM_EXPLANATION.md](docs/ALGORITHM_EXPLANATION.md) — In-depth breakdown of FSM verification, Isolation Forest ML, and consensus logic.
 - [PROJECT_REPORT.md](docs/PROJECT_REPORT.md) — University project report with problem statement, methodology, and results.
 - [VIVA_PREPARATION.md](docs/VIVA_PREPARATION.md) — 60 viva voce defense questions, mathematical derivations, and counterarguments.
-- [FINAL_PRESENTATION_SCRIPT.md](docs/FINAL_PRESENTATION_SCRIPT.md) — Timed defense presentation script coordinated with slides.
-- [PHASE_9_FINAL_QA_REPORT.md](docs/PHASE_9_FINAL_QA_REPORT.md) — Full independent QA, route verification, and functional test report.
-- [UI_REDESIGN_REPORT.md](docs/UI_REDESIGN_REPORT.md) — Architectural design system overhaul and visual hierarchy specification.
+- [FINAL_PRESENTATION_SCRIPT.md](docs/FINAL_PRESENTATION_SCRIPT.md) — Timed defense demonstration script coordinated with the web interface.
+- [DOCUMENTATION_INDEX.md](docs/DOCUMENTATION_INDEX.md) — Master catalog, directory tree, and cross-reference index of all project documentation.
+- [Historical Phase Archive](docs/archive/) — Archived earlier milestone reports (Phases 14, 15, 16) and Phase 12 brand audits ([BRAND_REBRAND_FINAL_AUDIT.md](docs/archive/BRAND_REBRAND_FINAL_AUDIT.md), [BRAND_REBRAND_FINAL_QA.md](docs/archive/BRAND_REBRAND_FINAL_QA.md), [BRAND_REBRAND_SCREENSHOT_INDEX.md](docs/archive/BRAND_REBRAND_SCREENSHOT_INDEX.md)).
 
 ---
 

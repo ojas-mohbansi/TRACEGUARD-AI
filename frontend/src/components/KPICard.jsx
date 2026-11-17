@@ -2,34 +2,34 @@ import React from 'react';
 
 const VARIANT_CONFIG = {
   default: {
-    badgeBg: 'bg-white/5',
+    badgeBg: 'bg-[var(--tg-bg-canvas)]',
     badgeText: 'text-[var(--tg-text-secondary)]',
     borderColor: 'border-[var(--tg-border-subtle)]',
-    iconColor: 'text-emerald-400',
+    iconColor: 'text-[var(--tg-status-info)]',
   },
   info: {
-    badgeBg: 'bg-blue-500/10',
-    badgeText: 'text-blue-400',
-    borderColor: 'border-blue-500/20',
-    iconColor: 'text-blue-400',
+    badgeBg: 'bg-[var(--tg-status-info-subtle)]',
+    badgeText: 'text-[var(--tg-status-info)]',
+    borderColor: 'border-[var(--tg-status-info)]/20',
+    iconColor: 'text-[var(--tg-status-info)]',
   },
   warning: {
-    badgeBg: 'bg-amber-500/10',
-    badgeText: 'text-amber-400',
-    borderColor: 'border-amber-500/20',
-    iconColor: 'text-amber-400',
+    badgeBg: 'bg-[var(--tg-status-warning-subtle)]',
+    badgeText: 'text-[var(--tg-status-warning)]',
+    borderColor: 'border-[var(--tg-status-warning)]/20',
+    iconColor: 'text-[var(--tg-status-warning)]',
   },
   danger: {
-    badgeBg: 'bg-rose-500/10',
-    badgeText: 'text-rose-400',
-    borderColor: 'border-rose-500/20',
-    iconColor: 'text-rose-400',
+    badgeBg: 'bg-[var(--tg-status-danger-subtle)]',
+    badgeText: 'text-[var(--tg-status-danger)]',
+    borderColor: 'border-[var(--tg-status-danger)]/20',
+    iconColor: 'text-[var(--tg-status-danger)]',
   },
   success: {
-    badgeBg: 'bg-emerald-500/10',
-    badgeText: 'text-emerald-400',
-    borderColor: 'border-emerald-500/20',
-    iconColor: 'text-emerald-400',
+    badgeBg: 'bg-[var(--tg-accent-emerald-subtle)]',
+    badgeText: 'text-[var(--tg-accent-emerald)]',
+    borderColor: 'border-[var(--tg-accent-emerald)]/20',
+    iconColor: 'text-[var(--tg-accent-emerald)]',
   },
 };
 
@@ -45,7 +45,7 @@ export function KPICard({
   const config = VARIANT_CONFIG[variant] || VARIANT_CONFIG.default;
 
   return (
-    <div className="tg-panel p-4 flex flex-col justify-between transition-all hover:-translate-y-0.5">
+    <div className="tg-panel p-4 flex flex-col justify-between transition-transform duration-150 ease-out hover:-translate-y-0.5">
       <div className="flex items-center justify-between gap-2">
         <span className="text-[11px] font-mono uppercase tracking-wider text-[var(--tg-text-muted)] truncate">
           {title}
@@ -59,7 +59,7 @@ export function KPICard({
 
       <div className="mt-3">
         {loading ? (
-          <div className="h-7 w-20 bg-white/5 animate-pulse rounded" />
+          <div className="h-7 w-20 bg-[var(--tg-bg-canvas)] animate-pulse rounded" />
         ) : (
           <div className="flex items-baseline gap-1 font-mono">
             <span className="text-2xl font-semibold tracking-tight text-[var(--tg-text-primary)]">

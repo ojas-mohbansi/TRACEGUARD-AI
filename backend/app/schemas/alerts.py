@@ -32,12 +32,18 @@ class AlertUpdate(BaseModel):
 class AlertDetailResponse(BaseModel):
     alert_id: str
     session_id: str
+    dataset_id: Optional[str] = None
     timestamp: datetime
     engine: str
     severity: str
     risk_score: int
     prediction: str
     status: str
+    summary: Optional[str] = None
+    fsm_violation: Optional[bool] = False
+    ml_anomaly_score: Optional[float] = 0.0
+    responsible_events: Optional[List[Any]] = []
+    processing_time_ms: Optional[float] = None
     fsm_result: Optional[Dict[str, Any]] = None
     ml_result: Optional[Dict[str, Any]] = None
     hybrid_result: Optional[Dict[str, Any]] = None

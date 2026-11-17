@@ -1,0 +1,354 @@
+{
+  "timestamp": "2026-11-17T18:28:43.137Z",
+  "viewportsTested": [
+    "mobile",
+    "tablet",
+    "laptop",
+    "desktop"
+  ],
+  "routesTested": [
+    "/",
+    "/technology",
+    "/automaton",
+    "/architecture",
+    "/research",
+    "/presentation",
+    "/about",
+    "/styleguide",
+    "/non-existent-route-for-testing"
+  ],
+  "routeResults": [
+    {
+      "viewport": "desktop",
+      "route": "/",
+      "slug": "home",
+      "name": "Home",
+      "status": 200,
+      "title": "TraceGuard AI — Formal Protocol Verification & Network Intrusion Detection",
+      "overflow": false,
+      "forbiddenTermsFound": [],
+      "screenshot": "qa/phase19/screenshots/desktop_home.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/technology",
+      "slug": "technology",
+      "name": "Technology",
+      "status": 200,
+      "title": "Technology — FSM & Isolation Forest | TraceGuard AI",
+      "overflow": false,
+      "forbiddenTermsFound": [],
+      "screenshot": "qa/phase19/screenshots/desktop_technology.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/automaton",
+      "slug": "automaton",
+      "name": "Automaton Lab",
+      "status": 200,
+      "title": "Automaton Lab — 9-State HTTP DFA | TraceGuard AI",
+      "overflow": false,
+      "forbiddenTermsFound": [],
+      "screenshot": "qa/phase19/screenshots/desktop_automaton.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/architecture",
+      "slug": "architecture",
+      "name": "Architecture",
+      "status": 200,
+      "title": "Architecture — 8-Stage Detection Pipeline | TraceGuard AI",
+      "overflow": false,
+      "forbiddenTermsFound": [],
+      "screenshot": "qa/phase19/screenshots/desktop_architecture.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/research",
+      "slug": "research",
+      "name": "Research",
+      "status": 200,
+      "title": "Research & Evaluation Benchmarks | TraceGuard AI",
+      "overflow": false,
+      "forbiddenTermsFound": [],
+      "screenshot": "qa/phase19/screenshots/desktop_research.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/presentation",
+      "slug": "presentation",
+      "name": "Presentation",
+      "status": 200,
+      "title": "Defense Deck — Theory of Computation Capstone | TraceGuard AI",
+      "overflow": false,
+      "forbiddenTermsFound": [],
+      "screenshot": "qa/phase19/screenshots/desktop_presentation.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/about",
+      "slug": "about",
+      "name": "About",
+      "status": 200,
+      "title": "Academic Context — Dept of CSE 2026 | TraceGuard AI",
+      "overflow": false,
+      "forbiddenTermsFound": [],
+      "screenshot": "qa/phase19/screenshots/desktop_about.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/styleguide",
+      "slug": "styleguide",
+      "name": "Style Guide",
+      "status": 200,
+      "title": "Design System & Style Guide | TraceGuard AI",
+      "overflow": false,
+      "forbiddenTermsFound": [],
+      "screenshot": "qa/phase19/screenshots/desktop_styleguide.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/non-existent-route-for-testing",
+      "slug": "404",
+      "name": "404 Trap State",
+      "status": 200,
+      "title": "Page not found — Protocol State TRAP | TraceGuard AI",
+      "overflow": false,
+      "forbiddenTermsFound": [],
+      "screenshot": "qa/phase19/screenshots/desktop_404.png"
+    },
+    {
+      "viewport": "laptop",
+      "route": "/",
+      "slug": "home",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/laptop_home.png"
+    },
+    {
+      "viewport": "laptop",
+      "route": "/technology",
+      "slug": "technology",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/laptop_technology.png"
+    },
+    {
+      "viewport": "laptop",
+      "route": "/automaton",
+      "slug": "automaton",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/laptop_automaton.png"
+    },
+    {
+      "viewport": "laptop",
+      "route": "/architecture",
+      "slug": "architecture",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/laptop_architecture.png"
+    },
+    {
+      "viewport": "laptop",
+      "route": "/research",
+      "slug": "research",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/laptop_research.png"
+    },
+    {
+      "viewport": "laptop",
+      "route": "/presentation",
+      "slug": "presentation",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/laptop_presentation.png"
+    },
+    {
+      "viewport": "tablet",
+      "route": "/",
+      "slug": "home",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/tablet_home.png"
+    },
+    {
+      "viewport": "tablet",
+      "route": "/automaton",
+      "slug": "automaton",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/tablet_automaton.png"
+    },
+    {
+      "viewport": "tablet",
+      "route": "/architecture",
+      "slug": "architecture",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/tablet_architecture.png"
+    },
+    {
+      "viewport": "tablet",
+      "route": "/research",
+      "slug": "research",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/tablet_research.png"
+    },
+    {
+      "viewport": "tablet",
+      "route": "/presentation",
+      "slug": "presentation",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/tablet_presentation.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/",
+      "slug": "home",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/mobile_home.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/technology",
+      "slug": "technology",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/mobile_technology.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/automaton",
+      "slug": "automaton",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/mobile_automaton.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/architecture",
+      "slug": "architecture",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/mobile_architecture.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/research",
+      "slug": "research",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/mobile_research.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/presentation",
+      "slug": "presentation",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/mobile_presentation.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/about",
+      "slug": "about",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/mobile_about.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/styleguide",
+      "slug": "styleguide",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/mobile_styleguide.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/non-existent-route-for-testing",
+      "slug": "404",
+      "overflow": false,
+      "screenshot": "qa/phase19/screenshots/mobile_404.png"
+    }
+  ],
+  "interactiveTests": [
+    {
+      "test": "Mobile Navigation Drawer Open & Links",
+      "passed": true,
+      "details": {
+        "exists": true,
+        "count": 8,
+        "items": [
+          "Home",
+          "Technology",
+          "Automaton Lab",
+          "Architecture",
+          "Research",
+          "Defense Deck",
+          "Academic Context",
+          "Automaton Lab"
+        ]
+      },
+      "screenshot": "qa/phase19/screenshots/mobile_drawer_open.png"
+    },
+    {
+      "test": "Mobile Drawer Navigation to /automaton",
+      "passed": true,
+      "targetUrl": "http://localhost:4173/automaton"
+    },
+    {
+      "test": "Automaton Lab: Auth Bypass triggers TRAP sink",
+      "passed": true,
+      "details": {
+        "hasTrap": true,
+        "fullSnippet": "Current Automaton State:\nTRAP\nReset (IDLE)\nDispatch Input Symbol (σ ∈ Σ):\n+CONNECT\n+REQUEST\n+AUTH_SUCCESS\n+AUTH_FAILURE\n+RESPONSE_200\n+RESPONSE_301\n+RESPONSE_401\n+RESPONSE_403\n+RESPONSE_500\n+CLOSE\n+TIMEOUT\n+MALFORMED\n+ERROR_RESPONSE\nExecuted Sequence Trace (w):\n1. CONNECT\n2. REQUEST\n3. RESPONSE_200\n"
+      },
+      "screenshot": "qa/phase19/screenshots/interactive_automaton_auth_bypass_trap.png"
+    },
+    {
+      "test": "Automaton Lab: Normal 200 OK completes to CLOSED (Accepted)",
+      "passed": true,
+      "screenshot": "qa/phase19/screenshots/interactive_automaton_normal_accepted.png"
+    },
+    {
+      "test": "DFADiagram: State Click & Inspect",
+      "passed": true,
+      "screenshot": "qa/phase19/screenshots/interactive_dfa_state_inspect.png"
+    }
+  ],
+  "forbiddenWordChecks": [],
+  "consoleErrors": [],
+  "consoleWarnings": [],
+  "networkFailures": [],
+  "accessibilityFindings": [
+    {
+      "test": "Keyboard Tab Focus Ring Propagation",
+      "passed": true,
+      "focusedSequence": [
+        {
+          "tagName": "A",
+          "ariaLabel": null,
+          "text": "Skip to content",
+          "hasOutline": true
+        },
+        {
+          "tagName": "A",
+          "ariaLabel": "TraceGuard AI home",
+          "text": "TraceGuard AI",
+          "hasOutline": true
+        },
+        {
+          "tagName": "A",
+          "ariaLabel": null,
+          "text": "Technology",
+          "hasOutline": true
+        },
+        {
+          "tagName": "A",
+          "ariaLabel": null,
+          "text": "Automaton Lab",
+          "hasOutline": true
+        },
+        {
+          "tagName": "A",
+          "ariaLabel": null,
+          "text": "Architecture",
+          "hasOutline": true
+        },
+        {
+          "tagName": "A",
+          "ariaLabel": null,
+          "text": "Research",
+          "hasOutline": true
+        }
+      ]
+    }
+  ]
+}

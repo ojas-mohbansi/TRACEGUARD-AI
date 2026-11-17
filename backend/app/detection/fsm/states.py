@@ -88,7 +88,8 @@ HTTP_FSM_DEFINITION: Dict[str, Any] = {
         {"id": "AUTH_FAILED", "label": "Auth Failed", "description": "Authentication failed", "is_initial": False, "is_final": False},
         {"id": "RESPONSE_SENT", "label": "Response Sent", "description": "HTTP response sent", "is_initial": False, "is_final": False},
         {"id": "ERROR", "label": "Error", "description": "Error state", "is_initial": False, "is_final": False},
-        {"id": "CLOSED", "label": "Closed", "description": "Connection closed", "is_initial": False, "is_final": True}
+        {"id": "CLOSED", "label": "Closed", "description": "Connection closed", "is_initial": False, "is_final": True},
+        {"id": "TRAP", "label": "Trap", "description": "Absorbing dead state", "is_initial": False, "is_final": False}
     ],
     "transitions": [
         {"from": "IDLE", "to": "CONNECTED", "event": "CONNECT", "description": "Client connects"},

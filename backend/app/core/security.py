@@ -56,10 +56,12 @@ def get_current_user(
     db: Session = Depends(get_db)
 ) -> User:
     """Dependency to retrieve the authenticated user from JWT token.
-    In development mode, unauthenticated requests fall back to the demo user.
+    In LOCAL_ACADEMIC mode: If token is missing, automatically defaults to
+    the internal local academic identity without credentials or browser token storage.
+    In PRODUCTION mode: Strictly raises 401 Unauthorized if token is missing or invalid.
     """
     if not token:
-        if getattr(settings, "ENVIRONMENT", "development") == "development":
+        if settings.LOCAL_ACADEMIC_MODE:
             return _ensure_demo_user(db)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -133,9 +135,43 @@ def get_current_workspace_context(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ) -> WorkspaceContext:
-    """Validate user's membership and permissions in the requested workspace."""
-    # If header not provided, find the user's first available workspace
+    """Validate user's membership and permissions in the requested workspace.
+    In LOCAL_ACADEMIC mode: Automatically binds to default-workspace and ignores client spoofing.
+    In PRODUCTION mode: Strictly enforces membership and workspace isolation.
+    """
+    if settings.LOCAL_ACADEMIC_MODE and current_user.username == settings.DEMO_USERNAME:
+        from app.api.auth import ensure_demo_user_and_workspace
+        _, ws = ensure_demo_user_and_workspace(db)
+        return WorkspaceContext(workspace=ws, user=current_user, role=RoleEnum.OWNER.value)
+
+    # If header not provided, find the user's workspace or default
     if not x_workspace_id:
+
+        membership = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == current_user.id).first()
+        if not membership:
+            # Auto-create a default workspace for this user if none exists
+            slug = f"{current_user.username}-personal"
+            ws = Workspace(
+                name=f"{current_user.username.capitalize()}'s Workspace",
+                slug=slug,
+                owner_id=current_user.id,
+                subscription_tier="free"
+            )
+            db.add(ws)
+            db.commit()
+            db.refresh(ws)
+
+            member = WorkspaceMember(
+                workspace_id=ws.workspace_id,
+                user_id=current_user.id,
+                role=RoleEnum.OWNER.value
+            )
+            db.add(member)
+            db.commit()
+            return WorkspaceContext(workspace=ws, user=current_user, role=RoleEnum.OWNER.value)
+
+        ws = db.query(Workspace).filter(Workspace.workspace_id == membership.workspace_id).first()
+        return WorkspaceContext(workspace=ws, user=current_user, role=membership.role)
         membership = db.query(WorkspaceMember).filter(WorkspaceMember.user_id == current_user.id).first()
         if not membership:
             # Auto-create a default workspace for this user if none exists

@@ -38,7 +38,7 @@ export function Settings() {
       {/* Editorial Header */}
       <div className="pb-2 border-b border-[var(--tg-border-subtle)]">
         <div className="flex items-center gap-2">
-          <Sliders className="w-4 h-4 text-emerald-400" />
+          <Sliders className="w-4 h-4 text-[var(--tg-accent-emerald)]" />
           <h1 className="text-lg font-semibold tracking-tight text-[var(--tg-text-primary)]">
             System Configuration & Hybrid Tuning
           </h1>
@@ -51,14 +51,14 @@ export function Settings() {
       {/* Consensus Tuning Panel */}
       <div className="tg-panel p-5 space-y-4">
         <div className="flex items-center gap-2 pb-3 border-b border-[var(--tg-border-subtle)]">
-          <Layers className="w-4 h-4 text-emerald-400" />
+          <Layers className="w-4 h-4 text-[var(--tg-accent-emerald)]" />
           <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-[var(--tg-text-primary)]">
             Hybrid Consensus Weight Calibration
           </h2>
         </div>
 
         {/* Academic scope notice */}
-        <div className="mb-2 px-3 py-2 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] font-mono text-amber-400">
+        <div className="mb-2 px-3 py-2 rounded bg-amber-500/10 border border-amber-500/20 text-[11px] font-mono text-[var(--tg-status-warning)]">
           <span className="font-semibold">Academic Demonstration Scope:</span> Weight values are saved locally to your browser for reference. The deployed hybrid engine uses the standard consensus formula S_h = 0.6·S_FSM + 0.4·S_ML as defined in the project specification. No backend API endpoint for runtime weight mutation is provided.
         </div>
         <form onSubmit={handleSaveWeights} className="space-y-5">
@@ -67,10 +67,10 @@ export function Settings() {
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-mono">
                 <span className="text-[var(--tg-text-muted)] uppercase flex items-center gap-1.5">
-                  <Binary className="w-3.5 h-3.5 text-emerald-400" />
+                  <Binary className="w-3.5 h-3.5 text-[var(--tg-accent-emerald)]" />
                   <span>FSM Invariant Weight (reference)</span>
                 </span>
-                <span className="text-emerald-400 font-semibold">{(fsmWeight * 100).toFixed(0)}%</span>
+                <span className="text-[var(--tg-accent-emerald)] font-semibold">{(fsmWeight * 100).toFixed(0)}%</span>
               </div>
               <input
                 type="range"
@@ -94,10 +94,10 @@ export function Settings() {
             <div className="space-y-2">
               <div className="flex justify-between text-xs font-mono">
                 <span className="text-[var(--tg-text-muted)] uppercase flex items-center gap-1.5">
-                  <Cpu className="w-3.5 h-3.5 text-blue-400" />
+                  <Cpu className="w-3.5 h-3.5 text-[var(--tg-accent-blue)]" />
                   <span>Isolation Forest ML Weight (reference)</span>
                 </span>
-                <span className="text-blue-400 font-semibold">{(mlWeight * 100).toFixed(0)}%</span>
+                <span className="text-[var(--tg-accent-blue)] font-semibold">{(mlWeight * 100).toFixed(0)}%</span>
               </div>
               <input
                 type="range"
@@ -122,7 +122,7 @@ export function Settings() {
           <div className="space-y-2 pt-2 border-t border-[var(--tg-border-subtle)]">
             <div className="flex justify-between text-xs font-mono">
               <span className="text-[var(--tg-text-muted)] uppercase">FSM Violation Risk Floor</span>
-              <span className="text-amber-400 font-semibold">{minViolationFloor}%</span>
+              <span className="text-[var(--tg-status-warning)] font-semibold">{minViolationFloor}%</span>
             </div>
             <input
               type="range"
@@ -140,7 +140,7 @@ export function Settings() {
 
           <div className="flex items-center justify-between pt-2">
             {savedSuccess ? (
-              <span className="text-xs font-mono text-emerald-400 flex items-center gap-1.5">
+              <span className="text-xs font-mono text-[var(--tg-accent-emerald)] font-semibold flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" />
                 <span>Reference weights saved to browser</span>
               </span>
@@ -155,34 +155,34 @@ export function Settings() {
         </form>
       </div>
 
-      {/* Operator Profile Card */}
+      {/* Academic Environment Profile Card */}
       <div className="tg-panel p-5 space-y-4">
         <div className="flex items-center gap-2 pb-3 border-b border-[var(--tg-border-subtle)]">
-          <User className="w-4 h-4 text-emerald-400" />
+          <Shield className="w-4 h-4 text-[var(--tg-accent-emerald)]" />
           <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-[var(--tg-text-primary)]">
-            Active Operator Profile
+            Academic Research Environment
           </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-[11px] font-mono text-[var(--tg-text-muted)] mb-1.5 uppercase">
-              Operator Handle
+              Demonstration Role
             </label>
             <input
               type="text"
-              value={username}
+              value="Theory of Computation Researcher"
               disabled
               className="tg-input text-xs font-mono opacity-80"
             />
           </div>
           <div>
             <label className="block text-[11px] font-mono text-[var(--tg-text-muted)] mb-1.5 uppercase">
-              Workstation Email
+              Runtime Mode
             </label>
             <input
-              type="email"
-              value={email}
+              type="text"
+              value="LOCAL_ACADEMIC (Auth-Free Sandbox)"
               disabled
               className="tg-input text-xs font-mono opacity-80"
             />
@@ -190,8 +190,8 @@ export function Settings() {
         </div>
 
         <div className="pt-2 flex items-center justify-between text-xs font-mono text-[var(--tg-text-muted)]">
-          <span>Role: Security Operations Center (SOC) Analyst</span>
-          <span className="tg-badge tg-badge-emerald">Authorized</span>
+          <span>Active Workspace: default-workspace</span>
+          <span className="tg-badge tg-badge-emerald">Academic Verified</span>
         </div>
       </div>
     </div>

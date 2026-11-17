@@ -1,0 +1,104 @@
+{
+  "platform": "Windows",
+  "architecture": "64bit",
+  "python_executable": "C:\\Users\\styli\\AppData\\Local\\Programs\\Python\\Python311\\python.exe",
+  "python_version": "3.11.9",
+  "state": "CAPTURE_READY",
+  "available": true,
+  "steps": {
+    "1_driver_installed": true,
+    "2_service_running": true,
+    "3_pcap_api_loaded": true,
+    "4_interfaces_enumerated": true,
+    "5_handle_open_test": true,
+    "6_capture_ready": true
+  },
+  "driver_info": {
+    "provider": "Npcap",
+    "version": "Npcap version 1.90, based on libpcap version 1.10.7 (64-bit time_t)",
+    "dll_path": "C:\\Windows\\System32\\Npcap\\wpcap.dll",
+    "admin_only": false,
+    "winpcap_compatible": true
+  },
+  "interfaces": [
+    {
+      "id": "\\Device\\NPF_{F5650A2F-F38C-460A-8B5D-295F4AB2B4EC}",
+      "name": "Local Area Connection* 6",
+      "description": "WAN Miniport (IPv6)",
+      "ip": "",
+      "mac": "",
+      "is_up": true
+    },
+    {
+      "id": "\\Device\\NPF_{9596089C-BB22-4A63-8A6D-19A8A743D799}",
+      "name": "Local Area Connection* 5",
+      "description": "WAN Miniport (IP)",
+      "ip": "",
+      "mac": "",
+      "is_up": true
+    },
+    {
+      "id": "\\Device\\NPF_{15353573-8528-4A1B-BA35-7253A88A636E}",
+      "name": "Local Area Connection* 4",
+      "description": "WAN Miniport (Network Monitor)",
+      "ip": "",
+      "mac": "",
+      "is_up": true
+    },
+    {
+      "id": "\\Device\\NPF_{9C499D01-DDCC-41F0-AF55-67187AB2AB33}",
+      "name": "Bluetooth Network Connection",
+      "description": "Bluetooth Device (Personal Area Network)",
+      "ip": "169.254.139.100",
+      "mac": "70:08:94:71:f9:52",
+      "is_up": true
+    },
+    {
+      "id": "\\Device\\NPF_{D6B96ABE-A761-4270-87A2-3661CD61B13C}",
+      "name": "Wi-Fi",
+      "description": "Realtek 8852CE WiFi 6E PCI-E NIC",
+      "ip": "192.168.107.105",
+      "mac": "70:08:94:71:f9:51",
+      "is_up": true
+    },
+    {
+      "id": "\\Device\\NPF_{D039BD58-8160-4D95-805B-6CD7BA03F50F}",
+      "name": "Local Area Connection* 12",
+      "description": "Microsoft Wi-Fi Direct Virtual Adapter #3",
+      "ip": "169.254.35.52",
+      "mac": "76:08:94:71:f9:51",
+      "is_up": true
+    },
+    {
+      "id": "\\Device\\NPF_{6DB95BCC-BAAA-4A1A-8710-5B027974C686}",
+      "name": "Local Area Connection* 9",
+      "description": "Microsoft Wi-Fi Direct Virtual Adapter",
+      "ip": "169.254.48.133",
+      "mac": "72:08:94:71:f9:51",
+      "is_up": true
+    },
+    {
+      "id": "\\Device\\NPF_{37217669-42DA-4657-A55B-0D995D328250}",
+      "name": "Tailscale",
+      "description": "Tailscale Tunnel",
+      "ip": "169.254.83.107",
+      "mac": "",
+      "is_up": true
+    },
+    {
+      "id": "\\Device\\NPF_Loopback",
+      "name": "Loopback Pseudo-Interface 1",
+      "description": "Software Loopback Interface 1",
+      "ip": "127.0.0.1",
+      "mac": "00:00:00:00:00:00",
+      "is_up": true
+    }
+  ],
+  "test_interface": {
+    "id": "\\Device\\NPF_{D6B96ABE-A761-4270-87A2-3661CD61B13C}",
+    "name": "Wi-Fi",
+    "ip": "192.168.107.105"
+  },
+  "message": "Npcap runtime active and validated. Npcap version 1.90, based on libpcap version 1.10.7 (64-bit time_t) operational. Successfully verified live capture handle on 'Wi-Fi' (192.168.107.105).",
+  "guidance": "Ready for passive promiscuous or local packet capture on authorized network adapters."
+}

@@ -1,0 +1,324 @@
+@import 'tailwindcss';
+
+/*
+  TraceGuard AI design tokens.
+  Dark-first software/security tool. Two semantic light sources:
+    signal (blue #3B82F6)  — protocol state machines, network flow, primary action
+    trace  (emerald #10B981) — ML anomaly paths, detection results, secondary
+  Plus threat (red) and warn (amber) for status.
+
+  Text is always AA-compliant on its surface.
+  Every rounded rectangle is a squircle (corner-shape: squircle in base layer).
+*/
+@theme {
+  /* ── Typography ──────────────────────────────────────────── */
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+
+  /* ── Surfaces ────────────────────────────────────────────── */
+  --color-bg:        #000000;    /* Page root — absolute black */
+  --color-bg-deep:   #030508;    /* Behind hero gradients */
+  --color-surface:   #0a0d16;    /* Cards, panels on bg */
+  --color-surface-2: #0e1420;    /* Elevated cards, nested panels */
+  --color-raised:    #141928;    /* Tooltips, popovers, modals */
+  --color-overlay:   #1a2033;    /* Highest elevation surface */
+
+  /* ── Borders ─────────────────────────────────────────────── */
+  --color-line:        rgb(255 255 255 / 0.08);   /* Default card/panel border */
+  --color-line-mid:    rgb(255 255 255 / 0.11);   /* Slightly visible dividers */
+  --color-line-strong: rgb(255 255 255 / 0.16);   /* Hover/focus borders */
+
+  /* ── Text hierarchy ──────────────────────────────────────── */
+  --color-fg:    #ffffff;   /* Primary — headlines, strong labels */
+  --color-soft:  #d6dae2;   /* Body copy, secondary labels */
+  --color-muted: #9ca3af;   /* Supporting text, placeholders */
+  --color-faint: #6b7280;   /* Timestamps, captions, disabled */
+
+  /* ── Signal (blue) — FSM / protocol / primary action ─────── */
+  --color-signal:        #3B82F6;   /* Brand ink — primary CTA, links, protocol */
+  --color-signal-soft:   #60a5fa;   /* Hover state, text on dark for AA */
+  --color-signal-dim:    #1d4ed8;   /* Pressed state, deep accent */
+  --color-signal-wash:   rgb(59 130 246 / 0.12);  /* Subtle tinted bg */
+  --color-signal-glow:   rgb(59 130 246 / 0.35);  /* Box-shadow glow */
+  --color-signal-border: rgb(59 130 246 / 0.30);  /* Tinted card borders */
+
+  /* ── Trace (emerald) — ML / anomaly / secondary ──────────── */
+  --color-trace:        #10B981;   /* Brand accent — anomaly, ML, secondary CTA */
+  --color-trace-soft:   #34d399;   /* Hover, text on dark */
+  --color-trace-dim:    #059669;   /* Pressed, deep accent */
+  --color-trace-wash:   rgb(16 185 129 / 0.10);
+  --color-trace-glow:   rgb(16 185 129 / 0.30);
+  --color-trace-border: rgb(16 185 129 / 0.25);
+
+  /* ── Threat (red) — alerts / intrusion events ────────────── */
+  --color-threat:        #ef4444;
+  --color-threat-soft:   #f87171;
+  --color-threat-dim:    #b91c1c;
+  --color-threat-wash:   rgb(239 68 68 / 0.10);
+  --color-threat-glow:   rgb(239 68 68 / 0.30);
+  --color-threat-border: rgb(239 68 68 / 0.25);
+
+  /* ── Warn (amber) — warnings / rate limits ───────────────── */
+  --color-warn:        #f59e0b;
+  --color-warn-soft:   #fbbf24;
+  --color-warn-dim:    #b45309;
+  --color-warn-wash:   rgb(245 158 11 / 0.10);
+  --color-warn-border: rgb(245 158 11 / 0.25);
+
+  /* ── Success (green) — clean state / resolved ────────────── */
+  --color-ok:        #22c55e;
+  --color-ok-soft:   #4ade80;
+  --color-ok-wash:   rgb(34 197 94 / 0.10);
+  --color-ok-border: rgb(34 197 94 / 0.25);
+
+  /* Backward compatibility aliases for transition */
+  --color-plasma: #3B82F6;
+  --color-plasma-text: #60a5fa;
+  --color-danger: #ef4444;
+  --color-success: #10B981;
+  --color-fire-1: #ef4444;
+  --color-fire-2: #f59e0b;
+  --color-fire-3: #fbbf24;
+  --color-ember: #b91c1c;
+  --color-ocean-1: #0a0d16;
+  --color-ocean-2: #0e1420;
+  --color-ocean-3: #1d4ed8;
+  --color-sky: #60a5fa;
+  --color-ice: #d6dae2;
+
+  /* ── Border radius (squircle scale) ──────────────────────── */
+  --radius-control: 999px;   /* Pill buttons, chips, badges */
+  --radius-field:   14px;    /* Inputs, selects, small cards */
+  --radius-card-sm: 20px;    /* Compact cards */
+  --radius-card:    28px;    /* Standard cards */
+  --radius-panel:   32px;    /* Section panels, modals */
+  --radius-xl:      40px;    /* Hero panels, feature spotlights */
+
+  /* ── Shadows ─────────────────────────────────────────────── */
+  --shadow-card:          0 40px 80px -30px rgb(0 0 0 / 0.85);
+  --shadow-panel:         0 60px 120px -40px rgb(0 0 0 / 0.9);
+  --shadow-glow-signal:   0 0 120px -10px rgb(59 130 246 / 0.35);
+  --shadow-glow-trace:    0 0 120px -10px rgb(16 185 129 / 0.30);
+  --shadow-glow-threat:   0 0 80px -10px rgb(239 68 68 / 0.30);
+  --shadow-glow-plasma:   0 0 120px -10px rgb(59 130 246 / 0.35);
+  --shadow-glow-fire:     0 0 80px -10px rgb(239 68 68 / 0.30);
+
+  /* ── Motion easing ───────────────────────────────────────── */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);  /* Overshoot spring */
+
+  /* ── Named animations ────────────────────────────────────── */
+  --animate-pulse-signal: pulse-signal 4.8s ease-in-out infinite;
+  --animate-pulse-trace:  pulse-trace  6s   ease-in-out infinite;
+  --animate-plasma:       pulse-signal 4.8s ease-in-out infinite;
+  --animate-float:        float        8s   ease-in-out infinite;
+  --animate-shimmer:      shimmer      1.6s linear      infinite;
+  --animate-spin-slow:    spin         1s   linear      infinite;
+  --animate-scan:         scan         6s   ease-in-out infinite;
+  --animate-flicker:      flicker      3s   ease-in-out infinite;
+
+  @keyframes pulse-signal {
+    0%, 100% { opacity: 0.80; transform: scale(1);    }
+    50%       { opacity: 1;    transform: scale(1.04); }
+  }
+  @keyframes pulse-trace {
+    0%, 100% { opacity: 0.75; transform: scale(1);    }
+    50%       { opacity: 1;    transform: scale(1.03); }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0);   }
+    50%       { transform: translateY(-6px); }
+  }
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to   { background-position:  200% 0; }
+  }
+  @keyframes scan {
+    0%, 100% { transform: translateX(-30%); opacity: 0.4; }
+    50%       { transform: translateX( 30%); opacity: 0.9; }
+  }
+  @keyframes flicker {
+    0%, 100% { opacity: 1;    }
+    92%       { opacity: 1;    }
+    93%       { opacity: 0.6;  }
+    94%       { opacity: 1;    }
+    96%       { opacity: 0.75; }
+    97%       { opacity: 1;    }
+  }
+}
+
+@layer base {
+  /* Every rounded rectangle is a squircle */
+  *, *::before, *::after {
+    corner-shape: squircle;
+    border-color: var(--color-line);
+  }
+  .round, .round::before, .round::after {
+    corner-shape: round;  /* Opt-out for true circles */
+  }
+
+  html {
+    background-color: var(--color-bg);
+    color-scheme: dark;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss03';
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background: rgb(59 130 246 / 0.35);
+    color: #fff;
+  }
+
+  button, input, textarea, select {
+    font: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-signal-soft);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* Depth: inset edge highlight drawn over children (applied to cards/panels) */
+@utility depth {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      inset 0 0 0 1px var(--depth-edge, rgb(255 255 255 / 0.10)),
+      inset 0 1px 0   var(--depth-highlight, rgb(255 255 255 / 0.14));
+  }
+}
+
+/* Display type: tight tracking + compressed leading */
+@utility display {
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+}
+
+/* Skeleton shimmer for loading states */
+@utility skeleton {
+  background: linear-gradient(
+    90deg,
+    rgb(255 255 255 / 0.04) 25%,
+    rgb(255 255 255 / 0.09) 50%,
+    rgb(255 255 255 / 0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+}
+
+/* Soft film grain over gradient hero sections */
+@utility grain {
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  opacity: 0.06;
+  mix-blend-mode: overlay;
+}
+
+/* Signal (blue) gradient page wash — behind hero sections */
+@utility signal-wash-bg {
+  background: linear-gradient(180deg,
+    #000 0%,
+    #03061a 40%,
+    #071233 75%,
+    #0e2060 100%
+  );
+}
+
+/* Alias ocean-wash for backwards compatibility */
+@utility ocean-wash {
+  background: linear-gradient(180deg,
+    #000 0%,
+    #03061a 40%,
+    #071233 75%,
+    #0e2060 100%
+  );
+}
+
+/* Trace (emerald) gradient wash — behind ML/anomaly sections */
+@utility trace-wash-bg {
+  background: linear-gradient(180deg,
+    #000 0%,
+    #030f0a 40%,
+    #061f14 75%,
+    #0b3d26 100%
+  );
+}
+
+/* Text utility classes */
+@utility text-balance { text-wrap: balance; }
+@utility text-pretty  { text-wrap: pretty;  }
+
+/* Range slider: a signal fill up to the thumb */
+.range {
+  appearance: none;
+  height: 40px;
+  background: transparent;
+  cursor: pointer;
+}
+.range::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--color-signal) var(--fill, 50%),
+    rgb(255 255 255 / 0.12) var(--fill, 50%)
+  );
+}
+.range::-moz-range-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--color-signal) var(--fill, 50%),
+    rgb(255 255 255 / 0.12) var(--fill, 50%)
+  );
+}
+.range::-webkit-slider-thumb {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  margin-top: -8px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 5px var(--color-signal-glow), 0 2px 8px rgb(0 0 0 / 0.4);
+  transition: transform 0.15s;
+}
+.range:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+.range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 5px var(--color-signal-glow);
+}

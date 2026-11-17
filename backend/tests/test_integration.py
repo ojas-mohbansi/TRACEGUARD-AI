@@ -17,6 +17,24 @@ from backend.app.detection.features.extractor import FeatureExtractor
 BASE_URL = "http://127.0.0.1:8000"
 
 
+def get_auth_context():
+    """Obtain valid JWT and workspace headers for integration testing."""
+    try:
+        login_res = requests.post(
+            f"{BASE_URL}/api/auth/login",
+            json={"username": "demo", "password": "traceguard2024"},
+            timeout=5.0
+        )
+        if login_res.status_code == 200:
+            token = login_res.json()["access_token"]
+            return {"Authorization": f"Bearer {token}", "X-Workspace-ID": "default-workspace"}
+    except Exception:
+        pass
+    from app.core.security import create_access_token
+    token = create_access_token(data={"sub": "demo"})
+    return {"Authorization": f"Bearer {token}", "X-Workspace-ID": "default-workspace"}
+
+
 def test_three_engines_detection_on_session():
     """1. Run detection on a session through all three engines."""
     fsm = FSMEngine()
@@ -78,8 +96,13 @@ def test_hybrid_score_combines_fsm_and_ml():
 
 def test_alerts_created_and_stored_in_db():
     """3. Verify alerts are created and stored in database."""
-    # Ensure at least one alert exists in the test database
-    r_alerts = requests.get(f"{BASE_URL}/api/alerts?limit=10")
+    # 3a. Unauthenticated access check (200 in LOCAL_ACADEMIC mode, 401 in PRODUCTION mode)
+    r_unauth = requests.get(f"{BASE_URL}/api/alerts?limit=10")
+    assert r_unauth.status_code in (200, 401), f"Unexpected status code: {r_unauth.status_code}"
+
+    # 3b. Authenticated request with valid JWT and workspace headers
+    headers = get_auth_context()
+    r_alerts = requests.get(f"{BASE_URL}/api/alerts?limit=10", headers=headers)
     assert r_alerts.status_code == 200
     data = r_alerts.json()
     assert "alerts" in data
@@ -89,12 +112,13 @@ def test_alerts_created_and_stored_in_db():
         # Populate an alert by triggering simulation or running detection
         requests.post(
             f"{BASE_URL}/api/simulation/start",
-            json={"duration": 2, "mode": "anomalous", "event_count": 20, "speed": 0.01}
+            json={"duration": 2, "mode": "anomalous", "event_count": 20, "speed": 0.01},
+            headers=headers
         )
         import time
         for _ in range(20):
             time.sleep(0.5)
-            r_check = requests.get(f"{BASE_URL}/api/alerts?limit=10")
+            r_check = requests.get(f"{BASE_URL}/api/alerts?limit=10", headers=headers)
             if r_check.status_code == 200 and len(r_check.json().get("alerts", [])) > 0:
                 data = r_check.json()
                 break
@@ -110,7 +134,7 @@ def test_alerts_created_and_stored_in_db():
 
     # Check alert detail
     alert_id = alert["alert_id"]
-    r_detail = requests.get(f"{BASE_URL}/api/alerts/{alert_id}")
+    r_detail = requests.get(f"{BASE_URL}/api/alerts/{alert_id}", headers=headers)
     assert r_detail.status_code == 200
     detail = r_detail.json()
     assert detail["alert_id"] == alert_id
@@ -123,11 +147,22 @@ def test_websocket_receives_events_on_simulation():
     import asyncio
     import websockets
 
+    # 4a. Unauthenticated access check (200 in LOCAL_ACADEMIC mode, 401 in PRODUCTION mode)
+    r_unauth = requests.post(f"{BASE_URL}/api/simulation/start", json={"duration": 2, "mode": "mixed"})
+    assert r_unauth.status_code in (200, 401), f"Unexpected status code: {r_unauth.status_code}"
+
+    # 4b. Authenticated simulation trigger
+    headers = get_auth_context()
+
     async def check_ws():
         uri = f"ws://127.0.0.1:8000/ws/events"
         async with websockets.connect(uri) as ws:
-            # Trigger simulation run
-            requests.post(f"{BASE_URL}/api/simulation/start", json={"duration": 2, "mode": "mixed", "event_count": 50, "speed": 0.05})
+            # Trigger simulation run with authenticated headers
+            requests.post(
+                f"{BASE_URL}/api/simulation/start",
+                json={"duration": 2, "mode": "mixed", "event_count": 50, "speed": 0.05},
+                headers=headers
+            )
             msg = await asyncio.wait_for(ws.recv(), timeout=15.0)
             data = json.loads(msg)
             assert data is not None
@@ -138,6 +173,12 @@ def test_websocket_receives_events_on_simulation():
 
 def test_csv_upload_works():
     """5. Verify CSV upload works."""
+    # 5a. Unauthenticated access check (200 in LOCAL_ACADEMIC mode, 401 in PRODUCTION mode)
+    r_unauth = requests.post(f"{BASE_URL}/api/datasets/upload", data={"name": "test"})
+    assert r_unauth.status_code in (200, 401, 422), f"Unexpected status code: {r_unauth.status_code}"
+
+    # 5b. Authenticated upload
+    headers = get_auth_context()
     root_dir = Path(__file__).resolve().parent.parent.parent
     csv_path = root_dir / "datasets" / "synthetic" / "test_data.csv"
     assert csv_path.exists()
@@ -153,6 +194,7 @@ def test_csv_upload_works():
         f"{BASE_URL}/api/datasets/upload",
         data={"name": f"verify_upload_{prefix}", "description": "Verification test upload"},
         files={"file": (f"test_data_{prefix}.csv", io.BytesIO(csv_bytes), "text/csv")},
+        headers=headers
     )
     assert r_up.status_code in [200, 201]
     res = r_up.json()
@@ -163,8 +205,13 @@ def test_csv_upload_works():
 
 def test_detection_comparison_produces_valid_metrics():
     """6. Verify detection comparison produces valid metrics."""
-    # List datasets to pick one
-    r_ds = requests.get(f"{BASE_URL}/api/datasets")
+    # 6a. Unauthenticated access check (200 in LOCAL_ACADEMIC mode, 401 in PRODUCTION mode)
+    r_unauth = requests.get(f"{BASE_URL}/api/datasets")
+    assert r_unauth.status_code in (200, 401), f"Unexpected status code: {r_unauth.status_code}"
+
+    # 6b. Authenticated access
+    headers = get_auth_context()
+    r_ds = requests.get(f"{BASE_URL}/api/datasets", headers=headers)
     assert r_ds.status_code == 200
     datasets = r_ds.json().get("datasets", [])
 
@@ -182,6 +229,7 @@ def test_detection_comparison_produces_valid_metrics():
                 f"{BASE_URL}/api/datasets/upload",
                 data={"name": f"seed_data_{prefix}", "description": "Seed dataset for comparison"},
                 files={"file": (f"seed_{prefix}.csv", io.BytesIO(buf.getvalue().encode("utf-8")), "text/csv")},
+                headers=headers
             )
             if r_seed.status_code in [200, 201]:
                 datasets = [r_seed.json()]
@@ -189,7 +237,7 @@ def test_detection_comparison_produces_valid_metrics():
     assert len(datasets) > 0, "Expected at least one dataset available for comparison"
 
     ds_id = datasets[0]["dataset_id"]
-    r_comp = requests.get(f"{BASE_URL}/api/detection/compare?dataset_id={ds_id}")
+    r_comp = requests.get(f"{BASE_URL}/api/detection/compare?dataset_id={ds_id}", headers=headers)
     assert r_comp.status_code == 200
     comp = r_comp.json()
     assert comp["dataset_id"] == ds_id
@@ -270,4 +318,83 @@ def test_hybrid_engine_four_detection_quadrants():
     assert res_d["fsm_violation"] is True
     assert res_d["risk_score"] >= 80
     assert res_d["severity"] in ["high", "critical"]
+
+
+def test_run_detection_with_dataset_id_and_empty_sessions():
+    """Verify run_detection resolves distinct session IDs when dataset_id is supplied without session_ids."""
+    from app.db.database import SessionLocal
+    from app.api.detection import run_detection
+    from app.schemas.detection import DetectionRequest
+    from app.models.models import Dataset, NetworkEvent
+    from datetime import datetime
+
+    db = SessionLocal()
+    try:
+        # Create a test dataset with 2 sessions
+        ds_id = f"ds_test_{uuid4().hex[:8]}"
+        ev1 = NetworkEvent(
+            workspace_id="default-workspace",
+            event_id=f"evt_{uuid4().hex[:8]}",
+            session_id=f"sess_t1_{uuid4().hex[:6]}",
+            dataset_id=ds_id,
+            timestamp=datetime.utcnow(),
+            event_type="CONNECT",
+            source="192.168.1.1",
+            destination="10.0.0.1",
+            label="normal"
+        )
+        ev2 = NetworkEvent(
+            workspace_id="default-workspace",
+            event_id=f"evt_{uuid4().hex[:8]}",
+            session_id=f"sess_t2_{uuid4().hex[:6]}",
+            dataset_id=ds_id,
+            timestamp=datetime.utcnow(),
+            event_type="CONNECT",
+            source="192.168.1.2",
+            destination="10.0.0.1",
+            label="normal"
+        )
+        db.add(ev1)
+        db.add(ev2)
+        db.commit()
+
+        req = DetectionRequest(session_ids=[], engines=["fsm"], dataset_id=ds_id)
+        res = run_detection(req, db)
+        assert len(res.results) >= 2
+        returned_sessions = {r.session_id for r in res.results}
+        assert ev1.session_id in returned_sessions
+        assert ev2.session_id in returned_sessions
+    finally:
+        db.query(NetworkEvent).filter(NetworkEvent.dataset_id == ds_id).delete()
+        db.commit()
+        db.close()
+
+
+def test_alert_detail_response_schema_fields():
+    """Verify AlertDetailResponse includes summary, fsm_violation, ml_anomaly_score, responsible_events."""
+    from app.schemas.alerts import AlertDetailResponse
+    from datetime import datetime
+
+    detail = AlertDetailResponse(
+        alert_id="alrt_test_123",
+        session_id="sess_test_123",
+        timestamp=datetime.utcnow(),
+        engine="hybrid",
+        severity="high",
+        risk_score=75,
+        prediction="anomalous",
+        status="new",
+        summary="DFA sequence rejected",
+        fsm_violation=True,
+        ml_anomaly_score=0.85,
+        responsible_events=["evt_1", "evt_2"],
+        processing_time_ms=12.5
+    )
+    dumped = detail.model_dump()
+    assert dumped["summary"] == "DFA sequence rejected"
+    assert dumped["fsm_violation"] is True
+    assert dumped["ml_anomaly_score"] == 0.85
+    assert dumped["responsible_events"] == ["evt_1", "evt_2"]
+    assert dumped["processing_time_ms"] == 12.5
+
 

@@ -72,7 +72,7 @@ export function Datasets() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[var(--tg-border-subtle)]">
         <div>
           <div className="flex items-center gap-2">
-            <Database className="w-4 h-4 text-emerald-400" />
+            <Database className="w-4 h-4 text-[var(--tg-accent-emerald)]" />
             <h1 className="text-lg font-semibold tracking-tight text-[var(--tg-text-primary)]">
               Dataset Registry & Corpus
             </h1>
@@ -86,7 +86,7 @@ export function Datasets() {
       {/* Dataset Ingestion Form */}
       <div className="tg-panel p-5 space-y-4">
         <div className="flex items-center gap-2 pb-3 border-b border-[var(--tg-border-subtle)]">
-          <Upload className="w-4 h-4 text-emerald-400" />
+          <Upload className="w-4 h-4 text-[var(--tg-accent-emerald)]" />
           <h2 className="text-xs font-mono font-semibold uppercase tracking-wider text-[var(--tg-text-primary)]">
             Ingest Benchmark Corpus (CSV / JSON)
           </h2>
@@ -140,7 +140,7 @@ export function Datasets() {
         </form>
 
         {uploadSuccess && (
-          <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-400 flex items-center gap-2">
+          <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-[var(--tg-accent-emerald)] font-semibold flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4" />
             <span>{uploadSuccess}</span>
           </div>
@@ -213,7 +213,7 @@ export function Datasets() {
                         <a
                           href={api.getDatasetDownloadUrl ? api.getDatasetDownloadUrl(ds.dataset_id) : `#`}
                           download
-                          className="text-xs font-mono text-[var(--tg-text-muted)] hover:text-emerald-400 inline-flex items-center gap-1 transition"
+                          className="text-xs font-mono text-[var(--tg-text-muted)] hover:text-[var(--tg-accent-emerald)] inline-flex items-center gap-1 transition"
                         >
                           <span>Export</span>
                           <ArrowUpRight className="w-3 h-3" />

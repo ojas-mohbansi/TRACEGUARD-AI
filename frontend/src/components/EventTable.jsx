@@ -36,8 +36,8 @@ export function EventTable({ events = [], loading = false, onRowClick = null, hi
                 key={evt.event_id || `${evt.session_id}-${evt.timestamp}`}
                 onClick={() => onRowClick && onRowClick(evt)}
                 className={`transition-colors ${
-                  isHighlighted ? 'bg-emerald-500/10 border-l-2 border-emerald-500' : ''
-                } ${onRowClick ? 'cursor-pointer' : ''}`}
+                  isHighlighted ? 'bg-[var(--tg-accent-emerald-subtle)] border-l-2 border-[var(--tg-accent-emerald)]' : ''
+                } ${onRowClick ? 'cursor-pointer hover:bg-[var(--tg-bg-hover)]' : ''}`}
               >
                 <td className="font-mono text-xs text-[var(--tg-text-muted)] whitespace-nowrap">
                   {evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : '—'}
@@ -52,12 +52,13 @@ export function EventTable({ events = [], loading = false, onRowClick = null, hi
                 </td>
                 <td className="font-mono text-xs whitespace-nowrap">
                   <span className="text-[var(--tg-text-muted)]">{evt.source || '0.0.0.0'}</span>
-                  <ArrowRight className="inline-block w-3 h-3 text-emerald-400 mx-1.5" />
+                  <span className="sr-only"> to </span>
+                  <ArrowRight className="inline-block w-3 h-3 text-[var(--tg-accent-emerald)] mx-1.5" aria-hidden="true" />
                   <span className="text-[var(--tg-text-primary)]">{evt.destination || '0.0.0.0'}</span>
                 </td>
                 <td className="font-mono text-xs whitespace-nowrap">
                   {evt.method && (
-                    <span className="mr-1.5 px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[var(--tg-text-primary)] font-semibold text-[10px]">
+                    <span className="mr-1.5 px-1.5 py-0.5 rounded bg-[var(--tg-bg-canvas)] border border-[var(--tg-border-subtle)] text-[var(--tg-text-primary)] font-semibold text-[10px]">
                       {evt.method}
                     </span>
                   )}
@@ -65,10 +66,10 @@ export function EventTable({ events = [], loading = false, onRowClick = null, hi
                     <span
                       className={`text-[11px] font-semibold ${
                         evt.status_code >= 400
-                          ? 'text-rose-400'
+                          ? 'text-[var(--tg-status-danger)]'
                           : evt.status_code >= 300
-                          ? 'text-amber-400'
-                          : 'text-emerald-400'
+                          ? 'text-[var(--tg-status-warning)]'
+                          : 'text-[var(--tg-accent-emerald)]'
                       }`}
                     >
                       {evt.status_code}

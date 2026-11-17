@@ -55,13 +55,16 @@ class TrafficSimulator:
     """Simulates realistic HTTP protocol sessions conforming or violating FSM rules."""
 
     def __init__(self, simulation_id: str, mode: str = "mixed", event_count: int = 100,
-                 speed: float = 1.0, anomaly_ratio: float = 0.2, seed: Optional[int] = 42):
+                 speed: float = 1.0, anomaly_ratio: float = 0.2, seed: Optional[int] = 42,
+                 workspace_id: Optional[str] = "default-workspace"):
         self.simulation_id = simulation_id
+        self.workspace_id = workspace_id or "default-workspace"
         self.mode = mode
         self.event_count = event_count
         self.speed = max(speed, 0.1)
         self.anomaly_ratio = anomaly_ratio
         self.is_running = False
+        self.generated_count: int = 0
         self._task: Optional[asyncio.Task] = None
         if seed is not None:
             random.seed(seed)
@@ -164,6 +167,7 @@ class TrafficSimulator:
                     if not self.is_running or generated_count >= self.event_count:
                         break
                     ne = NetworkEvent(
+                        workspace_id=self.workspace_id,
                         event_id=ev["event_id"],
                         session_id=ev["session_id"],
                         timestamp=ev["timestamp"],
@@ -209,19 +213,37 @@ class TrafficSimulator:
                 if engine and session_events:
                     try:
                         res = engine.detect_session(session_events)
-                        if res.get("prediction") == "anomalous" or res.get("risk_score", 0) >= 30:
+                        fsm_res = res.get("fsm_result") or {}
+                        ml_res = res.get("ml_result") or {}
+                        fsm_viol = bool(res.get("fsm_violation") or fsm_res.get("fsm_violation"))
+                        ml_anom = bool(res.get("ml_anomalous") or (ml_res.get("prediction") == "anomalous") or (res.get("ml_anomaly_score", 0) >= 0.55))
+
+                        engine_label = res.get("attribution")
+                        if not engine_label or engine_label == "none":
+                            if fsm_viol and ml_anom:
+                                engine_label = "hybrid"
+                            elif fsm_viol:
+                                engine_label = "fsm"
+                            elif ml_anom:
+                                engine_label = "ml"
+                            else:
+                                engine_label = "hybrid"
+
+                        if fsm_viol or ml_anom or res.get("prediction") == "anomalous" or res.get("risk_score", 0) >= 40:
+
                             alert = Alert(
+                                workspace_id=self.workspace_id,
                                 alert_id=f"alrt_{uuid4().hex[:12]}",
                                 session_id=session_id,
                                 timestamp=datetime.utcnow(),
-                                engine="hybrid",
+                                engine=engine_label,
                                 severity=res["severity"],
                                 risk_score=res["risk_score"],
                                 prediction=res["prediction"],
                                 status="new",
                                 summary=res["explanation"][:250],
-                                fsm_result=res.get("fsm_result"),
-                                ml_result=res.get("ml_result"),
+                                fsm_result=fsm_res,
+                                ml_result=ml_res,
                                 hybrid_result=res.get("hybrid_result"),
                                 responsible_events=res.get("responsible_events", []),
                                 processing_time_ms=res.get("processing_time_ms", 0.0)

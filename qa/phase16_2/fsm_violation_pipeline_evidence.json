@@ -1,0 +1,246 @@
+{
+  "alert_details": {
+    "alert_id": "alrt_demo_fsm_only_656551f8",
+    "session_id": "sess_demo_fsm_only_aa306ebf",
+    "dataset_id": "demo_showcase",
+    "timestamp": "2026-11-17T16:06:26.491395",
+    "engine": "fsm",
+    "severity": "critical",
+    "risk_score": 81,
+    "prediction": "anomalous",
+    "status": "new",
+    "summary": "[SYNTHETIC DEMONSTRATION] FSM protocol violation detected (Critical protocol violation: Session executed impossible transition(s) (1 total). First violation: Unexpected event 'REQUEST' in state 'CLOSED'. Expected one of: None.). ML statistical pr",
+    "fsm_violation": true,
+    "ml_anomaly_score": 0.5224,
+    "responsible_events": [
+      "evt_demo_fsm_5_b72e5f"
+    ],
+    "processing_time_ms": 5.07,
+    "fsm_result": {
+      "session_id": "sess_demo_fsm_only_aa306ebf",
+      "engine": "fsm",
+      "prediction": "anomalous",
+      "risk_score": 100,
+      "severity": "critical",
+      "fsm_violation": true,
+      "violations": [
+        {
+          "current_state": "CLOSED",
+          "previous_state": "CLOSED",
+          "incoming_event": "REQUEST",
+          "expected_transitions": [],
+          "actual_transition": "CLOSED -> ? via REQUEST",
+          "violation_reason": "Unexpected event 'REQUEST' in state 'CLOSED'. Expected one of: None."
+        }
+      ],
+      "transition_history": [
+        {
+          "from": "IDLE",
+          "to": "CONNECTED",
+          "event": "CONNECT",
+          "valid": true
+        },
+        {
+          "from": "CONNECTED",
+          "to": "REQUEST_RECEIVED",
+          "event": "REQUEST",
+          "valid": true
+        },
+        {
+          "from": "REQUEST_RECEIVED",
+          "to": "AUTH_CHECKED",
+          "event": "AUTH_SUCCESS",
+          "valid": true
+        },
+        {
+          "from": "AUTH_CHECKED",
+          "to": "RESPONSE_SENT",
+          "event": "RESPONSE_200",
+          "valid": true
+        },
+        {
+          "from": "RESPONSE_SENT",
+          "to": "CLOSED",
+          "event": "CLOSE",
+          "valid": true
+        },
+        {
+          "from": "CLOSED",
+          "to": "CLOSED",
+          "event": "REQUEST",
+          "valid": false
+        }
+      ],
+      "explanation": "Critical protocol violation: Session executed impossible transition(s) (1 total). First violation: Unexpected event 'REQUEST' in state 'CLOSED'. Expected one of: None.",
+      "responsible_events": [
+        "evt_demo_fsm_5_b72e5f"
+      ],
+      "processing_time_ms": 0.023
+    },
+    "ml_result": {
+      "session_id": "sess_demo_fsm_only_aa306ebf",
+      "engine": "ml",
+      "prediction": "normal",
+      "risk_score": 52,
+      "severity": "high",
+      "ml_anomaly_score": 0.5224,
+      "feature_importances": {
+        "event_count": 0.0242,
+        "unique_event_types": 0.0201,
+        "session_duration_seconds": 0.0006,
+        "avg_inter_event_time": 0.0001,
+        "std_inter_event_time": 0.0,
+        "invalid_transition_count": 0.1209,
+        "auth_failure_count": 0.0,
+        "error_count": 0.0,
+        "response_2xx_ratio": 0.004,
+        "response_4xx_ratio": 0.0,
+        "response_5xx_ratio": 0.0,
+        "avg_bytes": 0.4029,
+        "has_close": 0.0201,
+        "request_rate": 0.4029,
+        "unique_methods": 0.004
+      },
+      "model_version": "1.0.0",
+      "processing_time_ms": 8.473,
+      "anomaly_score": 0.5224
+    },
+    "hybrid_result": {
+      "combined_risk_score": 81,
+      "severity": "critical",
+      "fsm_weight": 0.6,
+      "ml_weight": 0.4,
+      "fsm_score": 100.0,
+      "ml_score": 52.239999999999995,
+      "formula": "max(0.6 * 100.0 + 0.4 * 52.2, 60.0)",
+      "floor_applied": false,
+      "attribution": "fsm",
+      "explanation": "FSM protocol violation detected (Critical protocol violation: Session executed impossible transition(s) (1 total). First violation: Unexpected event 'REQUEST' in state 'CLOSED'. Expected one of: None.). ML statistical profile within normal limits (score: 0.52)."
+    },
+    "events": [
+      {
+        "event_id": "evt_demo_fsm_0_8563bc",
+        "session_id": "sess_demo_fsm_only_aa306ebf",
+        "timestamp": "2026-11-17T16:06:26.438050",
+        "event_type": "CONNECT",
+        "method": null,
+        "status_code": null,
+        "bytes": 64
+      },
+      {
+        "event_id": "evt_demo_fsm_1_0bcae4",
+        "session_id": "sess_demo_fsm_only_aa306ebf",
+        "timestamp": "2026-11-17T16:06:26.463050",
+        "event_type": "REQUEST",
+        "method": "GET",
+        "status_code": null,
+        "bytes": 320
+      },
+      {
+        "event_id": "evt_demo_fsm_2_62c000",
+        "session_id": "sess_demo_fsm_only_aa306ebf",
+        "timestamp": "2026-11-17T16:06:26.488050",
+        "event_type": "AUTH_SUCCESS",
+        "method": null,
+        "status_code": null,
+        "bytes": 128
+      },
+      {
+        "event_id": "evt_demo_fsm_3_1a249a",
+        "session_id": "sess_demo_fsm_only_aa306ebf",
+        "timestamp": "2026-11-17T16:06:26.518050",
+        "event_type": "RESPONSE_200",
+        "method": null,
+        "status_code": 200,
+        "bytes": 1450
+      },
+      {
+        "event_id": "evt_demo_fsm_4_b694c1",
+        "session_id": "sess_demo_fsm_only_aa306ebf",
+        "timestamp": "2026-11-17T16:06:26.558050",
+        "event_type": "CLOSE",
+        "method": null,
+        "status_code": null,
+        "bytes": 64
+      },
+      {
+        "event_id": "evt_demo_fsm_5_b72e5f",
+        "session_id": "sess_demo_fsm_only_aa306ebf",
+        "timestamp": "2026-11-17T16:06:26.598050",
+        "event_type": "REQUEST",
+        "method": "GET",
+        "status_code": null,
+        "bytes": 380
+      }
+    ],
+    "investigation_notes": "Controlled demonstration run for scenario: fsm_only"
+  },
+  "step_execution_trap": {
+    "protocol": "HTTP",
+    "formal_5_tuple": {
+      "Q_cardinality": 9,
+      "Sigma_size": 13,
+      "q0": "IDLE",
+      "F": [
+        "CLOSED"
+      ],
+      "trap_state": "TRAP",
+      "total_transitions": 117
+    },
+    "input_symbols": [
+      "CONNECT",
+      "REQUEST",
+      "RESPONSE_200",
+      "CLOSE"
+    ],
+    "steps": [
+      {
+        "step_number": 1,
+        "current_state": "IDLE",
+        "symbol": "CONNECT",
+        "valid": true,
+        "next_state": "CONNECTED",
+        "delta_lookup": "\u03b4(IDLE, CONNECT) = CONNECTED",
+        "explanation": "Valid transition from IDLE to CONNECTED upon receiving input symbol 'CONNECT'.",
+        "accepted_so_far": false
+      },
+      {
+        "step_number": 2,
+        "current_state": "CONNECTED",
+        "symbol": "REQUEST",
+        "valid": true,
+        "next_state": "REQUEST_RECEIVED",
+        "delta_lookup": "\u03b4(CONNECTED, REQUEST) = REQUEST_RECEIVED",
+        "explanation": "Valid transition from CONNECTED to REQUEST_RECEIVED upon receiving input symbol 'REQUEST'.",
+        "accepted_so_far": false
+      },
+      {
+        "step_number": 3,
+        "current_state": "REQUEST_RECEIVED",
+        "symbol": "RESPONSE_200",
+        "valid": false,
+        "next_state": "TRAP",
+        "delta_lookup": "\u03b4(REQUEST_RECEIVED, RESPONSE_200) = TRAP",
+        "explanation": "REJECTION at Step 3: No valid transition defined in protocol specification for state 'REQUEST_RECEIVED' with symbol 'RESPONSE_200'. Transitioning to dead state 'TRAP'. Allowed symbols: [AUTH_SUCCESS, AUTH_FAILURE, MALFORMED].",
+        "accepted_so_far": false
+      },
+      {
+        "step_number": 4,
+        "current_state": "TRAP",
+        "symbol": "CLOSE",
+        "valid": false,
+        "next_state": "TRAP",
+        "delta_lookup": "\u03b4(TRAP, CLOSE) = TRAP",
+        "explanation": "Step 4: Automaton remains trapped in dead state 'TRAP' upon input 'CLOSE'.",
+        "accepted_so_far": false
+      }
+    ],
+    "initial_state": "IDLE",
+    "final_state": "TRAP",
+    "all_transitions_valid": false,
+    "is_in_accepting_state": false,
+    "accepted_by_automaton": false,
+    "verdict": "REJECTED",
+    "rejection_reason": "REJECTION at Step 3: No valid transition defined in protocol specification for state 'REQUEST_RECEIVED' with symbol 'RESPONSE_200'. Transitioning to dead state 'TRAP'. Allowed symbols: [AUTH_SUCCESS, AUTH_FAILURE, MALFORMED]."
+  }
+}

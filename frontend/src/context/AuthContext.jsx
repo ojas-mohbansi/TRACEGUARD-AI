@@ -1,104 +1,76 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
+import wsService from '../services/websocket';
+
+const ACADEMIC_USER = {
+  username: 'academic',
+  role: 'admin',
+  full_name: 'Academic Researcher',
+  email: 'academic@traceguard.local',
+};
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [token, setToken] = useState(() => localStorage.getItem('traceguard_token') || null);
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('traceguard_user');
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [activeWorkspace, setActiveWorkspace] = useState(() => localStorage.getItem('traceguard_workspace_id') || 'default-workspace');
-  const [workspaces, setWorkspaces] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // Local academic mode: directly authenticated without login gate
+  const [user, setUser] = useState(ACADEMIC_USER);
+  const [activeWorkspace, setActiveWorkspace] = useState('default-workspace');
+  const [workspaces, setWorkspaces] = useState([
+    { workspace_id: 'default-workspace', name: 'Academic Research Lab', role: 'owner' }
+  ]);
+  const [loading, setLoading] = useState(false);
 
-  // Initialize and load user profile if token exists
+  // Optional background sync with backend profile if available
   useEffect(() => {
-    async function loadUser() {
-      if (!token) {
-        setLoading(false);
-        return;
-      }
+    async function syncProfile() {
       try {
         const profile = await api.getMe();
-        setUser(profile);
-        localStorage.setItem('traceguard_user', JSON.stringify(profile));
-
-        // Load workspaces
-        const wsList = await api.getWorkspaces();
-        setWorkspaces(wsList);
-        if (wsList.length > 0) {
-          const match = wsList.find(w => w.workspace_id === activeWorkspace);
-          if (!match) {
-            setActiveWorkspace(wsList[0].workspace_id);
-            api.setWorkspace(wsList[0].workspace_id);
-          }
+        if (profile && profile.username) {
+          setUser({ ...ACADEMIC_USER, ...profile });
         }
-      } catch (err) {
-        console.warn('Session expired or invalid token:', err);
-        logout();
-      } finally {
-        setLoading(false);
+      } catch {
+        // In local academic mode, fallback smoothly to ACADEMIC_USER
       }
     }
-    loadUser();
-  }, [token]);
+    syncProfile();
+  }, []);
 
-  const login = async (username, password) => {
-    const res = await api.login(username, password);
-    setToken(res.access_token);
-    setUser(res.user);
-    localStorage.setItem('traceguard_user', JSON.stringify(res.user));
-    if (res.active_workspace_id) {
-      setActiveWorkspace(res.active_workspace_id);
-    }
-    // Refresh workspaces list
-    try {
-      const wsList = await api.getWorkspaces();
-      setWorkspaces(wsList);
-    } catch {
-      // ignore
-    }
-    return res;
+  const login = async () => {
+    setUser(ACADEMIC_USER);
+    return { access_token: 'local-academic-token', user: ACADEMIC_USER };
   };
 
-  const signup = async (payload) => {
-    const res = await api.signup(payload);
-    // After signup, automatically login
-    return await login(payload.username, payload.password);
+  const signup = async () => {
+    setUser(ACADEMIC_USER);
+    return { access_token: 'local-academic-token', user: ACADEMIC_USER };
   };
 
   const logout = () => {
-    api.logout();
-    setToken(null);
-    setUser(null);
-    setActiveWorkspace('default-workspace');
-    setWorkspaces([]);
+    // In local academic mode, logout is a safe no-op that retains academic workspace
+    console.info('Logout invoked in local academic mode — maintaining academic session.');
   };
 
   const switchWorkspace = (wsId) => {
     setActiveWorkspace(wsId);
     api.setWorkspace(wsId);
-    window.location.reload(); // Refresh app states cleanly
   };
 
   const refreshWorkspaces = async () => {
     try {
       const wsList = await api.getWorkspaces();
-      setWorkspaces(wsList);
-    } catch (err) {
-      console.error('Failed to refresh workspaces:', err);
+      if (wsList && wsList.length > 0) setWorkspaces(wsList);
+    } catch {
+      // ignore
     }
   };
 
   const value = {
-    token,
+    token: 'local-academic-token',
     user,
-    isAuthenticated: !!token,
+    isAuthenticated: true,
     activeWorkspace,
     workspaces,
-    loading,
+    loading: false,
     login,
     signup,
     logout,

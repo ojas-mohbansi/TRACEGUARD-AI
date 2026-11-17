@@ -17,6 +17,11 @@ class Settings(BaseSettings):
     DEMO_PASSWORD: str = os.getenv("DEMO_PASSWORD", "traceguard2024")
     DEMO_EMAIL: str = os.getenv("DEMO_EMAIL", "demo@traceguard.ai")
 
+    # Operating Mode: LOCAL_ACADEMIC (default, auth-free academic demo) vs PRODUCTION (strict JWT/RBAC)
+    TRACEGUARD_MODE: str = os.getenv("TRACEGUARD_MODE", "LOCAL_ACADEMIC")
+    LOCAL_ACADEMIC_MODE: bool = os.getenv("TRACEGUARD_MODE", "LOCAL_ACADEMIC").upper() in ["LOCAL_ACADEMIC", "ACADEMIC", "LOCAL"]
+    ALLOW_PUBLIC_ACADEMIC_MODE: bool = os.getenv("ALLOW_PUBLIC_ACADEMIC_MODE", "false").lower() == "true"
+
     # Production SaaS Settings
     ALLOWED_ORIGINS: str = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000,http://127.0.0.1:5173,https://traceguard.ai")
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")

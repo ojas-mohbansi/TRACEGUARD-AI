@@ -1,0 +1,26 @@
+{
+  "name": "TraceGuard AI",
+  "short_name": "TraceGuard",
+  "description": "Network protocol state machine verification and hybrid intrusion detection platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0E131F",
+  "theme_color": "#0E131F",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/traceguard-ai-icon-color-2048.png",
+      "sizes": "2048x2048",
+      "type": "image/png"
+    },
+    {
+      "src": "/traceguard-ai-android-app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
