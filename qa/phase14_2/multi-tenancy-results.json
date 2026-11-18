@@ -1,8 +1,0 @@
-{
-  "ws_a_generated_events": 10,
-  "ws_a_generated_alerts": 1,
-  "ws_a_isolation_verified": true,
-  "ws_b_leakage_detected": false,
-  "cross_workspace_isolation": "PASS",
-  "api_enforcement": "PASS"
-}
